@@ -1,0 +1,49 @@
+/* LOADER : Figma 1:98 */
+.loader {
+  position: fixed; inset: 0; z-index: 200;
+  overflow: hidden;
+  background: var(--c-bg-loader);
+  opacity: 1; transform: scale(1);
+  transition: opacity .8s ease, transform .8s var(--ease-out);
+}
+.loader.is-done { opacity: 0; transform: scale(1.04); pointer-events: none; }
+
+.loader__ring {
+  position: absolute; left: calc(50% + 0.5px); top: calc(50% - 0.5px);
+  width: max(300px, calc(869 * var(--px))); aspect-ratio: 869 / 837; height: auto;
+  max-width: none; object-fit: cover;
+  transform: translate(-50%, -50%);
+  animation: loader-ring-in 1.2s var(--ease-out) both;
+}
+.loader__ring::before { content: none; }
+.loader--gl img.loader__ring { display: none; }
+.loader__ring--gl { display: block; width: max(450px, calc(869 * 1.5 * var(--px))); }
+
+.loader__text {
+  position: absolute; left: 50%; top: 50%;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  transform: translate(-50%, -50%);
+  font-family: var(--f-inter); font-weight: 300;
+  font-size: max(36px, calc(84 * var(--px)));
+  letter-spacing: -0.04em; line-height: normal; white-space: nowrap;
+  color: #fff;
+}
+.loader__line { display: block; opacity: 0; animation: loader-line-in .9s var(--ease-out) forwards; }
+.loader__line:nth-child(1) { animation-delay: .35s; }
+.loader__line:nth-child(2) { animation-delay: .6s; }
+.loader__line:nth-child(3) { animation-delay: .85s; }
+.loader__line--accent { font-family: var(--f-serif); font-weight: 500; font-style: italic; color: var(--c-primary); }
+
+@keyframes loader-ring-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(.85) rotate(0deg); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+}
+@keyframes loader-line-in {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader, .loader__ring, .loader__line { animation-duration: .01s; animation-delay: 0s; transition-duration: .2s; }
+  .loader.is-done { transform: none; }
+}

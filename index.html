@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fuse.lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;800&family=Playfair+Display:ital,wght@1,400;1,500&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/loader.css">
+<link rel="stylesheet" href="css/hero.css">
+<link rel="stylesheet" href="css/divider.css">
+</head>
+<body class="is-loading">
+
+<!-- LOADER : Figma 1:98 -->
+<div class="loader" id="loader" aria-hidden="true">
+  <img class="loader__ring" src="assets/img/loader-ring.png" width="869" height="837" alt="">
+  <p class="loader__text">
+    <span class="loader__line">Building</span>
+    <span class="loader__line loader__line--accent">experiences</span>
+    <span class="loader__line">inspire.</span>
+  </p>
+</div>
+
+<header class="header" id="header" data-theme="light">
+  <div class="header__inner">
+    <a class="header__logo" href="#hero" aria-label="fuse.lab 홈">
+      <img class="header__logo-img header__logo-img--light" src="assets/img/logo-light.svg" width="177" height="36" alt="fuse.lab">
+      <img class="header__logo-img header__logo-img--dark" src="assets/img/logo-dark.svg" width="177" height="36" alt="">
+    </a>
+    <nav class="gnb" aria-label="주 메뉴">
+      <ul class="gnb__list">
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#">Portfolio</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Why Us</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- HERO : Figma 1:3 -->
+  <section class="hero" id="hero" data-header-theme="light">
+    <div class="hero__visual" aria-hidden="true"></div>
+    <h1 class="hero__title">Our Studio</h1>
+    <div class="hero__bottom">
+      <div class="hero__info">
+        <p class="hero__label">OUR APPROACH</p>
+        <p class="hero__tags">Strategy • Identity • Digital<br>Campaign • Experience • Content</p>
+      </div>
+      <div class="hero__logo"><img src="assets/img/logo-hero-large.svg" alt="fuse.lab"></div>
+    </div>
+  </section>
+
+  <!-- DIVIDER : Figma 1:47 -->
+  <section class="divider" id="divider" data-header-theme="dark">
+    <div class="divider__visual">
+      <div class="divider__sphere"><img src="assets/img/divider-sphere.png" alt="" width="1536" height="1024"></div>
+      <div class="divider__text">
+        <h2 class="divider__title">From Idea to System.</h2>
+        <p class="divider__desc">아이디어에서 끝나지 않고, 실제로 작동하는 구조까지 만듭니다.</p>
+      </div>
+    </div>
+    <div class="divider__marquee" role="img" aria-label="WEB, BRAND, DESIGN, UI/UX">
+      <div class="divider__track" aria-hidden="true">
+        <div class="divider__group"><span>WEB</span><span>•</span><span>BRAND</span><span>•</span><span>DESIGN</span><span>•</span><span>UI/UX</span><span>•</span><span>WEB</span><span>•</span><span>BRAND</span><span>•</span><span>DESIGN</span><span>•</span><span>UI/UX</span><span>•</span></div>
+        <div class="divider__group"><span>WEB</span><span>•</span><span>BRAND</span><span>•</span><span>DESIGN</span><span>•</span><span>UI/UX</span><span>•</span><span>WEB</span><span>•</span><span>BRAND</span><span>•</span><span>DESIGN</span><span>•</span><span>UI/UX</span><span>•</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/common.js"></script>
+<script src="js/loader-ring.js"></script>
+<script src="js/loader.js"></script>
+<script src="js/hero-flux.js"></script>
+<script src="js/divider.js"></script>
+</body>
+</html>
