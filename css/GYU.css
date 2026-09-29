@@ -1,0 +1,765 @@
+/* =========================================================
+   GYU LANE — PORTFOLIO SCROLL STORY
+========================================================= */
+
+.gyu-wrap {
+  --gyu-header-bg: rgba(22, 28, 34, 0.25);
+  background: var(--color-black);
+}
+
+#wrap.gyu-wrap {
+  overflow: visible;
+}
+
+.gyu-header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: var(--z-header);
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
+  align-items: center;
+  width: 100%;
+  height: var(--header-height);
+  padding: 0 var(--side-padding);
+  background: var(--gyu-header-bg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.gyu-logo {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  width: fit-content;
+}
+
+.gyu-logo__mark {
+  width: 60px;
+  height: 51px;
+  object-fit: contain;
+}
+
+.gyu-logo__wordmark {
+  width: 65px;
+  height: 15px;
+  margin-bottom: 1px;
+  object-fit: contain;
+}
+
+.gyu-nav {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  height: 100%;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.gyu-nav a {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 100%;
+  white-space: nowrap;
+}
+
+.gyu-nav a::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 18px;
+  left: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--transition-normal);
+}
+
+.gyu-nav a:hover::after,
+.gyu-nav a:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.gyu-theme {
+  justify-self: end;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 159px;
+  padding: 6px 12px;
+  overflow: hidden;
+  border: 1px solid #fff;
+  border-radius: var(--radius-round);
+  background: linear-gradient(90deg, #262626, #06000e);
+}
+
+.gyu-theme__track {
+  display: flex;
+  align-items: center;
+  width: 72px;
+  height: 36px;
+  padding: 0 4px;
+  border-radius: var(--radius-round);
+  background: linear-gradient(90deg, #5b21d6, #0fa97b);
+}
+
+.gyu-theme__thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+  transition: transform var(--transition-normal);
+}
+
+.gyu-theme[aria-pressed="false"] .gyu-theme__thumb {
+  transform: translateX(34px);
+}
+
+.gyu-theme__label {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.042em;
+}
+
+.gyu-story {
+  position: relative;
+  height: 320vh;
+  min-height: 1800px;
+  background: var(--color-black);
+}
+
+.gyu-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  min-height: 620px;
+  overflow: hidden;
+  perspective: 1800px;
+  perspective-origin: 50% 48%;
+  background: var(--color-black);
+}
+
+.gyu-track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: max-content;
+  height: 100%;
+  transform: translate3d(0, 0, 0);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.gyu-project {
+  --gyu-fold: 0;
+  position: relative;
+  flex: 0 0 100vw;
+  width: 100vw;
+  height: 100%;
+  overflow: hidden;
+  border: 0;
+  background: #050505;
+  transform-origin: center center;
+  transform: translateZ(0);
+  transform-style: preserve-3d;
+  backface-visibility: visible;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+  box-shadow: none;
+  will-change: transform, border-radius, box-shadow;
+}
+
+.gyu-project::before,
+.gyu-project::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  width: clamp(48px, 8vw, 150px);
+  opacity: var(--gyu-fold);
+  pointer-events: none;
+}
+
+.gyu-project::before {
+  left: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.58), transparent);
+}
+
+.gyu-project::after {
+  right: 0;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.58));
+}
+
+.gyu-project:not(.is-gyu-incoming)::before,
+.gyu-project:not(.is-gyu-outgoing)::after {
+  opacity: 0;
+}
+
+.gyu-project__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  border-radius: inherit;
+  object-fit: cover;
+  image-rendering: auto;
+}
+
+.gyu-project--second .gyu-project__image {
+  object-position: center center;
+}
+
+.gyu-project__shade {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.36), transparent 54%),
+    rgba(0, 0, 0, 0.25);
+}
+
+.gyu-project__shade--second {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.52), rgba(0, 0, 0, 0.08) 58%),
+    rgba(4, 10, 15, 0.12);
+}
+
+.gyu-project__content {
+  position: absolute;
+  bottom: 100px;
+  left: 120px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 64px;
+  width: 663px;
+  color: #fff;
+}
+
+.gyu-project__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.gyu-project__index {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.gyu-project__index strong {
+  font-size: 56px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.gyu-project__index span {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.gyu-project__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gyu-project__eyebrow {
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 1.5;
+}
+
+.gyu-project__title {
+  font-size: clamp(64px, 5vw, 96px);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.gyu-project__description {
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.016em;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.gyu-project__button {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 61px;
+  padding: 14px 40px;
+  border: 1px solid #fff;
+  border-radius: var(--radius-round);
+  background: linear-gradient(90deg, #262626, #06000e);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  pointer-events: auto;
+  transition:
+    color var(--transition-normal),
+    background var(--transition-normal),
+    transform var(--transition-normal);
+}
+
+.gyu-project__button::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: inherit;
+}
+
+.gyu-project__button:hover,
+.gyu-project__button.is-gyu-pointer-hover,
+.gyu-project__button:focus-visible {
+  background: #fff;
+  color: #111;
+  transform: translateY(-3px);
+}
+
+.gyu-project__button:active {
+  transform: translateY(-1px) scale(0.96);
+}
+
+/* =========================================================
+   SERVICES / PINNED CARD DECK
+========================================================= */
+
+.gyu-mvp {
+  position: relative;
+  background: #030507;
+  color: #fff;
+}
+
+.gyu-mvp__stage {
+  position: relative;
+  padding: 24px clamp(14px, 2.5vw, 42px);
+}
+
+.gyu-mvp__deck {
+  position: relative;
+  width: 100%;
+  max-width: 1800px;
+  margin: auto;
+  outline: none;
+}
+
+.gyu-service-card {
+  position: relative;
+  margin-bottom: 28px;
+  color: #fff;
+}
+
+.gyu-service-card__visual {
+  position: relative;
+  min-height: 560px;
+  overflow: hidden;
+  border-radius: clamp(20px, 2vw, 34px);
+  background: #151c2b;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.38);
+}
+
+.gyu-service-card__image,
+.gyu-service-card__shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.gyu-service-card__image {
+  max-width: none;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.025);
+}
+
+.gyu-service-card__shade {
+  background:
+    linear-gradient(180deg, rgba(5, 9, 18, 0.15), rgba(5, 9, 18, 0.45)),
+    linear-gradient(90deg, rgba(5, 9, 18, 0.15), transparent 75%);
+}
+
+.gyu-service-card__hero {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-height: 560px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(24px, 3.2vh, 40px);
+  padding: 60px clamp(24px, 5vw, 96px);
+  text-align: center;
+}
+
+.gyu-service-card__hero > strong {
+  display: none;
+}
+
+.gyu-service-card__hero > h2 {
+  max-width: 100%;
+  font-size: clamp(30px, 3.4vw, 62px);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.gyu-service-card__hero > div {
+  display: contents;
+}
+
+.gyu-service-card__hero h3 {
+  order: -1;
+  max-width: 100%;
+  padding: 8px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  background: rgba(5, 9, 18, 0.18);
+  color: #fff;
+  font-size: clamp(12px, 1vw, 17px);
+  font-weight: 500;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+.gyu-service-card__hero p {
+  max-width: 780px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: clamp(13px, 1.12vw, 19px);
+  line-height: 1.8;
+  letter-spacing: -0.025em;
+  text-wrap: pretty;
+}
+
+.gyu-service-card__side-label {
+  display: none;
+}
+
+/* Absolute cards share one sticky stage; only their transforms animate. */
+.gyu-mvp.is-deck .gyu-mvp__stage {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  height: var(--gyu-service-viewport, 100svh);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.gyu-mvp.is-deck .gyu-mvp__deck {
+  flex-shrink: 0;
+  width: var(--gyu-deck-width);
+  height: var(--gyu-card-height);
+  perspective: 1600px;
+  perspective-origin: 50% 50%;
+}
+
+.gyu-mvp.is-deck .gyu-service-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--gyu-card-width);
+  height: 100%;
+  margin: 0;
+  transform-origin: top left;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.gyu-mvp.is-deck .gyu-service-card__visual,
+.gyu-mvp.is-deck .gyu-service-card__hero {
+  height: 100%;
+  min-height: 0;
+}
+
+.gyu-mvp.is-deck .gyu-service-card__side-label {
+  position: absolute;
+  top: 50%;
+  right: clamp(7px, 1.1vw, 20px);
+  z-index: 4;
+  display: block;
+  width: clamp(25px, 2.3vw, 42px);
+  max-height: calc(100% - 48px);
+  padding: 16px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  background: rgba(4, 8, 14, 0.6);
+  color: #fff;
+  font-size: clamp(10px, 0.85vw, 15px);
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: translateY(-50%);
+}
+
+.gyu-service-card__side-label:hover {
+  background: #fff;
+  color: #101622;
+}
+
+.gyu-service-card__side-label:focus-visible,
+.gyu-mvp__deck:focus-visible {
+  outline: 2px solid #b5c5ff;
+  outline-offset: 5px;
+}
+
+.gyu-mvp__status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.gyu-mvp-active .gyu-header {
+  background: rgba(3, 5, 7, 0.9);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.gyu-mvp-active .gyu-logo__mark,
+.gyu-mvp-active .gyu-logo__wordmark {
+  filter: none;
+}
+
+.gyu-light .gyu-header {
+  --gyu-header-bg: rgba(238, 241, 244, 0.2);
+}
+
+.gyu-light .gyu-project--first .gyu-project__image {
+  filter: brightness(1.12) saturate(0.9);
+}
+
+@media (max-width: 1280px) {
+  .gyu-header {
+    grid-template-columns: minmax(170px, 1fr) auto minmax(170px, 1fr);
+  }
+
+  .gyu-nav {
+    gap: 30px;
+    font-size: 16px;
+  }
+
+  .gyu-project__content {
+    bottom: 72px;
+    left: 64px;
+    gap: 38px;
+  }
+
+  .gyu-project__index strong {
+    font-size: 40px;
+  }
+
+  .gyu-project__index {
+    font-size: 20px;
+  }
+
+  .gyu-project__eyebrow {
+    font-size: 18px;
+  }
+
+  .gyu-project__title {
+    font-size: clamp(48px, 5vw, 72px);
+  }
+
+  .gyu-project__description {
+    font-size: 22px;
+    line-height: 1.45;
+  }
+
+  .gyu-project__button {
+    min-height: 52px;
+    padding: 12px 30px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 767px) {
+  .gyu-header {
+    grid-template-columns: 1fr auto;
+    padding: 0 var(--side-padding);
+  }
+
+  .gyu-nav {
+    display: none;
+  }
+
+  .gyu-logo {
+    gap: 8px;
+  }
+
+  .gyu-logo__mark {
+    width: 43px;
+    height: 38px;
+  }
+
+  .gyu-logo__wordmark {
+    width: 51px;
+    height: 12px;
+  }
+
+  .gyu-theme {
+    width: 112px;
+    padding: 4px 8px;
+  }
+
+  .gyu-theme__track {
+    width: 52px;
+    height: 28px;
+  }
+
+  .gyu-theme__thumb {
+    width: 22px;
+    height: 22px;
+  }
+
+  .gyu-theme[aria-pressed="false"] .gyu-theme__thumb {
+    transform: translateX(22px);
+  }
+
+  .gyu-theme__label {
+    font-size: 14px;
+  }
+
+  .gyu-stage {
+    min-height: 540px;
+  }
+
+  .gyu-project__image {
+    object-position: 58% center;
+  }
+
+  .gyu-project--second .gyu-project__image {
+    object-position: 62% center;
+  }
+
+  .gyu-project__shade {
+    background:
+      linear-gradient(0deg, rgba(0, 0, 0, 0.68), transparent 72%),
+      rgba(0, 0, 0, 0.25);
+  }
+
+  .gyu-project__content {
+    right: 20px;
+    bottom: 48px;
+    left: 20px;
+    gap: 32px;
+    width: auto;
+  }
+
+  .gyu-project__index strong {
+    font-size: 34px;
+  }
+
+  .gyu-project__index {
+    gap: 6px;
+    font-size: 17px;
+  }
+
+  .gyu-project__eyebrow {
+    font-size: 14px;
+  }
+
+  .gyu-project__title {
+    font-size: clamp(38px, 11vw, 56px);
+    white-space: normal;
+  }
+
+  .gyu-project__description {
+    font-size: 17px;
+  }
+
+  .gyu-project__button {
+    min-height: 48px;
+    padding: 12px 24px;
+    font-size: 15px;
+  }
+
+  .gyu-mvp__stage {
+    min-height: 0;
+  }
+
+  .gyu-service-card__hero {
+    gap: 24px;
+    padding: 30px 20px;
+  }
+
+  .gyu-service-card__hero > h2 {
+    font-size: clamp(27px, 7vw, 42px);
+  }
+
+  .gyu-service-card__hero h3 {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+
+  .gyu-service-card__hero p {
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .gyu-mvp.is-deck .gyu-service-card__side-label {
+    right: 4px;
+    width: 22px;
+    padding: 12px 4px;
+    font-size: 10px;
+  }
+
+  .gyu-service-card__hero p br {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gyu-project,
+  .gyu-theme__thumb,
+  .gyu-nav a::after,
+  .gyu-project__button {
+    transition: none !important;
+  }
+}
+
+@media (max-height: 580px) and (min-width: 768px) {
+  .gyu-service-card__hero {
+    gap: 18px;
+    padding: 24px 48px;
+  }
+
+  .gyu-service-card__hero > h2 {
+    font-size: 30px;
+  }
+
+  .gyu-service-card__hero h3,
+  .gyu-service-card__hero p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}

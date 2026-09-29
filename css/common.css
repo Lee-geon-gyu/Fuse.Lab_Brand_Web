@@ -224,8 +224,8 @@ b {
 
 :root {
   /* Color */
-  --color-bg: #161c22;
-  --color-bg-dark: #0e1216;
+  --color-bg: #f1efea;
+  --color-bg-dark: #161c22;
 
   --color-white: #ffffff;
   --color-black: #000000;
@@ -234,11 +234,15 @@ b {
   --color-text-secondary: rgba(255, 255, 255, 0.7);
   --color-text-tertiary: rgba(255, 255, 255, 0.45);
 
+  --color-text-primary-dark: #000000;
+  --color-text-secondary-dark: rgba(0, 0, 0, 0.7);
+  --color-text-tertiary-dark: rgba(0, 0, 0, 0.45);
+
   --color-line: rgba(255, 255, 255, 0.12);
 
   /* Fuse Lab Primary */
-  --color-primary: #8b5cf6;
-  --color-primary-light: #a78bfa;
+  --color-primary: #5b21d6;
+  --color-primary-light: #ga00ff;
   --color-primary-dark: #6d46d9;
 
   /* Layout */
@@ -360,30 +364,12 @@ section {
 }
 
 /* =========================================================
-   SELECTION / SCROLLBAR
+   SELECTION
 ========================================================= */
 
 ::selection {
   background: var(--color-primary);
   color: #fff;
-}
-
-/* Chrome / Edge / Safari */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #11161b;
-}
-
-::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.35);
 }
 
 /* =========================================================
