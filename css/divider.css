@@ -1,0 +1,68 @@
+/* DIVIDER : Figma 1:47 */
+.divider {
+  position: relative; display: flex; flex-direction: column;
+  height: 100vh; min-height: calc(700 * var(--px));
+  padding: max(80px, calc(120 * var(--px))) var(--gutter) 0;
+  background: var(--c-bg-light); overflow: hidden;
+}
+.divider__visual {
+  position: relative; flex: 1; display: flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 0;
+}
+.divider__sphere {
+  position: relative; flex: none; overflow: hidden;
+  width: max(260px, calc(756 * var(--px))); aspect-ratio: 756 / 690;
+}
+.divider__sphere img {
+  position: absolute; max-width: none;
+  width: 177.13%; height: 129.45%; left: -38.56%; top: -16.33%;
+}
+.divider__text {
+  position: absolute; left: calc(50% + 0.5px); top: 50%; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: max(8px, calc(14 * var(--px))); white-space: nowrap;
+}
+.divider__title {
+  font-family: var(--f-serif); font-style: italic; font-weight: 400;
+  font-size: max(44px, calc(180 * var(--px))); letter-spacing: -0.042em; line-height: normal;
+  padding-right: 0.06em;
+  background: linear-gradient(90deg, #161c22 0%, var(--c-violet) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+.divider__desc {
+  font-weight: 500; font-size: max(14px, calc(22 * var(--px)));
+  letter-spacing: -0.021em; color: var(--c-ink-72);
+}
+
+.divider__marquee {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
+  padding: max(12px, calc(24 * var(--px))) 0; overflow: hidden;
+}
+.divider__track { display: flex; width: max-content; animation: divider-flow 30s linear infinite; }
+.divider__track.is-paused { animation-play-state: paused; }
+.divider__group { display: flex; flex: none; gap: max(30px, calc(60 * var(--px))); padding-right: max(30px, calc(60 * var(--px))); }
+.divider__group span {
+  font-weight: 600; font-size: max(24px, calc(48 * var(--px))); line-height: normal; white-space: nowrap;
+  background: linear-gradient(90deg, rgba(15, 169, 123, 0.5) 0%, rgba(91, 24, 241, 0.5) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+@keyframes divider-flow { to { transform: translateX(-50%); } }
+
+/* 진입 연출 */
+.divider.is-pre .divider__sphere { opacity: 0; transform: scale(0.8); }
+.divider.is-pre .divider__text { opacity: 0; transform: translate(-50%, calc(-50% + 30px)); }
+.divider__sphere { transition: opacity 1s var(--ease-out), transform 1.2s var(--ease-out); }
+.divider__text { transition: opacity 1s var(--ease-out) .2s, transform 1s var(--ease-out) .2s; }
+
+@media (max-width: 768px) {
+  .divider__text { white-space: normal; width: 100%; }
+  .divider__title { font-size: max(44px, 11vw); letter-spacing: -0.03em; }
+  .divider__desc { font-size: 13px; letter-spacing: -0.03em; word-break: keep-all; padding: 0 8px; }
+  .divider__sphere { width: min(80vw, 420px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .divider__track { animation: none; }
+  .divider__sphere, .divider__text { transition: none; }
+}

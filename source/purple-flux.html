@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Purple Flux — 블랙홀 병합</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #fff; }
+  canvas { display: block; }
+  #hud {
+    position: fixed; left: 20px; bottom: 16px;
+    font: 12px/1.7 system-ui, -apple-system, sans-serif; color: #8e8e93;
+    user-select: none; pointer-events: none; transition: color .3s;
+  }
+  body.dark #hud { color: rgba(255,255,255,0.5); }
+  #hud b { font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="hud"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ─────────────────────────────────────────────────────────────
+   구성
+
+   쌍성 블랙홀(binary)  — 크기가 다른 두 블랙홀이 공전하며 나선으로 가까워지다 하나로 합쳐짐
+                          간격 a(t) = a₀(1 − t/T_c)^¼  (중력파로 에너지를 잃는 쌍성의 근사식)
+                          각속도는 케플러 법칙 ω ∝ a^-1.5 → 끝으로 갈수록 급격히 빨라짐(chirp)
+   병합(plunge)         — 두 지평선이 닿으면 가운데를 메우는 타원체가 자라며 한 덩어리가 됨
+   링다운(ringdown)     — 합쳐진 블랙홀이 찌그러진 채 회전하다 진동이 잦아들며 구로 돌아감
+   강착원반(disk) 2개   — 각 블랙홀을 도는 물질. 일부는 떨어져 나와 상대 쪽으로 건너감(물질 교환)
+                          병합 과정에서 두 원반이 한 원반으로 합쳐짐
+   먼지(dust)           — 넓은 배경층. 중력파가 지나가며 나선 무늬로 출렁이고
+                          병합 순간 한 번 크게 퍼져나가는 파문이 생김
+   보이드·중력렌즈      — 블랙홀마다 적용. 뒤쪽 물질이 아인슈타인 링으로 끌려나옴
+   ───────────────────────────────────────────────────────────── */
+
+const CONFIG = {
+  /* 쌍성 블랙홀 — 질량은 지평선 반지름에 비례한다고 봄 (슈바르츠실트 반지름 ∝ 질량) */
+  r1:          0.46,   // 큰 쪽 지평선 반지름
+  r2:          0.34,   // 작은 쪽
+  rFinal:      0.76,   // 병합 후. r1+r2보다 조금 작음 (질량 일부가 중력파로 빠져나감)
+  sep0:        3.4,    // 시작 간격
+  contact:     1.0,    // 간격이 (r1+r2)×이 값이 되면 병합 시작
+  orbit0:      0.8,    // 시작 공전 각속도 (rad/s). 키우면 병합 전까지 더 많이 돎
+  orbitTilt:   0.32,   // 궤도면 기울기 (rad). 0이면 궤도를 거의 옆에서 봄
+  timeScale:   1.0,
+
+  /* 타임라인 (초). 전체 = inspiral + plunge + ringdown, 끝나면 처음부터 반복 */
+  inspiral:    14.0,
+  plunge:      0.5,
+  ringdown:    7.0,
+  fadeIn:      1.5,    // 반복 경계에서 블랙홀이 커지며 나타나고 줄어들며 사라지는 시간
+  fadeOut:     1.5,
+  rdShape:     0.20,   // 링다운 직후 찌그러짐
+  rdDecay:     0.8,    // 찌그러짐·회전이 잦아드는 시간
+  rdFreq:      9.0,    // 찌그러짐 진동 속도
+  flash:       1.6,    // 병합 직후 링이 잠깐 밝아지는 정도
+
+  /* 강착원반 — 길이 단위는 호스트 블랙홀 지평선 반지름 */
+  perDisk:     12000,  // 원반 하나당. 총 2배
+  diskIn:      1.5,
+  diskOut:     4.2,
+  diskLife:    4.0,    // 파티클 하나가 바깥에서 안쪽으로 감겨 드는 시간
+  inflow:      0.55,   // 생애 동안 반지름이 줄어드는 비율
+  spin:        1.6,    // 원반 회전 속도
+  thick:       0.12,   // 원반 두께 (반지름 비례)
+  turb:        0.20,   // 난류 진폭
+  turbFreq:    0.55,
+  twist:       2.2,    // 난류 결을 나선팔 모양으로 비트는 정도
+  streamRatio: 0.18,   // 상대 블랙홀로 건너가는 파티클 비율
+  diskSize:    6.9,    // 카메라 10 거리 기준 픽셀 크기
+  diskOpacity: 0.28,
+
+  /* 중력파 — 먼지에만 적용 */
+  gwSpeed:     1.5,    // 파가 퍼져나가는 속도
+  gwAmp:       0.35,   // 궤도면 방향 출렁임
+  gwLift:      0.22,   // 궤도면 수직 출렁임
+  gwGlow:      0.9,    // 파의 마루에서 밝아지는 정도
+  gwDecay:     1.2,    // 병합 후 중력파가 잦아드는 시간
+  burst:       0.55,   // 병합 순간 퍼지는 파문 세기
+
+  /* 배경 먼지 */
+  dust:        46000,
+  dustInner:   0.8,    // 질량중심에는 보이드가 없어서 0이면 가운데에 먼지가 뭉쳐 점처럼 보임
+  dustOuter:   9.5,
+  dustBias:    1.5,    // 클수록 중심에 몰림. 1이면 균등
+  dustSize:    3.75,
+  dustOpacity: 0.14,
+  dustDrift:   0.32,   // 흔들림 진폭
+  dustFreq:    0.20,
+
+  /* 보이드·렌즈 — 지평선 반지름 배수. 이전 버전 값(지평선 0.62 기준 1.15 / 0.55 / 0.72)을 비율로 옮김 */
+  voidK:       1.85,   // 이 반경 안쪽이 바깥으로 밀림
+  voidFK:      0.89,   // 미는 거리. voidK의 2/3를 넘기면 경로가 접히며 테두리가 생김
+  einsteinK:   1.16,   // 아인슈타인 반경. 뒤에 있는 것이 이 반경으로 끌려나와 링이 됨
+  ringGlow:    1.7,    // 링 위에서 추가로 밝아지는 정도
+  beam:        0.75,   // 도플러 비밍. 링 한쪽만 밝고 반대쪽은 어두워짐
+  beamDir:     new THREE.Vector3(1.0, 0.15, 0.35),
+
+  mouseRadius: 0.9,
+  mouseForce:  0.55,
+  autoRotate:  0.045,
+  seed:        5
+};
+
+/* ───────── 프리셋 ─────────
+   multiply = 흰 배경용(겹칠수록 진해짐) / add = 어두운 배경용(겹칠수록 밝아짐)
+   흰 배경에서는 보이드가 가장 밝은 구멍으로 보임 — 명암이 반전된 블랙홀 */
+const PRESETS = {
+  A: {
+    key: '1', name: 'A  흰 배경 · 겹칠수록 진해짐',
+    bg: 0xffffff, dark: false, blend: 'multiply',
+    colorA: 0xa77dff, colorB: 0xd9c2ff, merge: 0x3d0090, shadow: 0x1c0044,
+    diskOpacity: 0.22, dustOpacity: 0.10
+  },
+  B: {
+    key: '2', name: 'B  어두운 배경 · 겹칠수록 밝아짐',
+    bg: 0x07000f, dark: true, blend: 'add',
+    colorA: 0x6a00ff, colorB: 0xc9a6ff, merge: 0xffffff, shadow: 0x000000,
+    diskOpacity: 0.28, dustOpacity: 0.15
+  },
+  C: {
+    key: '3', name: 'C  보라 배경 · 반전',
+    bg: 0x3d0090, dark: true, blend: 'add',
+    colorA: 0xd2bfff, colorB: 0xffffff, merge: 0xffffff, shadow: 0x0d0022,
+    diskOpacity: 0.19, dustOpacity: 0.09
+  }
+};
+let preset = PRESETS.A;
+
+// mulberry32. 이전 LCG는 주기가 233280이라 파티클 30만 개 가까이 뽑으면 배치가 반복됐음
+let _s = CONFIG.seed >>> 0;
+const rand = () => {
+  _s = (_s + 0x6D2B79F5) >>> 0;
+  let t = _s;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+
+/* ───────── 기본 세팅 ─────────
+   커스텀 셰이더가 gl_FragColor를 직접 쓰므로 outputEncoding은 건드리지 않음 */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(36, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0.8, 1.9, 11.0);
+camera.lookAt(0, 0, 0);
+
+const root = new THREE.Group();
+scene.add(root);
+
+/* 궤도면 기저. N이 카메라 쪽으로 기울어 있어 궤도가 타원으로 보임 */
+const ORB_N  = new THREE.Vector3(0, Math.cos(CONFIG.orbitTilt), Math.sin(CONFIG.orbitTilt));
+const ORB_E1 = new THREE.Vector3(1, 0, 0);
+const ORB_E2 = new THREE.Vector3().crossVectors(ORB_N, ORB_E1);
+
+/* 원반 축을 궤도 축에서 조금씩 어긋나게 잡음 (스핀이 정렬되지 않은 쌍성). 병합하면서 궤도 축으로 모임 */
+const DISK_N = [
+  ORB_N.clone().addScaledVector(ORB_E1,  0.35).addScaledVector(ORB_E2, 0.10).normalize(),
+  ORB_N.clone().addScaledVector(ORB_E1, -0.22).addScaledVector(ORB_E2, 0.30).normalize()
+];
+
+// GLSL 3D 심플렉스 노이즈 (Ashima Arts / Stefan Gustavson, MIT)
+const NOISE_GLSL = `
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1.0/6.0,1.0/3.0); const vec4 D=vec4(0.0,0.5,1.0,2.0);
+  vec3 i=floor(v+dot(v,C.yyy)); vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g; vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857; vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.0*floor(p*ns.z*ns.z); vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);
+  vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy; vec4 h=1.0-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0; vec4 sh=-step(h,vec4(0.0));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
+  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0); m=m*m;
+  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}`;
+
+/* 두 레이어가 공유하는 부분: 보이드 + 마우스 밀어내기 + 중력렌즈 + 포인트 크기
+   블랙홀은 슬롯 2개. 병합 후에는 슬롯 0이 합쳐진 블랙홀, 슬롯 1은 반지름 0(꺼짐) */
+const COMMON = NOISE_GLSL + `
+attribute float aRand;
+uniform vec3  uHoleP[2];
+uniform float uHoleR[2];
+uniform float uVoidK, uVoidFK;
+uniform float uEinK, uRingGlow, uBeam;
+uniform vec3  uBeamDir;
+uniform vec3  uRayO, uRayD;
+uniform float uMouseR, uMouseF, uMouseOn;
+uniform float uSize, uPixelRatio, uOpacity;
+uniform vec3  uMerge;
+varying vec3  vColor;
+varying float vAlpha;
+
+vec3 safeNorm(vec3 v){ return v / max(length(v), 1e-4); }
+
+// 기준점(anchor)에서 반경 R 안에 있는 것을 최대 F 만큼 바깥으로 밀어냄
+// F가 R의 약 2/3를 넘으면 안쪽 경로가 바깥 경로를 추월하며 접힘 → 테두리에 밝은 띠가 생김
+vec3 pushOut(vec3 p, vec3 anchor, float R, float F){
+  vec3  d  = p - anchor;
+  float dl = length(d);
+  return p + (d / max(dl, 1e-4)) * F * (1.0 - smoothstep(0.0, R, dl));
+}
+
+// 보이드: 블랙홀마다 구 모양으로 비워냄
+vec3 openVoid(vec3 p){
+  for (int k = 0; k < 2; k++) {
+    float R = uHoleR[k];
+    if (R > 1e-3) p = pushOut(p, uHoleP[k], uVoidK * R, uVoidFK * R);
+  }
+  return p;
+}
+
+// 마우스: 기준점이 커서 광선 위의 최근접점 → 원통 모양으로 비워짐
+vec3 mousePush(vec3 p){
+  if (uMouseOn < 0.5) return p;
+  float s = max(dot(p - uRayO, uRayD), 0.0);
+  return pushOut(p, uRayO + uRayD * s, uMouseR, uMouseF);
+}
+
+/* 중력렌즈 (화면 공간 근사)
+   점질량 렌즈의 1차 상 위치: θ = ½(β + √(β² + 4θ_E²))
+   β는 블랙홀 중심에서 잰 원래 각거리, θ_E는 아인슈타인 반경
+   β가 0에 가까울수록 θ는 θ_E로 수렴함 → 바로 뒤에 있는 것들이 전부 한 반경에 쌓여 링이 됨
+   렌즈가 둘이면 각 렌즈가 만드는 이동량을 더함 (정확한 쌍렌즈 해는 아니고, 멀리서는 질량 합과 같아짐)
+   블랙홀보다 앞에 있는 파티클은 휘지 않음 (실제로도 전경 물질은 렌즈를 안 거침) */
+void emit(vec3 p, vec3 baseColor, float alpha, float sizeVar){
+  float merge = 0.0;
+  for (int k = 0; k < 2; k++) {
+    float R = uHoleR[k];
+    if (R > 1e-3) merge = max(merge, 1.0 - smoothstep(0.16 * R, 2.2 * R, length(p - uHoleP[k])));
+  }
+  vec3 col = mix(baseColor, uMerge, merge * 0.8);
+
+  vec4 mv   = modelViewMatrix * vec4(p, 1.0);
+  vec4 clip = projectionMatrix * mv;
+
+  float boost = 1.0;
+  float stretch = 1.0;
+
+  if (clip.w > 0.0) {
+    // projectionMatrix[1][1] = 1/tan(fov/2), [0][0] = 그 값 / aspect
+    float fy = projectionMatrix[1][1];
+    float aspect = fy / projectionMatrix[0][0];
+    vec2 ndc = clip.xy / clip.w;
+    vec2 shift = vec2(0.0);
+
+    for (int k = 0; k < 2; k++) {
+      float R = uHoleR[k];
+      if (R < 1e-3) continue;
+      vec4 hMV   = modelViewMatrix * vec4(uHoleP[k], 1.0);
+      vec4 hClip = projectionMatrix * hMV;
+      if (hClip.w <= 0.0) continue;
+
+      vec2 rel = (ndc - hClip.xy / hClip.w) * vec2(aspect, 1.0);   // 화면비 보정 → 원이 원으로 보임
+      float b = max(length(rel), 1e-5);
+      float thE = uEinK * R * fy / max(abs(hMV.z), 0.001);
+      float th  = 0.5 * (b + sqrt(b * b + 4.0 * thE * thE));
+
+      // 뷰 공간에서 z가 더 작으면(더 멀면) 블랙홀 뒤
+      float depthW = 1.13 * R;
+      float behind = 1.0 - smoothstep(hMV.z - depthW, hMV.z + depthW, mv.z);
+      float s = mix(1.0, th / b, behind);
+      shift   += rel * (s - 1.0);
+      stretch *= s;
+
+      // 링 근처에서만 밝기 조작
+      float g = (th - thE) / (thE * 0.45);
+      float ring = behind * exp(-g * g);
+      float side = dot(safeNorm(p - uHoleP[k]), uBeamDir);   // 도플러 비밍
+      boost *= (1.0 + uRingGlow * ring) * (1.0 + uBeam * ring * side);
+    }
+
+    ndc += shift / vec2(aspect, 1.0);
+    clip.xy = ndc * clip.w;
+  }
+
+  vColor = col;
+  vAlpha = alpha * max(boost, 0.0);
+  gl_PointSize = clamp(
+    uSize * uPixelRatio * sizeVar * sqrt(stretch) * (10.0 / max(-mv.z, 0.1)),
+    0.0, 39.0 * uPixelRatio
+  );
+  gl_Position = clip;
+}
+`;
+
+const FRAG = `
+uniform float uMultiply;
+varying vec3  vColor;
+varying float vAlpha;
+void main(){
+  float d = length(gl_PointCoord - 0.5);
+  float a = smoothstep(0.5, 0.04, d) * vAlpha;
+  if (a < 0.003) discard;
+  if (uMultiply > 0.5) {
+    // multiply 는 src 색만 곱함. 투명한 부분은 흰색(=변화 없음)이어야 함
+    gl_FragColor = vec4(mix(vec3(1.0), vColor, clamp(a, 0.0, 1.0)), 1.0);
+  } else {
+    gl_FragColor = vec4(vColor, a);
+  }
+}`;
+
+/* ───────── 강착원반 레이어 ─────────
+   적분 없이 닫힌 식으로 위치를 구함 → 노이즈 호출이 파티클당 3회뿐
+   원반 좌표계(중심·기저·크기)는 CPU가 매 프레임 넘겨주고, 셰이더는 그 안에서만 계산
+   그래서 블랙홀이 공전해도 원반이 통째로 따라다니고, 병합 때 중심·크기·축을 옮기면 자연스럽게 합쳐짐
+
+   position 속성은 좌표가 아니라 난수 3개로 씀: x 반지름 비율 / y 시작 각도 / z 두께 방향 오프셋 */
+const DISK_VERT = COMMON + `
+attribute float aPhase;
+attribute float aStream;
+uniform float uTime, uLife, uInflow, uSpin, uThick, uTurb, uTurbFreq, uTwist, uFade;
+uniform float uDiskIn, uDiskOut, uScale, uOtherR, uStreamMix;
+uniform vec3  uCenter, uE1, uE2, uN, uOther, uOrbN;
+uniform vec3  uColor, uColorOther;
+
+void main(){
+  float cyc = uTime / uLife + aPhase;
+  float u   = fract(cyc);
+  float gen = floor(cyc);   // 몇 번째 생애인지. 다시 태어날 때마다 다른 각도에서 시작
+
+  // 케플러 회전(Ω ∝ r^-1.5)하며 안쪽으로 감겨 듦
+  // r(u) = r₀(1 − k·u) 이면 각도 ∫Ω dt 가 닫힌 식으로 나옴 → 시간이 아무리 흘러도 튀지 않음
+  float k  = uInflow;
+  float r0 = mix(uDiskIn, uDiskOut, position.x);
+  float rr = r0 * (1.0 - k * u);
+  float th = position.y * 6.2831853 + gen * 2.3999632
+           + uSpin * uLife * pow(r0, -1.5) * (2.0 / k) * (inversesqrt(1.0 - k * u) - 1.0);
+  vec3 local = (uE1 * cos(th) + uE2 * sin(th)) * rr + uN * (position.z * uThick * rr);
+
+  // 반지름에 따라 비튼 좌표에서 노이즈를 뽑음 → 난류 결이 나선팔 모양으로 늘어남
+  float tw = uTwist * log(rr);
+  float lx = dot(local, uE1), ly = dot(local, uE2);
+  vec3 q = vec3(lx * cos(tw) - ly * sin(tw), lx * sin(tw) + ly * cos(tw), dot(local, uN));
+  q = q * uTurbFreq + vec3(0.0, 0.0, uTime * 0.07);
+  vec3 n = vec3(snoise(q), snoise(q + 19.7), snoise(q - 11.3));
+  vec3 disk = uCenter + (local + n * uTurb * rr) * uScale;
+
+  // 물질 교환: 원반 가장자리에서 떨어져 나와 호를 그리며 상대 원반으로 건너감
+  // lead = 상대 블랙홀이 공전해 가는 방향. 흐름은 그 반대편(뒤처지는 쪽)으로 휘어서
+  // 상대 원반의 회전 방향과 같은 쪽으로 들어감. 두 원반의 흐름이 합쳐지면 S자가 됨
+  vec3 toO  = uOther - uCenter;
+  float dist = length(toO);
+  vec3 dirO = toO / max(dist, 1e-4);
+  vec3 lead = cross(uOrbN, dirO);
+  vec3 P0 = uCenter + safeNorm(dirO - lead * 0.6) * uDiskOut * 0.75 * uScale;
+  vec3 P2 = uOther  + safeNorm(-lead - dirO * 0.3) * uOtherR * 2.2;
+  vec3 P1 = (uCenter + uOther) * 0.5 - lead * dist * 0.28;
+  vec3 path = mix(mix(P0, P1, u), mix(P1, P2, u), u);   // 2차 베지어
+  float width = uScale * 0.6 * (0.25 + 0.9 * sin(3.14159 * u));
+  vec3 stream = path
+              + (lead * (position.y - 0.5) * 2.0 + uOrbN * position.z * 0.6) * width
+              + n * uTurb * 2.5 * uScale;
+
+  float sm = aStream * uStreamMix;
+  vec3 p = mix(disk, stream, sm);
+  vec3 col = mix(uColor, mix(uColor, uColorOther, smoothstep(0.3, 1.0, u)), sm);
+
+  p = mousePush(openVoid(p));
+  float fade = smoothstep(0.0, 0.12, u) * (1.0 - smoothstep(0.7, 1.0, u));
+  emit(p, col, fade * uFade * uOpacity * (0.45 + aRand * 0.85), 0.55 + aRand * 0.85);
+}`;
+
+/* ───────── 먼지 레이어 ─────────
+   적분하지 않고 제자리에서 저주파 노이즈만큼 밀어둠. 누적이 없어 밀도가 안 무너짐
+
+   중력파: 쌍성은 궤도 주기의 절반 주기로 사중극자파(quadrupole wave)를 냄
+   → 방위각 ψ에 대해 cos(2ψ − 2φ) 꼴, 두 갈래 나선 무늬가 됨
+   거리 r에 있는 먼지는 r/c 만큼 과거(지연 시간)의 궤도 위상을 봄
+   그래서 바깥쪽은 느리고 성긴 무늬, 안쪽은 병합 직전의 빽빽한 무늬가 동시에 보임
+   궤도 위상 φ(t)가 닫힌 식이라 과거 값을 셰이더에서 바로 계산할 수 있음
+   (실제 중력파는 진행 방향에 수직으로 공간을 늘이고 줄이지만, 여기선 밀도 무늬로 보이게 방사 방향으로 밂) */
+const DUST_VERT = COMMON + `
+uniform float uTime, uAmp, uFreq;
+uniform vec3  uColorA, uColorB;
+uniform vec3  uOrbE1, uOrbE2, uOrbN;
+uniform float uT, uTm, uTc, uTp, uW0, uPhiM, uWm, uAc0;
+uniform float uGwC, uGwAmp, uGwLift, uGwGlow, uGwDecay, uGwOn, uBurst;
+
+float orbitPhase(float t){
+  if (t < uTm) return uW0 * uTc * 1.6 * (1.0 - pow(1.0 - t / uTc, 0.625));
+  return uPhiM + uWm * (t - uTm);
+}
+// 진폭 ∝ 1/a. 병합 시점에서 1
+float strainAmp(float t){
+  if (t < uTm) return uAc0 * pow(1.0 - t / uTc, -0.25);
+  return exp(-max(t - uTm - uTp, 0.0) / uGwDecay);
+}
+
+vec3 gravWave(vec3 p, out float glow){
+  float px = dot(p, uOrbE1), py = dot(p, uOrbE2);
+  float r  = length(p);
+  float tr = uT - r / uGwC;   // 지연 시간
+  float h  = strainAmp(tr) * cos(2.0 * atan(py, px + 1e-5) - 2.0 * orbitPhase(tr));
+  float env = smoothstep(0.8, 2.6, r) * 3.0 / (r + 2.0) * uGwOn;
+  float x = tr - uTm - uTp;
+  float pulse = exp(-x * x / 0.06) * env;   // 병합 순간 한 번 퍼지는 파문
+  vec3 radial = (px * uOrbE1 + py * uOrbE2) / max(length(vec2(px, py)), 1e-4);
+  glow = max(1.0 + uGwGlow * h * env + 2.0 * pulse, 0.0);
+  return p + radial * (h * env * uGwAmp + pulse * uBurst) + uOrbN * (h * env * uGwLift);
+}
+
+void main(){
+  vec3 q = position * uFreq + vec3(0.0, uTime * 0.05, 0.0);
+  vec3 d = vec3(snoise(q), snoise(q + 19.7), snoise(q - 11.3));
+  float glow;
+  vec3 p = gravWave(position + d * uAmp, glow);
+  p = mousePush(openVoid(p));
+  emit(p, mix(uColorA, uColorB, aRand), uOpacity * glow * (0.25 + aRand * 0.95), 0.5 + aRand * 0.7);
+}`;
+
+/* ───────── 공유 유니폼 ─────────
+   같은 객체를 모든 재질이 참조하므로 한 번 바꾸면 전부 반영됨 */
+const SHARED = {
+  uHoleP:      { value: [new THREE.Vector3(), new THREE.Vector3()] },
+  uHoleR:      { value: [0, 0] },
+  uVoidK:      { value: CONFIG.voidK },
+  uVoidFK:     { value: CONFIG.voidFK },
+  uEinK:       { value: CONFIG.einsteinK },
+  uRingGlow:   { value: CONFIG.ringGlow },
+  uBeam:       { value: CONFIG.beam },
+  uBeamDir:    { value: CONFIG.beamDir.clone().normalize() },
+  uRayO:       { value: new THREE.Vector3() },
+  uRayD:       { value: new THREE.Vector3(0, 0, -1) },
+  uMouseR:     { value: CONFIG.mouseRadius },
+  uMouseF:     { value: CONFIG.mouseForce },
+  uMouseOn:    { value: 0 },
+  uPixelRatio: { value: renderer.getPixelRatio() },
+  uMerge:      { value: new THREE.Color() },
+  uMultiply:   { value: 0 },
+  uTime:       { value: 0 },
+  uFade:       { value: 1 },
+  uOrbE1:      { value: ORB_E1 },
+  uOrbE2:      { value: ORB_E2 },
+  uOrbN:       { value: ORB_N },
+  /* 중력파 타임라인 — updateBinary에서 채움 */
+  uT: { value: 0 }, uTm: { value: 0 }, uTc: { value: 1 }, uTp: { value: 0 },
+  uW0: { value: 0 }, uPhiM: { value: 0 }, uWm: { value: 0 }, uAc0: { value: 0 },
+  uGwC:     { value: CONFIG.gwSpeed },
+  uGwAmp:   { value: CONFIG.gwAmp },
+  uGwLift:  { value: CONFIG.gwLift },
+  uGwGlow:  { value: CONFIG.gwGlow },
+  uGwDecay: { value: CONFIG.gwDecay },
+  uGwOn:    { value: 1 },
+  uBurst:   { value: CONFIG.burst }
+};
+let ringGlowBase = CONFIG.ringGlow;
+
+function uniformsWith(own) {
+  return Object.assign({}, SHARED, own);
+}
+
+/* ───────── 생성 ───────── */
+const disks = [];
+function makeDisk() {
+  const n = CONFIG.perDisk;
+  const pos = new Float32Array(n * 3);
+  const phase = new Float32Array(n);
+  const rnd = new Float32Array(n);
+  const stream = new Float32Array(n);
+
+  for (let i = 0; i < n; i++) {
+    pos[i*3]   = Math.pow(rand(), 0.7);                    // 바깥쪽에 조금 더 많이
+    pos[i*3+1] = rand();
+    pos[i*3+2] = (rand() + rand() + rand() - 1.5) * 1.2;   // 대충 정규분포
+    phase[i] = rand();
+    rnd[i] = rand();
+    stream[i] = rand() < CONFIG.streamRatio ? 1 : 0;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1));
+  geo.setAttribute('aRand', new THREE.BufferAttribute(rnd, 1));
+  geo.setAttribute('aStream', new THREE.BufferAttribute(stream, 1));
+
+  const mat = new THREE.ShaderMaterial({
+    uniforms: uniformsWith({
+      uSize:       { value: CONFIG.diskSize },
+      uOpacity:    { value: CONFIG.diskOpacity },
+      uLife:       { value: CONFIG.diskLife },
+      uInflow:     { value: CONFIG.inflow },
+      uSpin:       { value: CONFIG.spin },
+      uThick:      { value: CONFIG.thick },
+      uTurb:       { value: CONFIG.turb },
+      uTurbFreq:   { value: CONFIG.turbFreq },
+      uTwist:      { value: CONFIG.twist },
+      uDiskIn:     { value: CONFIG.diskIn },
+      uDiskOut:    { value: CONFIG.diskOut },
+      uScale:      { value: 1 },
+      uOtherR:     { value: 1 },
+      uStreamMix:  { value: 1 },
+      uCenter:     { value: new THREE.Vector3() },
+      uOther:      { value: new THREE.Vector3() },
+      uE1:         { value: new THREE.Vector3() },
+      uE2:         { value: new THREE.Vector3() },
+      uN:          { value: new THREE.Vector3() },
+      uColor:      { value: new THREE.Color() },
+      uColorOther: { value: new THREE.Color() }
+    }),
+    vertexShader: DISK_VERT,
+    fragmentShader: FRAG,
+    transparent: true, depthWrite: false, depthTest: true
+  });
+
+  const pts = new THREE.Points(geo, mat);
+  pts.frustumCulled = false;   // 위치를 셰이더에서 만들므로 바운딩 박스가 의미 없음
+  root.add(pts);
+  disks.push(pts);
+}
+
+function makeDust() {
+  const n = CONFIG.dust;
+  const pos = new Float32Array(n * 3);
+  const rnd = new Float32Array(n);
+  const span = CONFIG.dustOuter - CONFIG.dustInner;
+
+  for (let i = 0; i < n; i++) {
+    // 구면 균등 방향
+    const u = rand() * 2 - 1;
+    const th = rand() * Math.PI * 2;
+    const sq = Math.sqrt(Math.max(1 - u * u, 0));
+    // 반지름은 중심 쪽으로 치우치게 (bias가 클수록 안쪽에 몰림)
+    const r = CONFIG.dustInner + Math.pow(rand(), CONFIG.dustBias) * span;
+    pos[i*3]   = sq * Math.cos(th) * r;
+    pos[i*3+1] = u * r;
+    pos[i*3+2] = sq * Math.sin(th) * r;
+    rnd[i] = rand();
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('aRand', new THREE.BufferAttribute(rnd, 1));
+
+  const mat = new THREE.ShaderMaterial({
+    uniforms: uniformsWith({
+      uSize:    { value: CONFIG.dustSize },
+      uOpacity: { value: CONFIG.dustOpacity },
+      uAmp:     { value: CONFIG.dustDrift },
+      uFreq:    { value: CONFIG.dustFreq },
+      uColorA:  { value: new THREE.Color() },
+      uColorB:  { value: new THREE.Color() }
+    }),
+    vertexShader: DUST_VERT,
+    fragmentShader: FRAG,
+    transparent: true, depthWrite: false, depthTest: true
+  });
+
+  const pts = new THREE.Points(geo, mat);
+  pts.frustumCulled = false;
+  root.add(pts);
+  return pts;
+}
+
+makeDisk();
+makeDisk();
+const dust = makeDust();
+const layers = disks.concat([dust]);
+
+/* 사건의 지평선 — 실제 메시임
+   깊이 버퍼를 쓰므로(depthWrite: true) 뒤쪽 파티클이 이 구에 가려짐
+   파티클은 depthTest만 켜고 depthWrite는 꺼서 서로는 안 가림
+   hole1·hole2 = 병합 전 두 블랙홀 / remnant = 병합 중·후 하나로 합쳐진 블랙홀 (타원체로 찌그러뜨림) */
+const holeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+const unitSphere = new THREE.SphereGeometry(1, 48, 48);
+function makeHoleMesh() {
+  const m = new THREE.Mesh(unitSphere, holeMat);
+  m.renderOrder = -1;
+  root.add(m);
+  return m;
+}
+const hole1 = makeHoleMesh();
+const hole2 = makeHoleMesh();
+const remnant = makeHoleMesh();
+
+/* ───────── 타임라인 ─────────
+   0 ─ 나선 접근(inspiral) ─ tm ─ 병합(plunge) ─ tm+Tp ─ 링다운 ─ L
+   간격 a(t) = a₀(1 − t/T_c)^¼ 에서 t = tm 일 때 접촉 간격 a_c 가 되도록 T_c를 역산
+   각속도 ω = ω₀(1 − t/T_c)^(−3/8) 을 적분하면 위상 φ(t) = ω₀·T_c·(8/5)·(1 − (1 − t/T_c)^(5/8))
+   블랙홀 크기가 바뀌면 a_c가 바뀌므로 매 프레임 다시 계산 (계산량은 무시할 수준) */
+let holeScale = 1;
+function timeline() {
+  const R1 = CONFIG.r1 * holeScale, R2 = CONFIG.r2 * holeScale, Rf = CONFIG.rFinal * holeScale;
+  const M  = R1 + R2;
+  const a0 = CONFIG.sep0, ac = M * CONFIG.contact;
+  const tm = CONFIG.inspiral, Tp = CONFIG.plunge;
+  const Tc = tm / (1 - Math.pow(ac / a0, 4));
+  const xm = 1 - tm / Tc;
+  return {
+    R1, R2, Rf, M, a0, ac, tm, Tp, Tc,
+    phiM: CONFIG.orbit0 * Tc * 1.6 * (1 - Math.pow(xm, 0.625)),
+    wm:   CONFIG.orbit0 * Math.pow(xm, -0.375),
+    L:    tm + Tp + CONFIG.ringdown
+  };
+}
+
+const ease  = x => x * x * (3 - 2 * x);
+const clamp = THREE.MathUtils.clamp;
+const lerp  = THREE.MathUtils.lerp;
+const H1 = new THREE.Vector3(), H2 = new THREE.Vector3();
+const _dir = new THREE.Vector3(), _y = new THREE.Vector3(), _mat = new THREE.Matrix4();
+const _x = new THREE.Vector3(1, 0, 0);
+
+// 법선 n에 수직인 기저 두 개 (그람-슈미트. n이 연속으로 변하면 기저도 연속)
+function setBasis(n, e1, e2) {
+  e1.copy(_x).addScaledVector(n, -n.dot(_x)).normalize();
+  e2.crossVectors(n, e1);
+}
+
+let phaseName = '';
+function updateBinary(t, T) {
+  let a, phi, sp;
+  if (t < T.tm) {
+    const x = 1 - t / T.Tc;
+    a   = T.a0 * Math.pow(x, 0.25);
+    phi = CONFIG.orbit0 * T.Tc * 1.6 * (1 - Math.pow(x, 0.625));
+    sp  = 0;
+  } else {
+    sp  = Math.min((t - T.tm) / T.Tp, 1);
+    a   = T.ac * Math.pow(1 - sp, 1.5);
+    phi = T.phiM + T.wm * Math.min(t - T.tm, T.Tp);
+  }
+  const es = ease(sp);
+  phaseName = sp === 0 ? '나선 접근' : sp < 1 ? '병합' : '링다운';
+
+  // 반복 경계: 블랙홀이 커지며 나타나고, 끝에서 줄어들며 사라짐
+  const fade = ease(clamp(t / CONFIG.fadeIn, 0, 1)) * ease(clamp((T.L - t) / CONFIG.fadeOut, 0, 1));
+
+  // 질량중심이 원점. 큰 쪽이 덜 움직임
+  _dir.copy(ORB_E1).multiplyScalar(Math.cos(phi)).addScaledVector(ORB_E2, Math.sin(phi));
+  H1.copy(_dir).multiplyScalar(-a * T.R2 / T.M);
+  H2.copy(_dir).multiplyScalar( a * T.R1 / T.M);
+
+  // 렌즈·보이드: 병합하면서 슬롯 0은 최종 크기로, 슬롯 1은 0으로
+  SHARED.uHoleP.value[0].copy(H1);
+  SHARED.uHoleP.value[1].copy(H2);
+  SHARED.uHoleR.value[0] = lerp(T.R1, T.Rf, es) * fade;
+  SHARED.uHoleR.value[1] = lerp(T.R2, 0, es) * fade;
+
+  // 지평선 메시
+  hole1.visible = hole2.visible = sp < 1;
+  hole1.position.copy(H1); hole1.scale.setScalar(T.R1 * fade);
+  hole2.position.copy(H2); hole2.scale.setScalar(T.R2 * fade);
+
+  remnant.visible = sp > 0;
+  if (sp > 0) {
+    let major, minor, ang;
+    if (sp < 1) {
+      // 두 구 사이 잘록한 부분을 타원체가 메우며 자라남
+      const env = Math.max(a * T.R2 / T.M + T.R1, a * T.R1 / T.M + T.R2);
+      major = lerp(env * 0.95, T.Rf * (1 + CONFIG.rdShape), es);
+      minor = lerp(Math.min(T.R1, T.R2) * 0.6, T.Rf * (1 - CONFIG.rdShape * 0.5), es);
+      ang = phi;
+    } else {
+      // 링다운: 찌그러짐이 진동하며 줄어들고, 회전도 느려짐
+      const tau = t - T.tm - T.Tp;
+      const dk  = Math.exp(-tau / CONFIG.rdDecay);
+      const e   = CONFIG.rdShape * dk * Math.cos(CONFIG.rdFreq * tau);
+      major = T.Rf * (1 + e);
+      minor = T.Rf * (1 - e * 0.5);
+      ang = T.phiM + T.wm * T.Tp + T.wm * CONFIG.rdDecay * (1 - dk);
+    }
+    _dir.copy(ORB_E1).multiplyScalar(Math.cos(ang)).addScaledVector(ORB_E2, Math.sin(ang));
+    _y.crossVectors(ORB_N, _dir);
+    _mat.makeBasis(_dir, _y, ORB_N);
+    remnant.quaternion.setFromRotationMatrix(_mat);
+    remnant.scale.set(major * fade, minor * fade, minor * fade);
+  }
+
+  // 원반: 중심은 블랙홀을 따라가고, 병합하면서 크기·축이 최종 블랙홀 기준으로 모임
+  disks.forEach((d, i) => {
+    const u = d.material.uniforms;
+    u.uCenter.value.copy(i === 0 ? H1 : H2);
+    u.uOther.value.copy(i === 0 ? H2 : H1);
+    u.uScale.value  = lerp(i === 0 ? T.R1 : T.R2, T.Rf, es);
+    u.uOtherR.value = i === 0 ? T.R2 : T.R1;
+    u.uStreamMix.value = 1 - es;
+    u.uN.value.copy(DISK_N[i]).lerp(ORB_N, es).normalize();
+    setBasis(u.uN.value, u.uE1.value, u.uE2.value);
+  });
+  SHARED.uFade.value = fade;
+
+  // 병합 직후 링이 잠깐 밝아짐
+  const fl = (t - T.tm - T.Tp) / 0.4;
+  SHARED.uRingGlow.value = ringGlowBase * (1 + CONFIG.flash * Math.exp(-fl * fl));
+
+  // 중력파 — 셰이더가 같은 식으로 과거 위상을 계산하도록 상수를 넘김
+  SHARED.uT.value    = t;
+  SHARED.uTm.value   = T.tm;
+  SHARED.uTc.value   = T.Tc;
+  SHARED.uTp.value   = T.Tp;
+  SHARED.uW0.value   = CONFIG.orbit0;
+  SHARED.uPhiM.value = T.phiM;
+  SHARED.uWm.value   = T.wm;
+  SHARED.uAc0.value  = T.ac / T.a0;
+  SHARED.uGwOn.value = fade;
+}
+
+/* ───────── 프리셋 적용 ───────── */
+const hud = document.getElementById('hud');
+let isolate = 0;   // 0 전체 / 1 원반 A만 / 2 원반 B만 / 3 먼지만
+
+function applyPreset(p) {
+  preset = p;
+  const mul = p.blend === 'multiply';
+  const blending = mul ? THREE.MultiplyBlending : THREE.AdditiveBlending;
+
+  renderer.setClearColor(p.bg, 1);
+  document.body.style.background = '#' + p.bg.toString(16).padStart(6, '0');
+  document.body.classList.toggle('dark', p.dark);
+
+  disks.forEach((d, i) => {
+    const u = d.material.uniforms;
+    u.uColor.value.set(i === 0 ? p.colorA : p.colorB);
+    u.uColorOther.value.set(i === 0 ? p.colorB : p.colorA);
+    u.uOpacity.value = p.diskOpacity;
+  });
+  dust.material.uniforms.uColorA.value.set(p.colorA);
+  dust.material.uniforms.uColorB.value.set(p.colorB);
+  dust.material.uniforms.uOpacity.value = p.dustOpacity;
+  holeMat.color.set(p.shadow);
+
+  SHARED.uMerge.value.set(p.merge);
+  SHARED.uMultiply.value = mul ? 1 : 0;
+  layers.forEach(l => {
+    l.material.blending = blending;
+    l.material.needsUpdate = true;
+  });
+
+  hudKey = '';
+}
+
+function applyIsolate() {
+  disks[0].visible = isolate === 0 || isolate === 1;
+  disks[1].visible = isolate === 0 || isolate === 2;
+  dust.visible     = isolate === 0 || isolate === 3;
+  hudKey = '';
+}
+
+/* 블랙홀 크기: 지평선·아인슈타인 반경·보이드·원반이 모두 반지름 배수라 같이 커짐
+   시작 간격(sep0)은 그대로라 크게 할수록 병합이 이른 간격에서 시작됨 */
+function setHoleScale(s) {
+  holeScale = clamp(s, 0.3, 2.5);
+  hudKey = '';
+}
+
+let hudKey = '';
+function updateHud(t, T) {
+  const iso = ['전체', '원반 A', '원반 B', '먼지'][isolate];
+  const key = [preset.name, iso, holeScale.toFixed(2), ringGlowBase.toFixed(2), phaseName, t.toFixed(1), paused].join('|');
+  if (key === hudKey) return;
+  hudKey = key;
+  hud.innerHTML =
+    `<b>${preset.name}</b> · ${phaseName} ${t.toFixed(1)} / ${T.L.toFixed(1)}s${paused ? ' · 일시정지' : ''}<br>` +
+    `1 / 2 / 3 프리셋 · I 레이어 분리 (${iso}) · ` +
+    `[ ] 블랙홀 크기 ${holeScale.toFixed(2)} · ` +
+    `- = 링 밝기 ${ringGlowBase.toFixed(2)}<br>` +
+    `Space 정지 · ← → 시간 이동 (Shift 크게) · M 병합 직전으로 · R 처음부터 · ` +
+    `드래그 회전 · 휠 줌 · 마우스로 밀어내기`;
+}
+
+applyPreset(PRESETS.A);
+
+/* ───────── 입력 ───────── */
+let simTime = 0, paused = false;
+
+addEventListener('keydown', e => {
+  const p = Object.values(PRESETS).find(x => x.key === e.key);
+  if (p) applyPreset(p);
+  const k = e.key.toLowerCase();
+  if (k === 'i') { isolate = (isolate + 1) % 4; applyIsolate(); }
+  if (e.key === '[' || e.key === ']') {
+    setHoleScale(holeScale * (e.key === ']' ? 1.12 : 0.89));
+  }
+  if (e.key === '-' || e.key === '=') {
+    ringGlowBase = clamp(ringGlowBase + (e.key === '=' ? 0.25 : -0.25), 0, 6);
+  }
+  if (e.key === ' ') { paused = !paused; e.preventDefault(); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    simTime += (e.key === 'ArrowRight' ? 1 : -1) * (e.shiftKey ? 2.0 : 0.25);
+  }
+  if (k === 'm') {
+    // 현재 주기 안에서 병합 2초 전으로
+    const T = timeline();
+    simTime = Math.floor(simTime / T.L) * T.L + T.tm - 2.0;
+  }
+  if (k === 'r') simTime = 0;
+});
+
+/* ───────── 마우스 · 카메라 ───────── */
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+let mouseOn = false;
+let dragging = false, lastX = 0, lastY = 0, targetRX = 0, targetRY = 0;
+
+addEventListener('pointermove', e => {
+  ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  mouseOn = true;
+  if (!dragging) return;
+  targetRY += (e.clientX - lastX) * 0.006;
+  targetRX = clamp(targetRX + (e.clientY - lastY) * 0.006, -1.2, 1.2);
+  lastX = e.clientX; lastY = e.clientY;
+});
+renderer.domElement.addEventListener('pointerdown', e => {
+  dragging = true; lastX = e.clientX; lastY = e.clientY;
+});
+addEventListener('pointerup', () => dragging = false);
+addEventListener('pointerleave', () => mouseOn = false);
+addEventListener('wheel', e => {
+  camera.position.multiplyScalar(1 + Math.sign(e.deltaY) * 0.06);
+  camera.position.setLength(clamp(camera.position.length(), 4, 26));
+  camera.lookAt(0, 0, 0);
+}, { passive: true });
+
+/* ───────── 루프 ───────── */
+const clock = new THREE.Clock();
+const _inv = new THREE.Matrix4();
+
+function tick() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  if (!paused) {
+    simTime += dt * CONFIG.timeScale;
+    if (!dragging) targetRY += CONFIG.autoRotate * dt;
+  }
+  root.rotation.y += (targetRY - root.rotation.y) * 0.08;
+  root.rotation.x += (targetRX - root.rotation.x) * 0.08;
+  root.updateMatrixWorld();
+
+  const T = timeline();
+  const t = ((simTime % T.L) + T.L) % T.L;
+  updateBinary(t, T);
+  SHARED.uTime.value = simTime;
+
+  // 광선을 root 로컬 좌표로 변환 (파티클 위치가 로컬 공간에서 계산되므로)
+  const active = mouseOn && !dragging;
+  SHARED.uMouseOn.value = active ? 1 : 0;
+  if (active) {
+    raycaster.setFromCamera(ndc, camera);
+    _inv.copy(root.matrixWorld).invert();
+    SHARED.uRayO.value.copy(raycaster.ray.origin).applyMatrix4(_inv);
+    SHARED.uRayD.value.copy(raycaster.ray.direction).transformDirection(_inv).normalize();
+  }
+
+  updateHud(t, T);
+  renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+tick();
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  SHARED.uPixelRatio.value = renderer.getPixelRatio();
+});
+</script>
+</body>
+</html>
