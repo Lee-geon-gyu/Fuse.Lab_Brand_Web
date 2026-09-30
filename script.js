@@ -222,7 +222,7 @@
     });
   };
 
-  const resetToFirstProject = () => {
+  const resetToHero = () => {
     if (animationFrame) {
       window.cancelAnimationFrame(animationFrame);
       animationFrame = 0;
@@ -231,7 +231,7 @@
     targetTimeline = 0;
     displayTimeline = 0;
     render(0);
-    window.scrollTo(0, getStoryTop());
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
 
   themeButton?.addEventListener("click", () => {
@@ -663,8 +663,8 @@
   });
   window.addEventListener("pageshow", (event) => {
     if (event.persisted || shouldResetOnLoad) {
-      resetToFirstProject();
-      window.requestAnimationFrame(resetToFirstProject);
+      resetToHero();
+      window.requestAnimationFrame(resetToHero);
       return;
     }
 
@@ -676,7 +676,14 @@
   syncStoryHeight();
 
   if (shouldResetOnLoad) {
-    resetToFirstProject();
+    if (window.location.hash) {
+      window.history.replaceState(
+        window.history.state,
+        "",
+        window.location.pathname + window.location.search,
+      );
+    }
+    resetToHero();
   } else {
     targetTimeline = getTimelinePosition();
     displayTimeline = targetTimeline;
