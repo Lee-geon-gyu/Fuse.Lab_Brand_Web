@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>관리자 회원가입 | fuse.lab</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-width: 320px;
+      }
+
+      body {
+        font-family: "Pretendard Variable", Pretendard, sans-serif;
+        color: #222;
+        background: #fff;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      main {
+        display: grid;
+        min-height: 100vh;
+        min-height: 100dvh;
+        place-items: center;
+        padding: 40px 20px;
+      }
+
+      .signup-card {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: min(1200px, 100%);
+        padding: 40px 20px;
+        border: 1px solid #ddd;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.06);
+      }
+
+      .signup-card__heading {
+        display: flex;
+        justify-content: center;
+        padding-bottom: 16px;
+      }
+
+      h1 {
+        margin: 0;
+        color: #000;
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .signup-card__intro {
+        min-height: 42px;
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.5;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .field label {
+        width: fit-content;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.5;
+      }
+
+      .required {
+        color: #b42318;
+      }
+
+      .field__row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        min-width: 0;
+      }
+
+      .field input {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        height: 50px;
+        padding: 0 20px;
+        border: 0;
+        border-radius: 12px;
+        outline: none;
+        background: #f7f7f7;
+        color: #222;
+        font: 500 16px/1 "Pretendard Variable", Pretendard, sans-serif;
+      }
+
+      .field input::placeholder {
+        color: #868686;
+        opacity: 1;
+      }
+
+      .field input:focus-visible {
+        outline: 2px solid #6a00ff;
+        outline-offset: 1px;
+      }
+
+      .field__row input {
+        flex: 1;
+      }
+
+      .action {
+        display: inline-flex;
+        flex: 0 0 200px;
+        align-items: center;
+        justify-content: center;
+        width: 200px;
+        height: 50px;
+        padding: 0 24px;
+        border: 0;
+        border-radius: 71px;
+        background: #6a00ff;
+        color: #fff;
+        font: 600 16px/1 "Pretendard Variable", Pretendard, sans-serif;
+        cursor: pointer;
+      }
+
+      .action:hover {
+        background: #5900d6;
+      }
+
+      .action:focus-visible {
+        outline: 2px solid #222;
+        outline-offset: 3px;
+      }
+
+      .signup-card__footer {
+        display: flex;
+        justify-content: center;
+      }
+
+      .form-message {
+        margin: 0;
+        color: #b42318;
+        font-size: 14px;
+        text-align: center;
+      }
+
+      .form-message:empty {
+        display: none;
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding: 24px 16px;
+        }
+
+        .signup-card {
+          gap: 20px;
+          padding: 32px 20px;
+        }
+
+        h1 {
+          font-size: 24px;
+        }
+
+        .signup-card__intro,
+        .field label {
+          font-size: 16px;
+        }
+
+        .field__row {
+          align-items: stretch;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .field__row input {
+          flex: none;
+        }
+
+        .field__row .action {
+          align-self: flex-end;
+          flex-basis: 46px;
+          height: 46px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <form class="signup-card" id="signup-form" novalidate>
+        <div class="signup-card__heading">
+          <h1>관리자 회원가입</h1>
+        </div>
+
+        <p class="signup-card__intro">회원 정보를 입력해 주세요</p>
+
+        <div class="field">
+          <label for="admin-id">ID <span class="required" aria-hidden="true">*</span></label>
+          <div class="field__row">
+            <input id="admin-id" name="adminId" type="text" placeholder="ID를 입력해 주세요" autocomplete="username" required />
+            <button class="action" id="check-id" type="button">중복확인</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="password">비밀번호 <span class="required" aria-hidden="true">*</span></label>
+          <input id="password" name="password" type="password" placeholder="비밀번호를 입력해 주세요" autocomplete="new-password" required />
+        </div>
+
+        <div class="field">
+          <label for="password-confirm">비밀번호 확인 <span class="required" aria-hidden="true">*</span></label>
+          <input id="password-confirm" name="passwordConfirm" type="password" placeholder="비밀번호를 다시 입력해 주세요" autocomplete="new-password" required />
+        </div>
+
+        <div class="field">
+          <label for="admin-name">이름 <span class="required" aria-hidden="true">*</span></label>
+          <input id="admin-name" name="adminName" type="text" placeholder="이름을 입력해 주세요" autocomplete="name" required />
+        </div>
+
+        <div class="field">
+          <label for="approval-code">승인 코드 <span class="required" aria-hidden="true">*</span></label>
+          <input id="approval-code" name="approvalCode" type="text" placeholder="승인 코드를 입력해 주세요" required />
+        </div>
+
+        <div class="signup-card__footer">
+          <button class="action" type="submit">회원가입</button>
+        </div>
+        <p class="form-message" id="form-message" role="status" aria-live="polite"></p>
+      </form>
+    </main>
+
+    <script>
+      const form = document.querySelector("#signup-form");
+      const idInput = document.querySelector("#admin-id");
+      const passwordInput = document.querySelector("#password");
+      const confirmInput = document.querySelector("#password-confirm");
+      const message = document.querySelector("#form-message");
+
+      document.querySelector("#check-id").addEventListener("click", () => {
+        if (!idInput.value.trim()) {
+          idInput.reportValidity();
+          return;
+        }
+        message.textContent = "중복확인은 서버 연결 후 사용할 수 있습니다.";
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        message.textContent = "";
+
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return;
+        }
+
+        if (passwordInput.value !== confirmInput.value) {
+          confirmInput.setCustomValidity("비밀번호가 일치하지 않습니다.");
+          confirmInput.reportValidity();
+          return;
+        }
+
+        message.textContent = "회원가입은 서버 연결 후 사용할 수 있습니다.";
+      });
+
+      confirmInput.addEventListener("input", () => {
+        confirmInput.setCustomValidity("");
+        message.textContent = "";
+      });
+    </script>
+  </body>
+</html>

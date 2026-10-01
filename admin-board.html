@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>게시판 목록 | fuse.lab</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <link rel="stylesheet" href="css/admin-board.css" />
+    <script src="js/custom-select.js" defer></script>
+    <script src="js/admin-board.js" defer></script>
+  </head>
+  <body>
+    <main class="board-shell">
+      <header class="page-header">
+        <h1>게시판 목록</h1>
+        <div class="page-header__bottom">
+          <p class="post-count">총 <strong id="post-count">0</strong>건</p>
+          <div class="page-header__actions">
+            <div class="select-box select-box--category" data-custom-select>
+              <select id="category-filter" aria-label="게시판 종류">
+                <option value="notice">공지사항</option>
+                <option value="event">이벤트</option>
+                <option value="resources">자료실</option>
+                <option value="all">전체</option>
+              </select>
+              <img src="aseets/icons/admin/board-category-arrow.svg" alt="" width="20" height="20" />
+            </div>
+            <button class="pill-button pill-button--primary" id="new-post" type="button">글쓰기</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="board-card" aria-label="게시글 목록">
+        <div class="board-card__content">
+          <form class="search-toolbar" id="search-form" role="search">
+            <div class="search-toolbar__controls">
+              <div class="select-box select-box--scope" data-custom-select>
+                <select id="search-scope" aria-label="검색 범위">
+                  <option value="all">제목+내용</option>
+                  <option value="title">제목</option>
+                  <option value="content">내용</option>
+                  <option value="author">작성자</option>
+                </select>
+                <img src="aseets/icons/admin/board-search-arrow.svg" alt="" width="20" height="20" />
+              </div>
+              <input id="search-query" type="search" placeholder="검색어 입력" aria-label="검색어 입력" />
+              <button class="pill-button pill-button--muted" type="submit">검색</button>
+            </div>
+            <label class="visible-filter">
+              <input id="visible-only" type="checkbox" />
+              <span>노출된 글만</span>
+            </label>
+          </form>
+
+          <div class="table-scroll">
+            <table class="post-table">
+              <colgroup>
+                <col class="col-check" />
+                <col class="col-number" />
+                <col class="col-title" />
+                <col class="col-author" />
+                <col class="col-date" />
+                <col class="col-views" />
+                <col class="col-visible" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th scope="col"><input id="select-page" type="checkbox" aria-label="현재 페이지 글 모두 선택" /></th>
+                  <th scope="col">no.</th>
+                  <th scope="col">제목</th>
+                  <th scope="col">작성자</th>
+                  <th scope="col">등록일</th>
+                  <th scope="col">조회</th>
+                  <th scope="col">노출</th>
+                </tr>
+              </thead>
+              <tbody id="post-rows"></tbody>
+            </table>
+          </div>
+
+          <div class="bulk-row">
+            <div class="bulk-row__actions">
+              <button class="pill-button pill-button--muted" id="show-selected" type="button">노출</button>
+              <button class="pill-button pill-button--muted" id="hide-selected" type="button">숨김</button>
+              <button class="pill-button pill-button--danger" id="delete-selected" type="button">삭제</button>
+            </div>
+            <span id="page-summary" aria-live="polite">1 / 1페이지</span>
+          </div>
+        </div>
+
+        <nav class="pagination" id="pagination" aria-label="게시글 페이지 이동"></nav>
+      </section>
+    </main>
+
+    <template id="post-row-template">
+      <tr>
+        <td><input class="row-check" type="checkbox" /></td>
+        <td class="post-number"></td>
+        <td class="post-title-cell"><button class="post-title" type="button"></button></td>
+        <td class="post-author"></td>
+        <td class="post-date"></td>
+        <td class="post-views"></td>
+        <td class="post-visibility"></td>
+      </tr>
+    </template>
+
+    <dialog class="post-dialog" id="post-dialog" aria-labelledby="post-dialog-title">
+      <form id="post-form" novalidate>
+        <div class="post-dialog__heading">
+          <h2 id="post-dialog-title">글쓰기</h2>
+          <button class="post-dialog__close" id="close-post-dialog" type="button" aria-label="닫기">×</button>
+        </div>
+        <div class="dialog-field">
+          <label for="post-category">게시판</label>
+          <div class="select-box select-box--dialog" data-custom-select>
+            <select id="post-category">
+              <option value="notice">공지사항</option>
+              <option value="event">이벤트</option>
+              <option value="resources">자료실</option>
+            </select>
+            <img src="aseets/icons/admin/board-category-arrow.svg" alt="" width="20" height="20" />
+          </div>
+        </div>
+        <div class="dialog-field">
+          <label for="post-title">제목</label>
+          <input id="post-title" type="text" maxlength="120" required />
+        </div>
+        <div class="dialog-field">
+          <label for="post-content">내용</label>
+          <textarea id="post-content" rows="8" required></textarea>
+        </div>
+        <label class="dialog-visible"><input id="post-visible" type="checkbox" checked /> 노출</label>
+        <div class="post-dialog__actions">
+          <button class="pill-button pill-button--muted" id="cancel-post-dialog" type="button">취소</button>
+          <button class="pill-button pill-button--primary" type="submit">저장</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="board-toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>
