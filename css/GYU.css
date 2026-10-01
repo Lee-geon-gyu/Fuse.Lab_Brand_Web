@@ -308,12 +308,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 61px;
-  padding: 14px 40px;
+  min-height: 44px;
+  padding: 10px 28px;
   border: 1px solid #fff;
-  border-radius: var(--radius-round);
+  border-radius: 999px;
   background: linear-gradient(90deg, #262626, #06000e);
-  font-size: 24px;
+  color: #fff;
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -596,9 +597,9 @@
   }
 
   .gyu-project__button {
-    min-height: 52px;
-    padding: 12px 30px;
-    font-size: 18px;
+    min-height: 44px;
+    padding: 10px 28px;
+    font-size: 16px;
   }
 }
 
@@ -698,9 +699,9 @@
   }
 
   .gyu-project__button {
-    min-height: 48px;
-    padding: 12px 24px;
-    font-size: 15px;
+    min-height: 42px;
+    padding: 10px 24px;
+    font-size: 14px;
   }
 
   .gyu-mvp__stage {
