@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>관리자 로그인 | fuse.lab</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-width: 320px;
+      }
+
+      body {
+        background: #edf0f3;
+        color: #222;
+        font-family: "Pretendard Variable", Pretendard, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      main {
+        display: grid;
+        min-height: 100vh;
+        min-height: 100dvh;
+        place-items: center;
+        padding: 32px 20px;
+      }
+
+      .login-card {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: min(600px, 100%);
+        padding: 40px 20px;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.06);
+      }
+
+      .login-card__heading {
+        display: flex;
+        justify-content: center;
+        padding-bottom: 16px;
+      }
+
+      h1 {
+        margin: 0;
+        color: #000;
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .field label {
+        width: fit-content;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.5;
+      }
+
+      .field input,
+      .recovery-field input {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        height: 50px;
+        padding: 0 20px;
+        border: 0;
+        border-radius: 12px;
+        outline: none;
+        background: #f7f7f7;
+        color: #222;
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      input::placeholder {
+        color: #868686;
+        opacity: 1;
+      }
+
+      input:focus-visible {
+        outline: 2px solid #6a00ff;
+        outline-offset: 1px;
+      }
+
+      .login-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        min-height: 42px;
+      }
+
+      .login-links a,
+      .login-links button {
+        padding: 0;
+        border: 0;
+        background: none;
+        color: #868686;
+        font-size: 18px;
+        font-weight: 400;
+        line-height: 1.5;
+        text-decoration: underline;
+        text-underline-offset: 1px;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .login-links a:focus-visible,
+      .login-links button:focus-visible {
+        outline: 2px solid #6a00ff;
+        outline-offset: 3px;
+      }
+
+      .login-links__divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1px;
+        height: 21px;
+      }
+
+      .login-links__divider img {
+        display: block;
+        transform: rotate(90deg);
+      }
+
+      .login-card__footer {
+        display: flex;
+        justify-content: center;
+      }
+
+      .primary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 200px;
+        height: 50px;
+        padding: 0 24px;
+        border: 0;
+        border-radius: 71px;
+        background: #6a00ff;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .primary-button:hover {
+        background: #5900d6;
+      }
+
+      .primary-button:focus-visible {
+        outline: 2px solid #222;
+        outline-offset: 3px;
+      }
+
+      .feedback {
+        margin: 0;
+        color: #b42318;
+        font-size: 14px;
+        text-align: center;
+      }
+
+      .feedback:empty {
+        display: none;
+      }
+
+      .recovery-dialog {
+        width: min(480px, calc(100% - 32px));
+        padding: 28px;
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 14px 45px rgba(0, 0, 0, 0.18);
+      }
+
+      .recovery-dialog::backdrop {
+        background: rgba(22, 28, 34, 0.48);
+      }
+
+      .recovery-dialog__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .recovery-dialog h2 {
+        margin: 0;
+        font-size: 22px;
+      }
+
+      .recovery-dialog__close {
+        width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: 50%;
+        background: #f0f0f0;
+        color: #222;
+        font-size: 23px;
+        cursor: pointer;
+      }
+
+      .recovery-tabs {
+        display: flex;
+        gap: 8px;
+        margin: 24px 0;
+      }
+
+      .recovery-tabs button {
+        flex: 1;
+        height: 42px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #fff;
+        color: #222;
+        cursor: pointer;
+      }
+
+      .recovery-tabs button[aria-selected="true"] {
+        border-color: #6a00ff;
+        color: #6a00ff;
+        font-weight: 600;
+      }
+
+      .recovery-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .recovery-panel[hidden] {
+        display: none;
+      }
+
+      .recovery-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .recovery-field label {
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .recovery-panel .primary-button {
+        align-self: center;
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding: 24px 16px;
+        }
+
+        .login-card {
+          padding: 32px 20px;
+        }
+
+        h1 {
+          font-size: 24px;
+        }
+
+        .field label {
+          font-size: 16px;
+        }
+
+        .login-links {
+          gap: 14px;
+        }
+
+        .login-links a,
+        .login-links button {
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <form class="login-card" id="login-form" novalidate>
+        <div class="login-card__heading"><h1>관리자 로그인</h1></div>
+
+        <div class="field">
+          <label for="login-id">이메일(ID)</label>
+          <input id="login-id" name="loginId" type="text" placeholder="ID 또는 이메일을 입력해 주세요" autocomplete="username" required />
+        </div>
+
+        <div class="field">
+          <label for="login-password">비밀번호</label>
+          <input id="login-password" name="password" type="password" placeholder="비밀번호를 입력해 주세요" autocomplete="current-password" required />
+        </div>
+
+        <div class="login-links">
+          <a href="admin-signup.html">회원가입</a>
+          <span class="login-links__divider" aria-hidden="true"><img src="aseets/icons/admin/login-divider.svg" alt="" width="21" height="1" /></span>
+          <button id="open-recovery" type="button">ID/비밀번호 찾기</button>
+        </div>
+
+        <div class="login-card__footer">
+          <button class="primary-button" type="submit">로그인</button>
+        </div>
+        <p class="feedback" id="login-feedback" role="status" aria-live="polite"></p>
+      </form>
+    </main>
+
+    <dialog class="recovery-dialog" id="recovery-dialog" aria-labelledby="recovery-title">
+      <div class="recovery-dialog__header">
+        <h2 id="recovery-title">ID/비밀번호 찾기</h2>
+        <button class="recovery-dialog__close" id="close-recovery" type="button" aria-label="닫기">×</button>
+      </div>
+      <div class="recovery-tabs" role="tablist" aria-label="계정 찾기 종류">
+        <button id="id-tab" type="button" role="tab" aria-controls="id-panel" aria-selected="true">ID 찾기</button>
+        <button id="password-tab" type="button" role="tab" aria-controls="password-panel" aria-selected="false">비밀번호 찾기</button>
+      </div>
+      <form class="recovery-panel" id="id-panel" role="tabpanel" aria-labelledby="id-tab" novalidate>
+        <div class="recovery-field">
+          <label for="find-email">가입한 이메일</label>
+          <input id="find-email" type="email" placeholder="이메일을 입력해 주세요" autocomplete="email" required />
+        </div>
+        <button class="primary-button" type="submit">ID 찾기</button>
+      </form>
+      <form class="recovery-panel" id="password-panel" role="tabpanel" aria-labelledby="password-tab" novalidate hidden>
+        <div class="recovery-field">
+          <label for="find-id">ID</label>
+          <input id="find-id" type="text" placeholder="ID를 입력해 주세요" autocomplete="username" required />
+        </div>
+        <div class="recovery-field">
+          <label for="reset-email">가입한 이메일</label>
+          <input id="reset-email" type="email" placeholder="이메일을 입력해 주세요" autocomplete="email" required />
+        </div>
+        <button class="primary-button" type="submit">비밀번호 찾기</button>
+      </form>
+      <p class="feedback" id="recovery-feedback" role="status" aria-live="polite"></p>
+    </dialog>
+
+    <script>
+      (() => {
+        const loginForm = document.querySelector("#login-form");
+        const loginId = document.querySelector("#login-id");
+        const loginPassword = document.querySelector("#login-password");
+        const loginFeedback = document.querySelector("#login-feedback");
+        const dialog = document.querySelector("#recovery-dialog");
+        const recoveryFeedback = document.querySelector("#recovery-feedback");
+        const idTab = document.querySelector("#id-tab");
+        const passwordTab = document.querySelector("#password-tab");
+        const idPanel = document.querySelector("#id-panel");
+        const passwordPanel = document.querySelector("#password-panel");
+
+        loginForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+          loginFeedback.textContent = "";
+          if (!loginId.value.trim()) {
+            loginId.focus();
+            loginFeedback.textContent = "ID 또는 이메일을 입력해 주세요.";
+            return;
+          }
+          if (!loginPassword.value) {
+            loginPassword.focus();
+            loginFeedback.textContent = "비밀번호를 입력해 주세요.";
+            return;
+          }
+          loginFeedback.textContent = "로그인 서버가 연결되지 않아 인증을 진행할 수 없습니다.";
+        });
+
+        document.querySelector("#open-recovery").addEventListener("click", () => {
+          recoveryFeedback.textContent = "";
+          dialog.showModal();
+        });
+        document.querySelector("#close-recovery").addEventListener("click", () => dialog.close());
+        dialog.addEventListener("click", (event) => {
+          if (event.target === dialog) dialog.close();
+        });
+
+        function activateTab(tab) {
+          const showId = tab === idTab;
+          idTab.setAttribute("aria-selected", String(showId));
+          passwordTab.setAttribute("aria-selected", String(!showId));
+          idPanel.hidden = !showId;
+          passwordPanel.hidden = showId;
+          recoveryFeedback.textContent = "";
+          tab.focus();
+        }
+
+        idTab.addEventListener("click", () => activateTab(idTab));
+        passwordTab.addEventListener("click", () => activateTab(passwordTab));
+        for (const tab of [idTab, passwordTab]) {
+          tab.addEventListener("keydown", (event) => {
+            if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+            event.preventDefault();
+            activateTab(tab === idTab ? passwordTab : idTab);
+          });
+        }
+
+        for (const panel of [idPanel, passwordPanel]) {
+          panel.addEventListener("submit", (event) => {
+            event.preventDefault();
+            recoveryFeedback.textContent = "";
+            if (!panel.checkValidity()) {
+              panel.reportValidity();
+              return;
+            }
+            recoveryFeedback.textContent = "계정 찾기는 인증 서버 연결 후 사용할 수 있습니다.";
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>대시보드 | fuse.lab</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <link rel="stylesheet" href="css/admin-dashboard.css" />
+    <script src="js/admin-dashboard.js" defer></script>
+  </head>
+  <body>
+    <main class="dash-shell">
+      <header class="dash-header">
+        <div class="dash-header__title">
+          <h1>대시보드</h1>
+          <p>fuse.lab의 현황</p>
+        </div>
+        <div class="month-nav">
+          <button class="month-nav__step month-nav__step--prev" id="month-prev" type="button" aria-label="이전 달">
+            <img src="aseets/icons/admin/dashboard/arrow-20.svg" alt="" width="20" height="20" />
+          </button>
+          <label class="month-nav__picker">
+            <img src="aseets/icons/admin/dashboard/calendar-month.svg" alt="" width="24" height="24" />
+            <span id="month-label">2026. 09</span>
+            <img class="month-nav__caret" src="aseets/icons/admin/dashboard/arrow-down-12.svg" alt="" width="12" height="12" />
+            <input id="month-input" type="month" value="2026-09" aria-label="조회 월 선택" />
+          </label>
+          <button class="month-nav__step" id="month-next" type="button" aria-label="다음 달">
+            <img src="aseets/icons/admin/dashboard/arrow-20.svg" alt="" width="20" height="20" />
+          </button>
+        </div>
+      </header>
+
+      <section class="chatbot-banner" aria-labelledby="chatbot-title">
+        <div>
+          <h2 id="chatbot-title">챗봇 현황</h2>
+          <p>최근 회원들의 챗봇 사용률 현황 <strong id="chatbot-rate">7.4%</strong></p>
+        </div>
+        <a class="chatbot-banner__link" href="admin-chatbot.html">챗봇 관리 바로가기</a>
+      </section>
+
+      <div class="stat-row">
+        <section class="dash-card visitor-card" aria-labelledby="visitor-title">
+          <div class="visitor-card__head">
+            <h2 id="visitor-title">방문자 현황</h2>
+            <div class="visitor-card__total">
+              <strong id="visitor-total">6,974</strong>
+              <span>전체 방문자 수</span>
+            </div>
+            <label class="week-select">
+              <select id="week-select" aria-label="조회 주차"></select>
+              <img src="aseets/icons/admin/dashboard/arrow-down-14.svg" alt="" width="14" height="14" />
+            </label>
+          </div>
+          <div class="bar-chart">
+            <div class="bar-chart__axis" aria-hidden="true">
+              <span>600</span>
+              <span>400</span>
+              <span>200</span>
+              <span>0</span>
+            </div>
+            <ol class="bar-chart__bars" id="visitor-bars"></ol>
+          </div>
+        </section>
+
+        <section class="dash-card member-card" aria-labelledby="member-title">
+          <div class="card-head">
+            <h2 id="member-title">회원 현황</h2>
+            <a class="more-link more-link--small" href="#">
+              전체보기
+              <img src="aseets/icons/admin/dashboard/arrow-right-14-primary.svg" alt="" width="14" height="14" />
+            </a>
+          </div>
+          <div class="donut" id="member-donut" role="img" aria-label="탈퇴 회원 비율 6.9%">
+            <div class="donut__hole">
+              <span>탈퇴 회원</span>
+              <strong id="member-withdrawn">6.9%</strong>
+            </div>
+          </div>
+          <dl class="member-stats">
+            <div><dt>전체 회원</dt><dd id="member-total">5,877 명</dd></div>
+            <div><dt>이번 달 가입</dt><dd id="member-month">4485 명</dd></div>
+            <div><dt>오늘 가입</dt><dd id="member-today">85 명</dd></div>
+          </dl>
+        </section>
+      </div>
+
+      <section class="dash-card list-card" aria-labelledby="inquiry-title">
+        <div class="card-head card-head--list">
+          <h2 id="inquiry-title">최근 견적문의</h2>
+          <a class="more-link" href="#">
+            전체보기
+            <img src="aseets/icons/admin/dashboard/arrow-right-20-primary.svg" alt="" width="20" height="20" />
+          </a>
+        </div>
+        <div class="table-frame">
+          <table class="dash-table">
+            <colgroup>
+              <col style="width: 80px" />
+              <col style="width: 80px" />
+              <col style="width: 128px" />
+              <col />
+              <col style="width: 156px" />
+              <col style="width: 128px" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th scope="col">no.</th>
+                <th scope="col">작성자</th>
+                <th scope="col">회사명</th>
+                <th scope="col" class="is-left">문의내용</th>
+                <th scope="col">접수일</th>
+                <th scope="col">상태</th>
+              </tr>
+            </thead>
+            <tbody id="inquiry-rows"></tbody>
+          </table>
+        </div>
+        <nav class="pagination" id="inquiry-pagination" aria-label="견적문의 페이지 이동"></nav>
+      </section>
+
+      <section class="dash-card list-card" aria-labelledby="post-title">
+        <div class="card-head card-head--list">
+          <h2 id="post-title">최근 게시글</h2>
+          <a class="more-link" href="admin-board.html">
+            전체보기
+            <img src="aseets/icons/admin/dashboard/arrow-right-20-primary.svg" alt="" width="20" height="20" />
+          </a>
+        </div>
+        <div class="post-tabs" id="post-tabs" role="tablist" aria-label="게시글 분야"></div>
+        <div class="table-frame">
+          <table class="dash-table">
+            <colgroup>
+              <col style="width: 80px" />
+              <col style="width: 128px" />
+              <col />
+              <col style="width: 80px" />
+              <col style="width: 80px" />
+              <col style="width: 80px" />
+              <col style="width: 80px" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th scope="col">no.</th>
+                <th scope="col">분야</th>
+                <th scope="col" class="is-left">제목</th>
+                <th scope="col">작성자</th>
+                <th scope="col">등록일</th>
+                <th scope="col">조회</th>
+                <th scope="col">노출</th>
+              </tr>
+            </thead>
+            <tbody id="post-rows"></tbody>
+          </table>
+        </div>
+        <nav class="pagination" id="post-pagination" aria-label="게시글 페이지 이동"></nav>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>챗봇 설정 | fuse.lab</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-width: 320px;
+      }
+
+      body {
+        background: #edf0f3;
+        color: #222;
+        font-family: "Pretendard Variable", Pretendard, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+
+      main {
+        display: flex;
+        justify-content: center;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: 100px 20px 40px;
+      }
+
+      .settings-card {
+        display: flex;
+        flex-direction: column;
+        align-self: flex-start;
+        gap: 24px;
+        width: min(1200px, 100%);
+        padding: 40px 20px;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.06);
+      }
+
+      .settings-card__heading {
+        padding-bottom: 16px;
+      }
+
+      h1 {
+        margin: 0;
+        color: #000;
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 184px minmax(0, 1fr);
+        align-items: start;
+        min-height: 42px;
+      }
+
+      .form-row > label,
+      .form-row > .row-label {
+        display: flex;
+        align-items: center;
+        min-height: 42px;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.5;
+      }
+
+      .text-field {
+        width: 100%;
+        min-width: 0;
+        height: 42px;
+        padding: 0 20px;
+        border: 0;
+        border-radius: 12px;
+        outline: none;
+        background: #f7f7f7;
+        color: #222;
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .text-field::placeholder {
+        color: #868686;
+        opacity: 1;
+      }
+
+      .text-field:focus-visible,
+      textarea:focus-visible,
+      .upload-button:focus-within,
+      .tone-option:focus-within {
+        outline: 2px solid #6a00ff;
+        outline-offset: 2px;
+      }
+
+      .upload-control {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        min-height: 42px;
+      }
+
+      .upload-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        height: 42px;
+        padding: 0 20px;
+        border-radius: 12px;
+        background: #f7f7f7;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 1;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .upload-button img {
+        display: block;
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+      }
+
+      .upload-button input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+      }
+
+      .upload-name {
+        overflow: hidden;
+        color: #868686;
+        font-size: 14px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .tone-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 0;
+        margin: 0;
+        border: 0;
+      }
+
+      .tone-option {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 182px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        background: #fcfcfc;
+        cursor: pointer;
+      }
+
+      .tone-option:has(input:checked) {
+        border-color: var(--preview-color, #6a00ff);
+        background: #fff;
+      }
+
+      .tone-option input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+      }
+
+      .tone-option__name {
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .tone-option__example {
+        width: 156px;
+        padding: 12px;
+        border-radius: 4px;
+        background: #f2f2f2;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.5;
+      }
+
+      .tone-option:has(input:checked) .tone-option__example {
+        background: #f7f7f7;
+      }
+
+      .tone-option__example span {
+        display: block;
+        white-space: nowrap;
+      }
+
+      .welcome-field {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .welcome-field label {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.5;
+      }
+
+      textarea {
+        display: block;
+        width: 100%;
+        height: 98px;
+        padding: 20px;
+        border: 0;
+        border-radius: 12px;
+        outline: none;
+        resize: vertical;
+        background: #f7f7f7;
+        color: #222;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 1.5;
+      }
+
+      .form-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .form-actions button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 42px;
+        padding: 0 24px;
+        border: 0;
+        border-radius: 71px;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 1;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .form-actions button:focus-visible {
+        outline: 2px solid #222;
+        outline-offset: 2px;
+      }
+
+      .delete-button {
+        background: #e51f17;
+        color: #fff;
+      }
+
+      .quiet-button {
+        background: #f0f0f0;
+        color: #222;
+      }
+
+      .save-button {
+        background: var(--preview-color, #6a00ff);
+        color: #fff;
+      }
+
+      .toast {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 10;
+        max-width: min(420px, calc(100vw - 48px));
+        padding: 12px 18px;
+        border-radius: 10px;
+        background: #222;
+        color: #fff;
+        font-size: 14px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+      }
+
+      .toast[hidden] {
+        display: none;
+      }
+
+      @media (max-width: 900px) {
+        main {
+          padding: 32px 20px;
+        }
+
+        .form-row {
+          grid-template-columns: 150px minmax(0, 1fr);
+        }
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding: 20px 16px;
+        }
+
+        .settings-card {
+          gap: 20px;
+          padding: 28px 20px;
+        }
+
+        h1 {
+          font-size: 24px;
+        }
+
+        .form-row {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .form-row > label,
+        .form-row > .row-label {
+          min-height: auto;
+          font-size: 16px;
+        }
+
+        .tone-option {
+          width: min(182px, calc((100% - 12px) / 2));
+        }
+
+        .tone-option__example {
+          width: 100%;
+          font-size: 12px;
+        }
+
+        .tone-option__example span {
+          white-space: normal;
+        }
+
+        .welcome-field label {
+          font-size: 16px;
+        }
+
+        .form-actions button {
+          padding: 0 18px;
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <form class="settings-card" id="chatbot-settings">
+        <div class="settings-card__heading"><h1>챗봇 설정</h1></div>
+
+        <div class="form-row">
+          <label for="ai-name">AI 이름</label>
+          <input class="text-field" id="ai-name" name="aiName" type="text" placeholder="플레이스 홀더" />
+        </div>
+
+        <div class="form-row">
+          <label for="guide-text">안내문구</label>
+          <input class="text-field" id="guide-text" name="guideText" type="text" placeholder="플레이스 홀더" />
+        </div>
+
+        <div class="form-row">
+          <span class="row-label" id="icon-label">아이콘</span>
+          <div class="upload-control">
+            <label class="upload-button" for="icon-file">
+              <img id="icon-preview" src="aseets/icons/admin/all-inbox.svg" alt="" width="24" height="24" />
+              <span>파일 선택</span>
+              <input id="icon-file" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" aria-labelledby="icon-label" />
+            </label>
+            <span class="upload-name" id="upload-name" aria-live="polite"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="theme-color">테마 색상</label>
+          <input class="text-field" id="theme-color" name="themeColor" type="text" inputmode="text" placeholder="플레이스 홀더" aria-describedby="color-help" />
+          <span id="color-help" hidden>16진수 색상 코드, 예: #6a00ff</span>
+        </div>
+
+        <div class="form-row">
+          <span class="row-label" id="tone-label">말투 설정</span>
+          <fieldset class="tone-options" aria-labelledby="tone-label">
+            <label class="tone-option">
+              <input type="radio" name="tone" value="friendly" checked />
+              <span class="tone-option__name">친근하게</span>
+              <span class="tone-option__example"><span>밝고 친근한 예시</span><span>~ 알려드릴게요 😄</span></span>
+            </label>
+            <label class="tone-option">
+              <input type="radio" name="tone" value="calm" />
+              <span class="tone-option__name">차분하게</span>
+              <span class="tone-option__example"><span>차분하고 신뢰감 예시</span><span>~ 안내드리겠습니다.</span></span>
+            </label>
+            <label class="tone-option">
+              <input type="radio" name="tone" value="warm" />
+              <span class="tone-option__name">따듯하게</span>
+              <span class="tone-option__example"><span>밝고 친근한 예시</span><span>~ 같이 살펴볼까요?</span></span>
+            </label>
+            <label class="tone-option">
+              <input type="radio" name="tone" value="concise" />
+              <span class="tone-option__name">간결하게</span>
+              <span class="tone-option__example"><span>간결하고 사실적 예시</span><span>~ 안내드립니다.</span></span>
+            </label>
+          </fieldset>
+        </div>
+
+        <div class="welcome-field">
+          <label for="welcome-message">환영 메세지</label>
+          <textarea id="welcome-message" name="welcomeMessage">안녕하세요, 궁금하신 점을 편하게 물어보세요 😄</textarea>
+        </div>
+
+        <div class="form-actions">
+          <button class="delete-button" id="delete-settings" type="button">삭제</button>
+          <button class="quiet-button" id="cancel-settings" type="button">취소</button>
+          <button class="quiet-button" id="draft-settings" type="button">임시저장</button>
+          <button class="save-button" type="submit">저장</button>
+        </div>
+      </form>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script>
+      (() => {
+        const form = document.querySelector("#chatbot-settings");
+        const iconInput = document.querySelector("#icon-file");
+        const iconPreview = document.querySelector("#icon-preview");
+        const uploadName = document.querySelector("#upload-name");
+        const colorInput = document.querySelector("#theme-color");
+        const toast = document.querySelector("#toast");
+        const defaultIcon = "aseets/icons/admin/all-inbox.svg";
+        const savedKey = "fuselab.chatbot.settings";
+        const draftKey = "fuselab.chatbot.draft";
+        const defaults = {
+          aiName: "",
+          guideText: "",
+          themeColor: "",
+          tone: "friendly",
+          welcomeMessage: "안녕하세요, 궁금하신 점을 편하게 물어보세요 😄",
+          iconData: "",
+          iconName: "",
+        };
+        let currentIconData = "";
+        let currentIconName = "";
+        let toastTimer;
+
+        function notify(message) {
+          toast.textContent = message;
+          toast.hidden = false;
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => { toast.hidden = true; }, 3500);
+        }
+
+        function read(key) {
+          try {
+            const value = JSON.parse(localStorage.getItem(key));
+            return value && typeof value === "object" ? value : null;
+          } catch {
+            return null;
+          }
+        }
+
+        function apply(settings) {
+          const value = { ...defaults, ...settings };
+          form.elements.aiName.value = value.aiName;
+          form.elements.guideText.value = value.guideText;
+          form.elements.themeColor.value = value.themeColor;
+          form.elements.welcomeMessage.value = value.welcomeMessage;
+          const selectedTone = form.querySelector(`input[name="tone"][value="${value.tone}"]`);
+          (selectedTone || form.querySelector('input[name="tone"][value="friendly"]')).checked = true;
+          currentIconData = value.iconData;
+          currentIconName = value.iconName;
+          iconPreview.src = currentIconData || defaultIcon;
+          uploadName.textContent = currentIconName;
+          iconInput.value = "";
+          updateColorPreview();
+        }
+
+        function collect() {
+          return {
+            aiName: form.elements.aiName.value.trim(),
+            guideText: form.elements.guideText.value.trim(),
+            themeColor: colorInput.value.trim(),
+            tone: form.querySelector('input[name="tone"]:checked').value,
+            welcomeMessage: form.elements.welcomeMessage.value,
+            iconData: currentIconData,
+            iconName: currentIconName,
+          };
+        }
+
+        function updateColorPreview() {
+          const color = colorInput.value.trim();
+          form.style.setProperty("--preview-color", /^#[0-9a-fA-F]{6}$/.test(color) ? color : "#6a00ff");
+        }
+
+        function validColor() {
+          const color = colorInput.value.trim();
+          if (color && !/^#[0-9a-fA-F]{6}$/.test(color)) {
+            colorInput.focus();
+            notify("테마 색상은 #6a00ff처럼 입력해 주세요.");
+            return false;
+          }
+          return true;
+        }
+
+        function persist(key, successMessage) {
+          if (!validColor()) return;
+          try {
+            localStorage.setItem(key, JSON.stringify(collect()));
+            if (key === savedKey) localStorage.removeItem(draftKey);
+            notify(successMessage);
+          } catch {
+            notify("브라우저 저장 공간을 사용할 수 없습니다. 아이콘 파일 크기를 확인해 주세요.");
+          }
+        }
+
+        iconInput.addEventListener("change", () => {
+          const file = iconInput.files?.[0];
+          if (!file) return;
+          if (!file.type.startsWith("image/") || file.size > 1024 * 1024) {
+            iconInput.value = "";
+            notify("1MB 이하의 이미지 파일을 선택해 주세요.");
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = () => {
+            currentIconData = String(reader.result);
+            currentIconName = file.name;
+            iconPreview.src = currentIconData;
+            uploadName.textContent = currentIconName;
+          };
+          reader.readAsDataURL(file);
+        });
+
+        colorInput.addEventListener("input", updateColorPreview);
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          persist(savedKey, "챗봇 설정을 저장했습니다.");
+        });
+        document.querySelector("#draft-settings").addEventListener("click", () => {
+          persist(draftKey, "임시저장했습니다.");
+        });
+        document.querySelector("#cancel-settings").addEventListener("click", () => {
+          apply(read(draftKey) || read(savedKey) || defaults);
+          notify("저장하지 않은 변경사항을 취소했습니다.");
+        });
+        document.querySelector("#delete-settings").addEventListener("click", () => {
+          if (!confirm("저장된 챗봇 설정과 임시저장 내용을 삭제할까요?")) return;
+          try {
+            localStorage.removeItem(savedKey);
+            localStorage.removeItem(draftKey);
+            apply(defaults);
+            notify("챗봇 설정을 삭제했습니다.");
+          } catch {
+            notify("설정을 삭제할 수 없습니다.");
+          }
+        });
+
+        apply(read(draftKey) || read(savedKey) || defaults);
+      })();
+    </script>
+  </body>
+</html>
