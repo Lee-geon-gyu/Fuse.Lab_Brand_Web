@@ -1,5 +1,7 @@
 (() => {
   const storageKey = "fuselab.board.posts";
+  const flashKey = "fuselab.board.flash";
+  const editorUrl = "admin-post-edit.html";
   const pageSize = 13;
   const pageGroupSize = 8;
   const template = document.querySelector("#post-row-template");
@@ -13,18 +15,11 @@
   const searchScope = document.querySelector("#search-scope");
   const searchQuery = document.querySelector("#search-query");
   const visibleOnly = document.querySelector("#visible-only");
-  const dialog = document.querySelector("#post-dialog");
-  const postForm = document.querySelector("#post-form");
-  const postCategory = document.querySelector("#post-category");
-  const postTitle = document.querySelector("#post-title");
-  const postContent = document.querySelector("#post-content");
-  const postVisible = document.querySelector("#post-visible");
   const toast = document.querySelector("#board-toast");
 
   let posts = loadPosts();
   let currentPage = 1;
   let appliedQuery = "";
-  let editingId = null;
   let pagePosts = [];
   let toastTimer;
   const selectedIds = new Set();
@@ -194,22 +189,21 @@
     renderPagination(totalPages);
   }
 
+  // 편집 화면이 같은 저장소를 읽으므로 샘플 데이터도 먼저 저장해 둠
   function openEditor(post = null) {
-    editingId = post?.id || null;
-    postForm.reset();
-    document.querySelector("#post-dialog-title").textContent = post ? "게시글 수정" : "글쓰기";
-    postCategory.value = post?.category || (categoryFilter.value === "all" ? "notice" : categoryFilter.value);
-    postCategory.dispatchEvent(new Event("change", { bubbles: true }));
-    postTitle.value = post?.title || "";
-    postContent.value = post?.content || "";
-    postVisible.checked = post?.visible ?? true;
-    dialog.showModal();
-    postTitle.focus();
+    if (!savePosts()) return;
+    const params = post
+      ? new URLSearchParams({ id: post.id })
+      : new URLSearchParams({ category: categoryFilter.value === "all" ? "notice" : categoryFilter.value });
+    location.href = `${editorUrl}?${params}`;
   }
 
-  function closeEditor() {
-    dialog.close();
-    editingId = null;
+  function showFlash() {
+    try {
+      const message = sessionStorage.getItem(flashKey);
+      sessionStorage.removeItem(flashKey);
+      if (message) notify(message);
+    } catch {}
   }
 
   categoryFilter.addEventListener("change", () => {
@@ -254,8 +248,6 @@
     const post = posts.find((item) => item.id === titleButton.dataset.postId);
     if (!post) return;
     post.views += 1;
-    savePosts();
-    render();
     openEditor(post);
   });
 
@@ -287,56 +279,7 @@
   document.querySelector("#hide-selected").addEventListener("click", () => changeSelected("hide"));
   document.querySelector("#delete-selected").addEventListener("click", () => changeSelected("delete"));
   document.querySelector("#new-post").addEventListener("click", () => openEditor());
-  document.querySelector("#close-post-dialog").addEventListener("click", closeEditor);
-  document.querySelector("#cancel-post-dialog").addEventListener("click", closeEditor);
-  dialog.addEventListener("click", (event) => {
-    if (event.target === dialog) closeEditor();
-  });
-
-  postForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    postTitle.value = postTitle.value.trim();
-    postContent.value = postContent.value.trim();
-    if (!postForm.checkValidity()) {
-      postForm.reportValidity();
-      return;
-    }
-
-    if (editingId) {
-      const post = posts.find((item) => item.id === editingId);
-      if (!post) return;
-      post.title = postTitle.value;
-      post.content = postContent.value;
-      post.category = postCategory.value;
-      post.visible = postVisible.checked;
-    } else {
-      const now = new Date();
-      posts.unshift({
-        id: `post-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        no: Math.max(1, ...posts.map((post) => Number(post.no) || 0)) + 1,
-        title: postTitle.value,
-        content: postContent.value,
-        category: postCategory.value,
-        author: "관리자",
-        date: `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
-        views: 0,
-        visible: postVisible.checked,
-      });
-    }
-
-    const wasEditing = Boolean(editingId);
-    const savedCategory = postCategory.value;
-    closeEditor();
-    categoryFilter.value = savedCategory;
-    categoryFilter.dispatchEvent(new Event("change", { bubbles: true }));
-    visibleOnly.checked = false;
-    searchQuery.value = "";
-    appliedQuery = "";
-    currentPage = 1;
-    savePosts();
-    render();
-    notify(wasEditing ? "게시글을 수정했습니다." : "게시글을 등록했습니다.");
-  });
 
   render();
+  showFlash();
 })();

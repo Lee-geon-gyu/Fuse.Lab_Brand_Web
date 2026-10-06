@@ -108,39 +108,6 @@
       </tr>
     </template>
 
-    <dialog class="post-dialog" id="post-dialog" aria-labelledby="post-dialog-title">
-      <form id="post-form" novalidate>
-        <div class="post-dialog__heading">
-          <h2 id="post-dialog-title">글쓰기</h2>
-          <button class="post-dialog__close" id="close-post-dialog" type="button" aria-label="닫기">×</button>
-        </div>
-        <div class="dialog-field">
-          <label for="post-category">게시판</label>
-          <div class="select-box select-box--dialog" data-custom-select>
-            <select id="post-category">
-              <option value="notice">공지사항</option>
-              <option value="event">이벤트</option>
-              <option value="resources">자료실</option>
-            </select>
-            <img src="aseets/icons/admin/board-category-arrow.svg" alt="" width="20" height="20" />
-          </div>
-        </div>
-        <div class="dialog-field">
-          <label for="post-title">제목</label>
-          <input id="post-title" type="text" maxlength="120" required />
-        </div>
-        <div class="dialog-field">
-          <label for="post-content">내용</label>
-          <textarea id="post-content" rows="8" required></textarea>
-        </div>
-        <label class="dialog-visible"><input id="post-visible" type="checkbox" checked /> 노출</label>
-        <div class="post-dialog__actions">
-          <button class="pill-button pill-button--muted" id="cancel-post-dialog" type="button">취소</button>
-          <button class="pill-button pill-button--primary" type="submit">저장</button>
-        </div>
-      </form>
-    </dialog>
-
     <div class="toast" id="board-toast" role="status" aria-live="polite" hidden></div>
   </body>
 </html>
