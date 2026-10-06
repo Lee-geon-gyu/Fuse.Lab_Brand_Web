@@ -707,13 +707,19 @@ marqueeBtns.forEach((btn) => {
   if (!originalText) return;
 
   const text = originalText.textContent.trim();
-  const buttonWidth = btn.getBoundingClientRect().width;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  if (btn.querySelector(".marquee-viewport")) return;
+
+  const viewport = document.createElement("span");
+  viewport.classList.add("marquee-viewport");
+  viewport.setAttribute("aria-hidden", "true");
 
   const track = document.createElement("span");
   track.classList.add("marquee-track");
 
-  btn.style.width = `${buttonWidth}px`;
-  originalText.replaceWith(track);
+  viewport.appendChild(track);
+  btn.appendChild(viewport);
 
   const createItem = () => {
     const item = document.createElement("span");
@@ -727,72 +733,32 @@ marqueeBtns.forEach((btn) => {
   const firstItem = createItem();
   track.appendChild(firstItem);
 
-  const itemWidth = firstItem.getBoundingClientRect().width;
-  const itemCount = Math.max(2, Math.ceil((buttonWidth * 2) / itemWidth));
-
-  for (let i = 1; i < itemCount; i++) {
+  for (let i = 1; i < 3; i++) {
     track.appendChild(createItem());
   }
 
-  const originalItems = [...track.children];
-
-  originalItems.forEach((item) => {
-    const clone = item.cloneNode(true);
-
-    clone.setAttribute("aria-hidden", "true");
-
-    track.appendChild(clone);
-  });
-
-  const moveWidth = track.scrollWidth / 2;
-
   const marqueeTween = gsap.to(track, {
-    x: -moveWidth,
-    duration: 3,
+    x: () => -firstItem.getBoundingClientRect().width,
+    duration: 1.5,
     ease: "none",
     repeat: -1,
     paused: true,
   });
 
-  btn.addEventListener("mouseenter", () => {
-    marqueeTween.restart();
-  });
+  const startMarquee = () => {
+    if (!reducedMotion.matches) marqueeTween.invalidate().restart();
+  };
 
-  btn.addEventListener("mouseleave", () => {
+  const stopMarquee = () => {
+    if (btn.matches(":hover, :focus-visible")) return;
     marqueeTween.pause();
     gsap.set(track, { x: 0 });
-  });
-});
+  };
 
-// footer text rolling
-const footerNavLinks = document.querySelectorAll(".footer-nav a");
-
-footerNavLinks.forEach((link) => {
-  const label = link.textContent.trim();
-  link.textContent = "";
-
-  const clip = document.createElement("span");
-  clip.className = "rolling-label";
-
-  [...label].forEach((character, index) => {
-    const column = document.createElement("span");
-    column.className = "rolling-character";
-    column.style.setProperty("--index", index);
-
-    const stack = document.createElement("span");
-    stack.className = "rolling-stack";
-
-    for (let i = 0; i < 2; i++) {
-      const glyph = document.createElement("span");
-      glyph.textContent = character === " " ? "\u00a0" : character;
-      stack.append(glyph);
-    }
-
-    column.append(stack);
-    clip.append(column);
-  });
-
-  link.append(clip);
+  btn.addEventListener("mouseenter", startMarquee);
+  btn.addEventListener("mouseleave", stopMarquee);
+  btn.addEventListener("focus", startMarquee);
+  btn.addEventListener("blur", stopMarquee);
 });
 
 // why-sec
@@ -848,6 +814,7 @@ for (let i = 1; i < items.length; i++) {
 // contact-sec
 
 const contactSection = document.querySelector(".contact-sec");
+if (!contactSection) return;
 const contactRight = contactSection.querySelector(".right-box");
 const contactTrack = contactSection.querySelector(".contact-form-track");
 
