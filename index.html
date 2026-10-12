@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>fuse.lab</title>
+    <script>
+      // Set this before the browser restores the previous scroll position.
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -22,6 +26,7 @@
     <link rel="stylesheet" href="css/GYU.css" />
     <link rel="stylesheet" href="css/WON.css" />
     <link rel="stylesheet" href="css/SURO.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.css" />
   </head>
   <body class="is-loading">
     <!-- LOADER : Figma 1:98 -->
@@ -131,8 +136,8 @@
                     </p>
                   </div>
 
-                  <button class="gyu-project__button" type="button">
-                    VIEW PROJECT
+                  <button class="gyu-project__button marquee-btn" type="button">
+                    <span class="marquee-text">VIEW PROJECT</span>
                   </button>
                 </div>
               </article>
@@ -174,8 +179,8 @@
                     </p>
                   </div>
 
-                  <button class="gyu-project__button" type="button">
-                    VIEW PROJECT
+                  <button class="gyu-project__button marquee-btn" type="button">
+                    <span class="marquee-text">VIEW PROJECT</span>
                   </button>
                 </div>
               </article>
@@ -187,8 +192,8 @@
               >
                 <img
                   class="gyu-project__image"
-                  src="aseets/images/section-portfolio/portfolio-2.png"
-                  alt="노을빛 미래형 건축 공간"
+                  src="aseets/images/section-portfolio/portfolio-3.png"
+                  alt="달 표면 위를 유영하는 우주비행사"
                 />
                 <div
                   class="gyu-project__shade gyu-project__shade--second"
@@ -214,8 +219,8 @@
                     </p>
                   </div>
 
-                  <button class="gyu-project__button" type="button">
-                    VIEW PROJECT
+                  <button class="gyu-project__button marquee-btn" type="button">
+                    <span class="marquee-text">VIEW PROJECT</span>
                   </button>
                 </div>
               </article>
@@ -227,7 +232,7 @@
               >
                 <img
                   class="gyu-project__image"
-                  src="aseets/images/section-portfolio/portfolio-2.png"
+                  src="aseets/images/section-portfolio/portfolio-4.png"
                   alt="노을빛 미래형 건축 공간"
                 />
                 <div
@@ -254,8 +259,8 @@
                     </p>
                   </div>
 
-                  <button class="gyu-project__button" type="button">
-                    VIEW PROJECT
+                  <button class="gyu-project__button marquee-btn" type="button">
+                    <span class="marquee-text">VIEW PROJECT</span>
                   </button>
                 </div>
               </article>
@@ -648,7 +653,7 @@
                   </label>
 
                   <div class="input-box">
-                    <textarea id="details" name="details" placeholder="your message" required></textarea>
+                    <textarea id="details" name="details" placeholder="your message" data-lenis-prevent required></textarea>
                   </div>
                 </div>
 
@@ -739,6 +744,8 @@
     <script src="js/divider.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
     <script src="script.js"></script>
+    <script src="js/smooth-scroll.js"></script>
   </body>
 </html>
