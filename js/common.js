@@ -19,12 +19,13 @@
   update();
 })();
 
-// 공통 푸터 텍스트 롤링
+// 공통 헤더·푸터 내비게이션 텍스트 롤링
 (() => {
-  document.querySelectorAll('.footer-nav a').forEach((link) => {
+  document.querySelectorAll('.gnb__list a, .footer-nav a').forEach((link) => {
     if (link.querySelector('.rolling-label')) return;
 
     const label = link.textContent.trim();
+    link.classList.add('rolling-link');
     link.setAttribute('aria-label', label);
     link.textContent = '';
 
