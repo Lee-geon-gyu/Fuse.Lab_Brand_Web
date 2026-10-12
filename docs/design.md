@@ -71,8 +71,8 @@ GNB / footer 메뉴: Home `#hero`, Portfolio `#gyu-main`, Services `#gyu-mvp`, W
 
 | 화면 | 표시/입력 | 필요한 서버 기능 |
 | --- | --- | --- |
-| 로그인 | 이메일(ID), 비밀번호 / ID 찾기 · 비밀번호 찾기 다이얼로그 | 세션 로그인, 계정 찾기 방식 미정 |
-| 회원가입 | ID(중복확인)*, 비밀번호*, 비밀번호 확인*, 이름*, 승인 코드* | ID 중복 확인, 승인 코드 검증 후 관리자 생성 |
+| 로그인 | 이메일(ID), 비밀번호 / ID 찾기 · 비밀번호 찾기 다이얼로그 | ✅ 세션 로그인·로그아웃. 계정 찾기는 미정 |
+| 회원가입 | ID(중복확인)*, 비밀번호*, 비밀번호 확인*, 이름*, 승인 코드* | ✅ ID 중복 확인, 승인 코드(`signup_code` 설정) 검증 후 관리자 생성 |
 | 대시보드 | 월 선택, 챗봇 사용률, 방문자 주간 그래프·합계, 회원 현황(전체·이번 달·오늘·탈퇴율), 최근 견적문의(상태), 최근 게시글(분류 탭) | 방문 집계, 문의/게시글 최근 목록 |
 | 게시판 목록 | 게시판 선택, 검색(제목+내용·제목·내용·작성자), 노출된 글만, 체크 일괄 노출/숨김/삭제, 13개/페이지 | 목록·검색·페이지네이션, 일괄 상태 변경 |
 | 게시글 작성/수정 | 제목, 노출 여부, 게시판, 내용, 파일첨부 / 취소·임시저장·저장(·삭제) | 저장/수정/삭제, 첨부 업로드, 임시저장 |
@@ -86,7 +86,7 @@ GNB / footer 메뉴: Home `#hero`, Portfolio `#gyu-main`, Services `#gyu-mvp`, W
 
 | 테이블 | 주요 컬럼 | 사용 화면 |
 | --- | --- | --- |
-| `admins` | id, login_id(UNIQUE), password_hash, name, created_at, last_login_at | 로그인, 회원가입 |
+| `admins` ✅ | id, login_id(UNIQUE), password_hash, name, created_at, last_login_at | 로그인, 회원가입 |
 | `inquiries` | id, name, email, phone, budget, schedule, company, details, status, privacy_agreed_at, created_at | 메인 폼, 대시보드 |
 | `posts` | id, board, title, content, is_visible, is_draft, admin_id, views, created_at, updated_at | 게시판, 글작성, 대시보드 |
 | `post_files` | id, post_id, original_name, stored_name, size, created_at | 글작성 |
@@ -94,7 +94,7 @@ GNB / footer 메뉴: Home `#hero`, Portfolio `#gyu-main`, Services `#gyu-mvp`, W
 | `chatbot_settings` | id, ai_name, guide_text, icon, theme_color, tone, welcome_message, is_draft, updated_at | 챗봇 설정, 대시보드 |
 | `visit_stats` | visit_date(PK), visitors | 대시보드 방문자 |
 
-테이블은 기능 구현 시점에 `db/schema.sql` 로 확정한다.
+테이블은 기능 구현 시점에 `db/schema.sql` 로 확정한다. ✅ = `db/schema.sql` 에 반영됨.
 
 ## 6. 미정 사항
 
@@ -105,6 +105,5 @@ GNB / footer 메뉴: Home `#hero`, Portfolio `#gyu-main`, Services `#gyu-mvp`, W
 | 챗봇 사용률 | 사용자 화면에 챗봇 UI가 없음. 측정 기준(방문자 대비 대화 시작 등) 필요 |
 | 포트폴리오 진입 경로 | 메인 GNB Portfolio 는 `#gyu-main` 섹션으로 이동. 목록 페이지로 가는 버튼 위치 결정 필요 |
 | 포트폴리오 관리 | 관리자에 포트폴리오 등록 화면이 없음. 게시판으로 관리할지 별도 화면을 만들지 결정 필요 |
-| 계정 찾기 | ID/비밀번호 찾기 방식(메일 발송 등). 카페24 메일 발송 가능 여부 확인 필요 |
-| 승인 코드 | 고정 코드(설정 파일)인지, 관리자가 발급하는지 |
+| 계정 찾기 | ID/비밀번호 찾기 다이얼로그는 이메일을 받지만 회원가입에 이메일 입력이 없음. 이메일 수집 여부와 발송 방식(카페24 메일 발송 가능 여부) 결정 필요. 현재는 phpMyAdmin 에서 계정 삭제 후 재가입 |
 | 견적문의 상세 | 대시보드에 목록만 있음. 상세 보기·상태 변경 화면 필요 여부 |

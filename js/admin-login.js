@@ -11,19 +11,18 @@
   const passwordPanel = document.querySelector("#password-panel");
 
   loginForm.addEventListener("submit", (event) => {
-    event.preventDefault();
     loginFeedback.textContent = "";
     if (!loginId.value.trim()) {
+      event.preventDefault();
       loginId.focus();
       loginFeedback.textContent = "ID 또는 이메일을 입력해 주세요.";
       return;
     }
     if (!loginPassword.value) {
+      event.preventDefault();
       loginPassword.focus();
       loginFeedback.textContent = "비밀번호를 입력해 주세요.";
-      return;
     }
-    loginFeedback.textContent = "로그인 서버가 연결되지 않아 인증을 진행할 수 없습니다.";
   });
 
   document.querySelector("#open-recovery").addEventListener("click", () => {

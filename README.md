@@ -20,15 +20,24 @@
 - Windows: `setup.bat` 더블클릭
 - macOS / Linux: `./setup.sh`
 
-Docker 확인 → `.env` 생성(없을 때만) → 컨테이너 빌드/기동 → DB 연결 확인 → 접속 주소 출력. 다시 실행해도 안전.
+Docker 확인 → `.env` 생성(없을 때만) → 컨테이너 빌드/기동 → DB 연결 확인 → `db/schema.sql` 적용 → 접속 주소 출력. 다시 실행해도 안전.
 
 | 서비스 | 주소 |
 | --- | --- |
 | 사이트 | http://localhost:8088 |
+| 관리자 | http://localhost:8088/admin/ |
 | phpMyAdmin | http://localhost:8089 |
 | MariaDB (외부 클라이언트) | `localhost:3310` / `fuselab` / `fuselab` |
 
 포트 충돌 시 `.env` 의 `WEB_PORT`, `PMA_PORT`, `DB_PORT_HOST` 값을 바꾸고 setup 을 다시 실행.
+
+### 관리자 계정
+
+기본 계정은 없다. `/admin/signup.php` 에서 승인 코드로 가입한다.
+
+- 로컬 승인 코드: `fuselab-dev` (`.env` 의 `ADMIN_SIGNUP_CODE` 로 변경)
+- 운영 승인 코드: `app/config.local.php` 의 `signup_code` (비우면 가입 불가)
+- 비밀번호 분실 시: phpMyAdmin 에서 `admins` 행을 지우고 다시 가입
 
 ## 구조
 
@@ -40,5 +49,7 @@ Docker 확인 → `.env` 생성(없을 때만) → 컨테이너 빌드/기동 �
 
 ## 카페24 배포
 
-1. `app/config.local.example.php` → `app/config.local.php` 로 복사 후 카페24 DB 정보 입력
-2. `docker/`, `docker-compose.yml`, `*.md` 는 업로드하지 않음 (업로드돼도 `.htaccess` 로 차단)
+1. `app/config.local.example.php` → `app/config.local.php` 로 복사 후 카페24 DB 정보와 `signup_code` 입력
+2. 카페24 DB 관리(phpMyAdmin) > SQL 에서 `db/schema.sql` 실행
+3. `/admin/signup.php` 에서 첫 관리자 가입
+4. `docker/`, `docker-compose.yml`, `*.md` 는 업로드하지 않음 (업로드돼도 `.htaccess` 로 차단)

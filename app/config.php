@@ -14,6 +14,8 @@ $config = [
         'pass' => getenv('DB_PASS') ?: '',
     ],
     'debug' => getenv('APP_DEBUG') === '1',
+    // 관리자 회원가입 승인 코드. 비어 있으면 회원가입 불가
+    'signup_code' => getenv('ADMIN_SIGNUP_CODE') ?: '',
 ];
 
 $local = __DIR__ . '/config.local.php';

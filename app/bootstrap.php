@@ -25,11 +25,31 @@ session_set_cookie_params([
 session_start();
 
 require __DIR__ . '/db.php';
+require __DIR__ . '/csrf.php';
+require __DIR__ . '/auth.php';
 
 /** HTML 출력용 이스케이프 */
 function e(?string $value): string
 {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+}
+
+function redirect(string $url): never
+{
+    header('Location: ' . $url);
+    exit;
+}
+
+/** 다음 요청에서 한 번만 보여줄 메시지. 인자 2개면 저장, 1개면 꺼내고 삭제 */
+function flash(string $key, ?string $message = null): ?string
+{
+    if ($message !== null) {
+        $_SESSION['flash'][$key] = $message;
+        return null;
+    }
+    $value = $_SESSION['flash'][$key] ?? null;
+    unset($_SESSION['flash'][$key]);
+    return $value;
 }
 
 /**

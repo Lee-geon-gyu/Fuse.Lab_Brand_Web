@@ -44,7 +44,10 @@ fuse.lab 브랜드 웹사이트. 정적 HTML 퍼블리싱 위에 필요한 기�
 - PHP 8.2 문법까지만. 8.3+ 기능(typed class constants, `json_validate`, `|>` 등) 금지.
 - DB 는 `db()` (PDO, utf8mb4) + prepared statement 만 사용. 문자열로 쿼리 조립 금지.
 - 출력은 `e()` 로 이스케이프. 비밀번호는 `password_hash` / `password_verify`.
-- 상태 변경 요청(POST)은 CSRF 토큰 검증.
+- 상태 변경 요청(POST)은 CSRF 토큰 검증: 폼에 `<?= csrf_field() ?>`, 처리 시 `csrf_valid()`.
+- 관리자 페이지(로그인·회원가입·중복확인 제외)는 bootstrap 바로 다음에 `require_admin();`.
+- 테이블 추가·변경은 `db/schema.sql` 에 `CREATE TABLE IF NOT EXISTS` 로 적는다 (setup 이 매번 적용, 카페24 는 phpMyAdmin 에서 실행).
+  기존 테이블 컬럼 변경은 `ALTER TABLE` 을 별도로 적고 실행 방법을 README 에 남긴다.
 - 설정값은 `app_config()`. 비밀값을 코드에 하드코딩 금지 — 운영 값은 `app/config.local.php` (git 제외).
 - include 전용 파일은 `app/` 아래에 둔다. 웹에서 직접 열리는 파일만 루트/하위 폴더에 둔다.
 - SQL 은 MariaDB 10.x 공통 문법 위주. 로컬은 10.6 이지만 운영 버전은 미확인이므로 최신 전용 기능은 피한다.
@@ -59,8 +62,10 @@ fuse.lab 브랜드 웹사이트. 정적 HTML 퍼블리싱 위에 필요한 기�
 
 ## 배포 (카페24)
 
-1. `app/config.local.example.php` → `app/config.local.php` 복사 후 카페24 DB 정보 입력
-2. 업로드 제외: `docker/`, `docker-compose.yml`, `setup.*`, `.env*`, `*.md`, `.git*`
+1. `app/config.local.example.php` → `app/config.local.php` 복사 후 카페24 DB 정보·`signup_code` 입력
+2. 카페24 DB 관리(phpMyAdmin)에서 `db/schema.sql` 실행
+3. `/admin/signup.php` 에서 승인 코드로 첫 관리자 가입 (가입이 끝나면 `signup_code` 를 `''` 로 비워 닫을 수 있음)
+4. 업로드 제외: `docker/`, `docker-compose.yml`, `setup.*`, `.env*`, `*.md`, `.git*`
    (실수로 올라가도 루트 `.htaccess` 가 차단)
 
 ## Git

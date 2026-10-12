@@ -1,8 +1,10 @@
 <?php
 /**
  * 관리자 좌측 메뉴 + 본문 영역 시작. 본문 뒤에 admin/layout-end 로 닫는다.
+ * 페이지에서 require_admin() 을 먼저 호출한 상태를 전제로 한다.
  * @var string $active 'dashboard' | 'board' | 'chatbot'
  */
+$admin = current_admin();
 $menu = [
     'dashboard' => ['/admin/', '대시보드'],
     'board' => ['/admin/board.php', '게시판'],
@@ -22,8 +24,12 @@ $menu = [
           </ul>
         </nav>
         <div class="admin-nav__bottom">
+          <span class="admin-nav__user"><?= e($admin['name']) ?> 님</span>
           <a href="/" target="_blank" rel="noopener">사이트 보기</a>
-          <a href="/admin/logout.php">로그아웃</a>
+          <form method="post" action="/admin/logout.php">
+            <?= csrf_field() ?>
+            <button type="submit">로그아웃</button>
+          </form>
         </div>
       </aside>
       <div class="admin-content">

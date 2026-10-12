@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/../app/bootstrap.php';
+require_admin();
 
 view('admin/head', [
     'pageTitle' => '대시보드',

@@ -1,6 +1,28 @@
 <?php
 require __DIR__ . '/../app/bootstrap.php';
 
+if (current_admin() !== null) {
+    redirect('/admin/');
+}
+
+$loginId = '';
+$feedback = flash('login') ?? '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $loginId = trim((string) ($_POST['loginId'] ?? ''));
+    $password = (string) ($_POST['password'] ?? '');
+
+    if (!csrf_valid()) {
+        $feedback = '요청이 만료되었습니다. 다시 시도해 주세요.';
+    } elseif ($loginId === '' || $password === '') {
+        $feedback = 'ID와 비밀번호를 입력해 주세요.';
+    } elseif (attempt_admin_login($loginId, $password)) {
+        redirect('/admin/');
+    } else {
+        $feedback = 'ID 또는 비밀번호가 올바르지 않습니다.';
+    }
+}
+
 view('admin/head', [
     'pageTitle' => '관리자 로그인',
     'styles' => ['/css/admin-login.css'],
@@ -8,12 +30,13 @@ view('admin/head', [
 ]);
 ?>
     <main>
-      <form class="login-card" id="login-form" novalidate>
+      <form class="login-card" id="login-form" method="post" action="/admin/login.php" novalidate>
+        <?= csrf_field() ?>
         <div class="login-card__heading"><h1>관리자 로그인</h1></div>
 
         <div class="field">
           <label for="login-id">이메일(ID)</label>
-          <input id="login-id" name="loginId" type="text" placeholder="ID 또는 이메일을 입력해 주세요" autocomplete="username" required />
+          <input id="login-id" name="loginId" type="text" value="<?= e($loginId) ?>" placeholder="ID 또는 이메일을 입력해 주세요" autocomplete="username" required />
         </div>
 
         <div class="field">
@@ -30,7 +53,7 @@ view('admin/head', [
         <div class="login-card__footer">
           <button class="primary-button" type="submit">로그인</button>
         </div>
-        <p class="feedback" id="login-feedback" role="status" aria-live="polite"></p>
+        <p class="feedback" id="login-feedback" role="status" aria-live="polite"><?= e($feedback) ?></p>
       </form>
     </main>
 

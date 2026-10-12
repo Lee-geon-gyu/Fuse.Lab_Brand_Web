@@ -10,4 +10,6 @@ return [
         'pass' => 'DB_PASSWORD',
     ],
     'debug' => false,
+    // 관리자 회원가입 승인 코드 (추측하기 어려운 값). 관리자 등록이 끝나면 '' 로 비워 가입을 막아도 된다
+    'signup_code' => 'CHANGE_ME',
 ];
