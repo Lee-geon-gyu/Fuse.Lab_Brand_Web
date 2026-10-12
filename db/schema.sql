@@ -15,6 +15,10 @@ CREATE TABLE IF NOT EXISTS admins (
 -- 계정 찾기용 이메일 (기존 DB 에도 적용되도록 ALTER ... IF NOT EXISTS, MariaDB 10.0.2+)
 ALTER TABLE admins ADD COLUMN IF NOT EXISTS email VARCHAR(255) NULL AFTER name;
 
+-- 기본 관리자 계정 admin / qwer1234 (bcrypt 해시). 같은 login_id 가 있으면 건드리지 않는다 (비밀번호 덮어쓰지 않음)
+INSERT IGNORE INTO admins (login_id, password_hash, name, email)
+VALUES ('admin', '$2y$10$KWitJ4BCPDWFEnlF8VyZZOuNOFaBopERwq7ATHCTGU8k5PhQZbULe', '관리자', 'admin@fuselab.example');
+
 -- 비밀번호 재설정 링크. token_hash = SHA-256(메일로 보낸 토큰)
 CREATE TABLE IF NOT EXISTS password_resets (
   id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -29,12 +33,13 @@ CREATE TABLE IF NOT EXISTS password_resets (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 게시판 글. board: notice(공지사항) / event(이벤트) / resources(자료실) / portfolio(메인 포트폴리오 슬라이드)
--- portfolio 글은 eyebrow(제목 위 작은 문구)·image(배경 이미지 경로)를 함께 쓴다
+-- portfolio 글은 eyebrow(제목 위 작은 문구)·image(배경 이미지 경로)·portfolio_id(VIEW PROJECT 로 열 포트폴리오 상세)를 함께 쓴다
 CREATE TABLE IF NOT EXISTS posts (
   id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
   board      VARCHAR(20)  NOT NULL,
   title      VARCHAR(120) NOT NULL,
   eyebrow    VARCHAR(60)  NOT NULL DEFAULT '',
+  portfolio_id INT UNSIGNED NULL,
   content    TEXT         NOT NULL,
   image      VARCHAR(255) NULL,
   is_visible TINYINT(1)   NOT NULL DEFAULT 1,
@@ -46,6 +51,9 @@ CREATE TABLE IF NOT EXISTS posts (
   KEY idx_posts_board (board, is_visible, id),
   CONSTRAINT fk_posts_admin FOREIGN KEY (admin_id) REFERENCES admins (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 슬라이드 → 포트폴리오 상세 연결 (기존 DB 에도 적용). 대상이 삭제·숨김이면 화면에서 연결 없음으로 처리
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS portfolio_id INT UNSIGNED NULL AFTER eyebrow;
 
 CREATE TABLE IF NOT EXISTS post_files (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT,

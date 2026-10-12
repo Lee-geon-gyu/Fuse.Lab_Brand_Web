@@ -24,6 +24,7 @@
   const toast = document.querySelector("#board-toast");
   // 포트폴리오 전용 입력 (PHP 화면에만 있음)
   const eyebrowInput = document.querySelector("#post-eyebrow");
+  const portfolioSelect = document.querySelector("#post-portfolio");
   const imageInput = document.querySelector("#post-image");
   const imagePreview = document.querySelector("#image-preview");
   const boardOnlyFields = [...document.querySelectorAll("[data-board-only]")];
@@ -97,6 +98,7 @@
       content: contentInput.value.trim(),
       category: categorySelect.value,
       eyebrow: eyebrowInput ? eyebrowInput.value.trim() : "",
+      portfolioId: portfolioSelect ? portfolioSelect.value : "",
       visible: form.elements.visible.value === "true",
       files: files.map(fileName),
       image: imageFile ? imageFile.name : imageUrl,
@@ -109,6 +111,12 @@
     categorySelect.value = data.category || "notice";
     categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
     if (eyebrowInput) eyebrowInput.value = data.eyebrow || "";
+    if (portfolioSelect) {
+      portfolioSelect.value = data.portfolioId || "";
+      // 숨김→삭제 등으로 목록에 없는 id 면 연결 없음으로 표시
+      if (portfolioSelect.selectedIndex < 0) portfolioSelect.value = "";
+      portfolioSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    }
     form.elements.visible.value = String(data.visible ?? true);
     files = Array.isArray(data.files) ? [...data.files] : [];
     imageUrl = data.image || "";
@@ -204,6 +212,7 @@
     body.append("category", data.category);
     body.append("title", data.title);
     body.append("eyebrow", data.eyebrow);
+    body.append("portfolio_id", data.portfolioId);
     body.append("content", data.content);
     body.append("visible", String(data.visible));
     if (imageFile) body.append("image", imageFile);

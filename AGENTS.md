@@ -64,7 +64,7 @@ fuse.lab 브랜드 웹사이트. 정적 HTML 퍼블리싱 위에 필요한 기�
 
 1. `app/config.local.example.php` → `app/config.local.php` 복사 후 카페24 DB 정보·`signup_code`·`mail_from`·`site_url` 입력
 2. 카페24 DB 관리(phpMyAdmin)에서 `db/schema.sql` 실행 (시안 데이터가 필요하면 `db/seed-*.sql` 도 한 번씩)
-3. `/admin/signup.php` 에서 승인 코드로 첫 관리자 가입 (가입이 끝나면 `signup_code` 를 `''` 로 비워 닫을 수 있음)
+3. 기본 관리자 `admin` / `qwer1234` (`db/schema.sql` 이 넣음) 로 로그인 후 비밀번호 변경. 추가 관리자는 `/admin/signup.php` 에서 승인 코드로 가입 (필요 없으면 `signup_code` 를 `''` 로 비워 닫을 수 있음)
 4. 업로드 제외: `docker/`, `docker-compose.yml`, `setup.*`, `.env*`, `*.md`, `.git*`, `app/storage/`, `uploads/posts/` (로컬 업로드 파일)
    (실수로 올라가도 루트 `.htaccess` 가 차단)
 

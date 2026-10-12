@@ -99,9 +99,15 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading', 'isHo
                     </p>
                   </div>
 
+<?php if ($slide['link_id'] !== null): ?>
+                  <a class="gyu-project__button marquee-btn" href="/portfolio-detail.php?id=<?= (int) $slide['link_id'] ?>">
+                    <span class="marquee-text">VIEW PROJECT</span>
+                  </a>
+<?php else: ?>
                   <button class="gyu-project__button marquee-btn" type="button">
                     <span class="marquee-text">VIEW PROJECT</span>
                   </button>
+<?php endif; ?>
                 </div>
 <?php if ($isAdmin): ?>
                 <a class="admin-edit-link" href="/admin/post-edit.php?<?= e(http_build_query(['id' => $slide['id'], 'return' => '/'])) ?>">이 슬라이드 수정</a>

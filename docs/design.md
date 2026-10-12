@@ -103,7 +103,7 @@ GNB / footer 메뉴: Home `#hero`, Portfolio `#gyu-main`, Services `#gyu-mvp`, W
 | `admins` | id, login_id(UNIQUE), password_hash, name, email, created_at, last_login_at | 로그인, 회원가입, 계정 찾기, 대시보드 |
 | `password_resets` | id, admin_id, token_hash(UNIQUE), expires_at, used_at, created_at | 비밀번호 재설정 |
 | `inquiries` | id, name, email, phone, budget, schedule, company, details, status, admin_memo, privacy_agreed_at, ip, created_at, updated_at | 메인 폼, 견적문의 관리, 대시보드 |
-| `posts` | id, board, title, eyebrow, content, image, is_visible, admin_id, views, created_at, updated_at | 게시판, 글작성, 메인 포트폴리오, 대시보드 |
+| `posts` | id, board, title, eyebrow, portfolio_id, content, image, is_visible, admin_id, views, created_at, updated_at | 게시판, 글작성, 메인 포트폴리오, 대시보드 |
 | `post_files` | id, post_id, original_name, stored_name, size, created_at | 글작성 |
 | `portfolios` | id, title, category, client, type, project_date, summary, site_url, thumbnail, hero_image, detail_image, sort_order, is_visible, created_at, updated_at | 포트폴리오 목록/상세/관리 |
 | `chatbot_settings` | id(=1), ai_name, guide_text, icon, theme_color, tone, welcome_message, updated_at | 챗봇 설정, 챗봇 위젯 |
@@ -118,8 +118,8 @@ GNB / footer 메뉴: Home `#hero`, Portfolio `#gyu-main`, Services `#gyu-mvp`, W
 | 게시판 분류 | `공지사항/이벤트/자료실/포트폴리오` 로 통일 (`POST_BOARDS`). 대시보드 탭도 같은 목록 |
 | 대시보드 회원 현황 | 사용자 회원 기능이 없어 관리자 계정 기준으로 표시. 사용자 회원 기능을 만들면 다시 결정 |
 | 챗봇 사용률 | 선택 월 '챗봇을 연 세션 / 방문 세션' (둘 다 세션당 하루 1회) |
-| 포트폴리오 진입 경로 | 미정. 메인 GNB Portfolio 는 `#gyu-main` 섹션으로 이동하고, 목록 페이지는 챗봇 응답 링크로만 연결됨. 목록 페이지로 가는 버튼 위치 결정 필요 |
-| 포트폴리오 데이터 | 메인 슬라이드 = 게시판 `포트폴리오` 글, 목록/상세 = `portfolios` 테이블로 분리 |
+| 포트폴리오 진입 경로 | 메인 슬라이드 VIEW PROJECT → 글작성에서 고른 `portfolios` 상세 → 상세의 "목록으로" → 목록. 연결 안 함이거나 대상이 숨김·삭제면 퍼블리싱 동작(다음 슬라이드) 유지. GNB Portfolio 는 `#gyu-main` 그대로 |
+| 포트폴리오 데이터 | 메인 슬라이드 = 게시판 `포트폴리오` 글(`posts.portfolio_id` 로 상세 연결), 목록/상세 = `portfolios` 테이블로 분리 |
 | 포트폴리오 시드 | 원본에 상세가 있는 쿠무 외 5개는 분류·소개 문구를 임의로 넣음 (`db/seed-portfolios.sql`). 실제 내용으로 교체 필요 |
 | 계정 찾기 메일 | 로컬은 `app/storage/mail.log`. 카페24 `mail()` 발송 여부는 배포 후 확인 필요 |
 | 견적문의 알림 | 문의 접수 시 관리자 알림 메일은 보내지 않음. 필요하면 `send_mail()` 로 추가 |

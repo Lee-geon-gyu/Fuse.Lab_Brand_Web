@@ -2,6 +2,8 @@
 require __DIR__ . '/../app/bootstrap.php';
 require_admin();
 
+$portfolioOptions = portfolio_admin_list('');
+
 view('admin/head', [
     'pageTitle' => '게시글 작성',
     'styles' => ['/css/admin-board.css', '/css/admin-post-edit.css', '/css/admin-layout.css'],
@@ -51,6 +53,22 @@ view('admin/layout-start', ['active' => 'board']);
         <div class="editor-row" data-board-only="portfolio" hidden>
           <label class="editor-label" for="post-eyebrow">상단 문구</label>
           <input class="editor-input" id="post-eyebrow" type="text" maxlength="60" placeholder="예: BRAND EXPERIENCE" />
+        </div>
+
+        <div class="editor-row" data-board-only="portfolio" hidden>
+          <span class="editor-label" id="post-portfolio-label">연결 포트폴리오</span>
+          <div class="editor-files">
+            <div class="select-box" data-custom-select>
+              <select id="post-portfolio" aria-labelledby="post-portfolio-label" aria-describedby="post-portfolio-hint">
+                <option value="">연결 안 함</option>
+<?php foreach ($portfolioOptions as $option): ?>
+                <option value="<?= (int) $option['id'] ?>"><?= e($option['title']) ?><?= $option['is_visible'] ? '' : ' (숨김)' ?></option>
+<?php endforeach; ?>
+              </select>
+              <img src="/aseets/icons/admin/board-category-arrow.svg" alt="" width="20" height="20" />
+            </div>
+            <span class="editor-hint" id="post-portfolio-hint">VIEW PROJECT 버튼이 이 포트폴리오 상세로 이동합니다. 연결 안 함이거나 대상이 숨김이면 다음 슬라이드로 넘어갑니다.</span>
+          </div>
         </div>
 
         <div class="editor-row" data-board-only="portfolio" hidden>

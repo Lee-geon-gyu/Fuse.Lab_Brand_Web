@@ -274,12 +274,20 @@
     })
     .filter(Boolean);
 
+  // 슬라이드가 자리잡기 전이면 그 슬라이드로 이동.
+  // 자리잡은 상태에서 상세 링크(a[href])가 있으면 상세로, 없으면 다음 슬라이드(마지막이면 다음 섹션)로.
   const activateProjectButton = (index) => {
     const currentTimeline = getTimelinePosition();
     const isProjectSettled = Math.abs(currentTimeline - index) < 0.04;
 
     if (!isProjectSettled) {
       scrollToProject(index);
+      return;
+    }
+
+    const link = projects[index]?.querySelector(".gyu-project__button")?.getAttribute("href");
+    if (link) {
+      window.location.href = link;
       return;
     }
 

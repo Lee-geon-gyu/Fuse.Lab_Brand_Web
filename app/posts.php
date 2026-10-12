@@ -37,13 +37,18 @@ function post_upload_url(string $storedName): string
     return '/uploads/posts/' . $storedName;
 }
 
-/** 메인 포트폴리오 슬라이드: 노출된 portfolio 글, 먼저 쓴 글이 앞 */
+/**
+ * 메인 포트폴리오 슬라이드: 노출된 portfolio 글, 먼저 쓴 글이 앞.
+ * link_id = 연결된 포트폴리오 상세 id (연결 없음·삭제·숨김이면 null)
+ */
 function portfolio_slides(): array
 {
     return db()->query(
-        "SELECT id, title, eyebrow, content, image FROM posts
-         WHERE board = 'portfolio' AND is_visible = 1 AND image IS NOT NULL
-         ORDER BY id"
+        "SELECT p.id, p.title, p.eyebrow, p.content, p.image, f.id AS link_id
+         FROM posts p
+         LEFT JOIN portfolios f ON f.id = p.portfolio_id AND f.is_visible = 1
+         WHERE p.board = 'portfolio' AND p.is_visible = 1 AND p.image IS NOT NULL
+         ORDER BY p.id"
     )->fetchAll();
 }
 
@@ -71,7 +76,7 @@ function post_list(): array
 /** 편집 화면용 글 1건 + 첨부 목록 (없으면 null) */
 function post_find(int $id): ?array
 {
-    $stmt = db()->prepare('SELECT id, board, title, eyebrow, content, image, is_visible FROM posts WHERE id = ?');
+    $stmt = db()->prepare('SELECT id, board, title, eyebrow, portfolio_id, content, image, is_visible FROM posts WHERE id = ?');
     $stmt->execute([$id]);
     $row = $stmt->fetch();
     if (!$row) {
@@ -86,6 +91,7 @@ function post_find(int $id): ?array
         'category' => $row['board'],
         'title' => $row['title'],
         'eyebrow' => $row['eyebrow'],
+        'portfolioId' => $row['portfolio_id'] === null ? '' : (string) $row['portfolio_id'],
         'content' => $row['content'],
         'image' => $row['image'],
         'visible' => (bool) $row['is_visible'],

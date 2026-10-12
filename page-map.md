@@ -60,6 +60,6 @@ PHP 파일 목록. 파일을 추가/삭제하면 이 표도 함께 수정한다.
 
 | 파일 | 테이블 |
 | --- | --- |
-| `db/schema.sql` | `admins` (+ `email` ALTER), `password_resets`, `posts`, `post_files`, `inquiries`, `portfolios`, `chatbot_settings`, `visit_stats`. 여러 번 실행해도 안전 |
-| `db/seed-portfolio.sql` | 메인 포트폴리오 슬라이드 시안 4개 (`posts` 에 포트폴리오 글이 없을 때만) |
+| `db/schema.sql` | `admins` (+ `email` ALTER), `password_resets`, `posts` (+ `portfolio_id` ALTER), `post_files`, `inquiries`, `portfolios`, `chatbot_settings`, `visit_stats`. 여러 번 실행해도 안전 |
+| `db/seed-portfolio.sql` | 메인 포트폴리오 슬라이드 시안 4개 (`posts` 에 포트폴리오 글이 없을 때만). `seed-portfolios.sql` 다음에 실행하면 VIEW PROJECT 를 목록 1~4번째에 연결 |
 | `db/seed-portfolios.sql` | 포트폴리오 목록/상세 시안 6개 (`portfolios` 가 비어 있을 때만) |

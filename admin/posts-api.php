@@ -3,7 +3,7 @@
  * 게시판 JSON API (관리자 전용). 응답: { ok: bool, message?: string, ... }
  *   GET  ?action=list                 → { posts: [...] }
  *   GET  ?action=get&id=              → { post: {...} }
- *   POST action=save   (multipart)    → id?, category, title, eyebrow, content, visible, image, remove_files[], files[]
+ *   POST action=save   (multipart)    → id?, category, title, eyebrow, portfolio_id, content, visible, image, remove_files[], files[]
  *   POST action=bulk                  → ids[], op = show | hide | delete
  *   POST action=delete                → id
  * POST 는 모두 csrf_token 필요.
@@ -110,6 +110,7 @@ $id = (int) ($_POST['id'] ?? 0);
 $board = (string) ($_POST['category'] ?? '');
 $title = trim((string) ($_POST['title'] ?? ''));
 $eyebrow = trim((string) ($_POST['eyebrow'] ?? ''));
+$portfolioId = (int) ($_POST['portfolio_id'] ?? 0);
 $content = trim((string) ($_POST['content'] ?? ''));
 $visible = ($_POST['visible'] ?? '') === 'true' ? 1 : 0;
 $removeFiles = array_map('intval', (array) ($_POST['remove_files'] ?? []));
@@ -138,6 +139,12 @@ if (mb_strlen($eyebrow) > 60) {
 if ($board === 'portfolio' && !$hasNewImage && empty($existing['image'])) {
     fail('포트폴리오는 배경 이미지가 필요합니다.');
 }
+if ($board !== 'portfolio') {
+    $portfolioId = 0;
+} elseif ($portfolioId > 0 && portfolio_find($portfolioId) === null) {
+    fail('연결할 포트폴리오를 찾을 수 없습니다.');
+}
+$portfolioId = $portfolioId > 0 ? $portfolioId : null;
 
 // 파일을 먼저 저장하고, DB 실패 시 새로 올린 파일만 지운다
 $stored = [];
@@ -162,11 +169,11 @@ $removedNames = [];
 try {
     $pdo->beginTransaction();
     if ($existing) {
-        $pdo->prepare('UPDATE posts SET board = ?, title = ?, eyebrow = ?, content = ?, image = ?, is_visible = ? WHERE id = ?')
-            ->execute([$board, $title, $eyebrow, $content, $image, $visible, $id]);
+        $pdo->prepare('UPDATE posts SET board = ?, title = ?, eyebrow = ?, portfolio_id = ?, content = ?, image = ?, is_visible = ? WHERE id = ?')
+            ->execute([$board, $title, $eyebrow, $portfolioId, $content, $image, $visible, $id]);
     } else {
-        $pdo->prepare('INSERT INTO posts (board, title, eyebrow, content, image, is_visible, admin_id) VALUES (?, ?, ?, ?, ?, ?, ?)')
-            ->execute([$board, $title, $eyebrow, $content, $image, $visible, $admin['id']]);
+        $pdo->prepare('INSERT INTO posts (board, title, eyebrow, portfolio_id, content, image, is_visible, admin_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+            ->execute([$board, $title, $eyebrow, $portfolioId, $content, $image, $visible, $admin['id']]);
         $id = (int) $pdo->lastInsertId();
     }
 

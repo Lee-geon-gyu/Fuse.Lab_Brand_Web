@@ -33,7 +33,10 @@ Docker 확인 → `.env` 생성(없을 때만) → 컨테이너 빌드/기동 �
 
 ### 관리자 계정
 
-기본 계정은 없다. `/admin/signup.php` 에서 승인 코드로 가입한다 (ID·비밀번호·이름·이메일).
+기본 계정 `admin` / `qwer1234` 가 `db/schema.sql` 실행 시 들어간다 (이름 `관리자`, 이메일 `admin@fuselab.example`). 같은 ID 가 이미 있으면 비밀번호를 덮어쓰지 않는다.
+공개 저장소에 비밀번호가 적혀 있으므로 운영에서는 배포 직후 비밀번호를 바꾼다 (로그인 화면 > 비밀번호 찾기, 또는 phpMyAdmin 에서 `password_hash` 교체).
+
+추가 계정은 `/admin/signup.php` 에서 승인 코드로 가입한다 (ID·비밀번호·이름·이메일).
 
 - 로컬 승인 코드: `fuselab-dev` (`.env` 의 `ADMIN_SIGNUP_CODE` 로 변경)
 - 운영 승인 코드: `app/config.local.php` 의 `signup_code` (비우면 가입 불가)
@@ -46,8 +49,8 @@ Docker 확인 → `.env` 생성(없을 때만) → 컨테이너 빌드/기동 �
 setup 은 스키마만 적용한다. 시안 데이터가 필요하면 한 번 실행 (데이터가 이미 있으면 아무것도 넣지 않음)
 
 ```
-docker compose exec -T db mariadb -ufuselab -pfuselab fuselab < db/seed-portfolio.sql
 docker compose exec -T db mariadb -ufuselab -pfuselab fuselab < db/seed-portfolios.sql
+docker compose exec -T db mariadb -ufuselab -pfuselab fuselab < db/seed-portfolio.sql
 ```
 
 ## 구조
@@ -63,9 +66,9 @@ docker compose exec -T db mariadb -ufuselab -pfuselab fuselab < db/seed-portfoli
 ## 카페24 배포
 
 1. `app/config.local.example.php` → `app/config.local.php` 로 복사 후 카페24 DB 정보, `signup_code`, `mail_from`(보내는 사람), `site_url`(사이트 주소, 재설정 메일 링크용) 입력
-2. 카페24 DB 관리(phpMyAdmin) > SQL 에서 `db/schema.sql` 실행. 이미 이전 버전 스키마를 적용한 DB 에 다시 실행해도 안전함 (`admins.email` 은 `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` 로 추가됨)
-3. `/admin/signup.php` 에서 첫 관리자 가입
-4. 시안 데이터가 필요하면 `db/seed-portfolio.sql`(메인 슬라이드 4개), `db/seed-portfolios.sql`(포트폴리오 목록 6개) 을 한 번씩 실행
+2. 카페24 DB 관리(phpMyAdmin) > SQL 에서 `db/schema.sql` 실행. 이미 이전 버전 스키마를 적용한 DB 에 다시 실행해도 안전함 (`admins.email`, `posts.portfolio_id` 는 `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` 로 추가됨)
+3. 기본 계정 `admin` / `qwer1234` 로 `/admin/login.php` 로그인 후 비밀번호 변경 (이메일을 실제 주소로 바꿔야 비밀번호 찾기 메일을 받을 수 있음)
+4. 시안 데이터가 필요하면 `db/seed-portfolios.sql`(포트폴리오 목록 6개) → `db/seed-portfolio.sql`(메인 슬라이드 4개, VIEW PROJECT 를 목록 1~4번째에 연결) 순서로 한 번씩 실행
 5. `uploads/.htaccess` 를 함께 업로드. `uploads/posts/` 는 첫 업로드 때 자동 생성되며, 실패하면 FTP 로 만들고 쓰기 권한(755/707) 부여
 6. 배포 후 확인: 견적문의 제출, ID/비밀번호 찾기 메일 수신(카페24 `mail()` 발송 여부 미확인), 이미지 업로드
 7. `docker/`, `docker-compose.yml`, `*.md` 는 업로드하지 않음 (업로드돼도 `.htaccess` 로 차단)
