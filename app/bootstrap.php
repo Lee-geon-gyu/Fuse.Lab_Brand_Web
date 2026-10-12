@@ -27,6 +27,12 @@ session_start();
 require __DIR__ . '/db.php';
 require __DIR__ . '/csrf.php';
 require __DIR__ . '/auth.php';
+require __DIR__ . '/posts.php';
+require __DIR__ . '/stats.php';
+require __DIR__ . '/inquiries.php';
+require __DIR__ . '/portfolios.php';
+require __DIR__ . '/chatbot.php';
+require __DIR__ . '/mail.php';
 
 /** HTML 출력용 이스케이프 */
 function e(?string $value): string

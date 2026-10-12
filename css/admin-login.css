@@ -178,6 +178,10 @@ input:focus-visible {
   display: none;
 }
 
+.feedback.is-success {
+  color: #1a7f37;
+}
+
 .recovery-dialog {
   width: min(480px, calc(100% - 32px));
   padding: 28px;

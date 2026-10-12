@@ -1,0 +1,32 @@
+/* 포트폴리오 목록 PHP 페이지 보조 스타일 (퍼블리싱 SURO.css 위에 덧씀) */
+
+/* 분류 탭을 GET 폼으로 감쌌으므로 원본처럼 버튼이 아래 정렬되도록 높이 유지 */
+.portfolio-filter-form {
+  height: 100%;
+}
+
+/* 업로드 썸네일 크기가 제각각이어도 원본(560×560)과 같은 칸 크기로 */
+.portfolio-sub-grid .body-box .body-list .body-list-item img {
+  display: block;
+  width: 56rem;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.portfolio-sub-grid .portfolio-empty {
+  padding: 8rem 0;
+  font-size: 2.4rem;
+  text-align: center;
+  color: #868686;
+}
+
+.portfolio-sub-grid .portfolio-empty[hidden],
+.portfolio-sub-grid .plus-btn[hidden] {
+  display: none;
+}
+
+.portfolio-sub-grid .plus-btn[aria-busy="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+}

@@ -5,9 +5,14 @@
   const uploadName = document.querySelector("#upload-name");
   const colorInput = document.querySelector("#theme-color");
   const toast = document.querySelector("#toast");
-  const defaultIcon = "/aseets/icons/admin/all-inbox.svg";
+  const buttons = form.querySelectorAll(".form-actions button");
+  // PHP 페이지는 <body data-chatbot-api> 로 서버 저장, 없으면 localStorage 저장 (.html 원본과 같은 동작)
+  const chatbotApi = document.body.dataset.chatbotApi;
+  const csrfToken = document.body.dataset.csrf || "";
+  const defaultIcon = document.body.dataset.defaultIcon || "/aseets/icons/admin/all-inbox.svg";
   const savedKey = "fuselab.chatbot.settings";
-  const draftKey = "fuselab.chatbot.draft";
+  const draftKey = chatbotApi ? "fuselab.chatbot.server-draft" : "fuselab.chatbot.draft";
+  const iconTypes = ["image/png", "image/jpeg", "image/webp"];
   const defaults = {
     aiName: "",
     guideText: "",
@@ -37,6 +42,14 @@
     }
   }
 
+  function removeDraft() {
+    try {
+      localStorage.removeItem(draftKey);
+    } catch {
+      // 저장 공간을 못 쓰면 지울 임시저장도 없다
+    }
+  }
+
   function apply(settings) {
     const value = { ...defaults, ...settings };
     form.elements.aiName.value = value.aiName;
@@ -48,7 +61,7 @@
     currentIconData = value.iconData;
     currentIconName = value.iconName;
     iconPreview.src = currentIconData || defaultIcon;
-    uploadName.textContent = currentIconName;
+    uploadName.textContent = currentIconName || (chatbotApi && currentIconData ? "등록된 아이콘" : "");
     iconInput.value = "";
     updateColorPreview();
   }
@@ -91,12 +104,66 @@
     }
   }
 
+  // ---- 서버 모드 ----
+  // 서버에 저장된 값 (취소 시 이 값으로 되돌림). 첫 값은 PHP 가 채운 폼에서 읽는다
+  let serverSaved = null;
+
+  async function requestApi(body) {
+    body.append("csrf_token", csrfToken);
+    buttons.forEach((button) => { button.disabled = true; });
+    try {
+      const response = await fetch(chatbotApi, { method: "POST", body });
+      const data = await response.json().catch(() => ({ ok: false }));
+      if (!response.ok || !data.ok) throw new Error(data.message || "서버 요청에 실패했습니다.");
+      return data;
+    } finally {
+      buttons.forEach((button) => { button.disabled = false; });
+    }
+  }
+
+  async function saveToServer() {
+    if (!validColor()) return;
+    const value = collect();
+    const body = new FormData();
+    body.append("action", "save");
+    ["aiName", "guideText", "themeColor", "tone", "welcomeMessage"].forEach((key) => body.append(key, value[key]));
+    if (value.iconData.startsWith("data:")) {
+      const blob = await (await fetch(value.iconData)).blob();
+      body.append("icon", blob, value.iconName || "icon");
+    } else if (!value.iconData && serverSaved.iconData) {
+      body.append("remove_icon", "1");
+    }
+    try {
+      const data = await requestApi(body);
+      serverSaved = data.settings;
+      removeDraft();
+      apply(serverSaved);
+      notify("챗봇 설정을 저장했습니다.");
+    } catch (error) {
+      notify(error.message);
+    }
+  }
+
+  async function deleteFromServer() {
+    const body = new FormData();
+    body.append("action", "delete");
+    try {
+      const data = await requestApi(body);
+      serverSaved = data.settings;
+      removeDraft();
+      apply(serverSaved);
+      notify("챗봇 설정을 삭제하고 기본값으로 되돌렸습니다.");
+    } catch (error) {
+      notify(error.message);
+    }
+  }
+
   iconInput.addEventListener("change", () => {
     const file = iconInput.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/") || file.size > 1024 * 1024) {
+    if (!iconTypes.includes(file.type) || file.size > 1024 * 1024) {
       iconInput.value = "";
-      notify("1MB 이하의 이미지 파일을 선택해 주세요.");
+      notify("1MB 이하의 PNG, JPG, WEBP 이미지를 선택해 주세요.");
       return;
     }
     const reader = new FileReader();
@@ -112,16 +179,27 @@
   colorInput.addEventListener("input", updateColorPreview);
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    persist(savedKey, "챗봇 설정을 저장했습니다.");
+    if (chatbotApi) saveToServer();
+    else persist(savedKey, "챗봇 설정을 저장했습니다.");
   });
   document.querySelector("#draft-settings").addEventListener("click", () => {
     persist(draftKey, "임시저장했습니다.");
   });
   document.querySelector("#cancel-settings").addEventListener("click", () => {
+    if (chatbotApi) {
+      removeDraft();
+      apply(serverSaved);
+      notify("저장된 설정으로 되돌렸습니다.");
+      return;
+    }
     apply(read(draftKey) || read(savedKey) || defaults);
     notify("저장하지 않은 변경사항을 취소했습니다.");
   });
   document.querySelector("#delete-settings").addEventListener("click", () => {
+    if (chatbotApi) {
+      if (confirm("챗봇 설정을 삭제하고 기본값으로 되돌릴까요? 업로드한 아이콘도 삭제됩니다.")) deleteFromServer();
+      return;
+    }
     if (!confirm("저장된 챗봇 설정과 임시저장 내용을 삭제할까요?")) return;
     try {
       localStorage.removeItem(savedKey);
@@ -133,5 +211,17 @@
     }
   });
 
-  apply(read(draftKey) || read(savedKey) || defaults);
+  if (chatbotApi) {
+    currentIconData = iconPreview.dataset.icon || "";
+    serverSaved = collect();
+    const draft = read(draftKey);
+    if (draft) {
+      apply(draft);
+      notify("임시저장한 내용을 불러왔습니다. 취소를 누르면 저장된 설정으로 돌아갑니다.");
+    } else {
+      apply(serverSaved);
+    }
+  } else {
+    apply(read(draftKey) || read(savedKey) || defaults);
+  }
 })();

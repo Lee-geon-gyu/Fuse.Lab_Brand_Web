@@ -27,6 +27,7 @@ view('admin/head', [
     'pageTitle' => '관리자 로그인',
     'styles' => ['/css/admin-login.css'],
     'scripts' => ['/js/admin-login.js'],
+    'bodyData' => ['recover-api' => '/admin/recover.php', 'csrf' => csrf_token()],
 ]);
 ?>
     <main>
@@ -69,14 +70,14 @@ view('admin/head', [
       <form class="recovery-panel" id="id-panel" role="tabpanel" aria-labelledby="id-tab" novalidate>
         <div class="recovery-field">
           <label for="find-email">가입한 이메일</label>
-          <input id="find-email" type="email" placeholder="이메일을 입력해 주세요" autocomplete="email" required />
+          <input id="find-email" type="email" placeholder="이메일을 입력해 주세요" autocomplete="email" maxlength="<?= ADMIN_EMAIL_MAX ?>" required />
         </div>
         <button class="primary-button" type="submit">ID 찾기</button>
       </form>
       <form class="recovery-panel" id="password-panel" role="tabpanel" aria-labelledby="password-tab" novalidate hidden>
         <div class="recovery-field">
           <label for="find-id">ID</label>
-          <input id="find-id" type="text" placeholder="ID를 입력해 주세요" autocomplete="username" required />
+          <input id="find-id" type="text" placeholder="ID를 입력해 주세요" autocomplete="username" maxlength="50" required />
         </div>
         <div class="recovery-field">
           <label for="reset-email">가입한 이메일</label>

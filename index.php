@@ -1,7 +1,14 @@
 <?php
 require __DIR__ . '/app/bootstrap.php';
+track_visit();
 
-view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
+// 포트폴리오 슬라이드 = 관리자 게시판 '포트폴리오' 노출 글 (첫 글은 first 디자인, 나머지는 second 디자인)
+$slides = portfolio_slides();
+$slideTotal = sprintf('%02d', count($slides));
+// 관리자로 로그인한 상태면 슬라이드마다 수정 링크, 화면 아래에 추가 버튼
+$isAdmin = current_admin() !== null;
+
+view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading', 'isHome' => true]);
 ?>
     <!-- LOADER : Figma 1:98 -->
     <div class="loader" id="loader" aria-hidden="true">
@@ -46,173 +53,71 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
       <div id="wrap" class="gyu-wrap">
         <section id="gyu-main" class="gyu-story" data-header-theme="light">
           <div class="gyu-stage">
-            <!-- 새 프로젝트는 두 번째 article 블록을 복사하고 이미지와 문구만 변경하세요. -->
             <div class="gyu-track">
+<?php foreach ($slides as $index => $slide):
+    $number = sprintf('%02d', $index + 1);
+    $isFirst = $index === 0;
+    $headingTag = $isFirst ? 'h1' : 'h2';
+?>
               <article
-                id="gyu-project-01"
-                class="gyu-project gyu-project--first"
-                aria-labelledby="gyu-title-01"
+                id="gyu-project-<?= $number ?>"
+                class="gyu-project gyu-project--<?= $isFirst ? 'first' : 'second' ?>"
+                aria-labelledby="gyu-title-<?= $number ?>"
               >
                 <img
                   class="gyu-project__image"
-                  src="/aseets/images/section-portfolio/portfolio-1.png"
-                  alt="달 표면 위를 유영하는 우주비행사"
+                  src="<?= e($slide['image']) ?>"
+                  alt=""
+<?php if ($index < 2): ?>
                   loading="eager"
                   decoding="sync"
                   fetchpriority="high"
-                />
-                <div class="gyu-project__shade" aria-hidden="true"></div>
-
-                <div class="gyu-project__content">
-                  <div class="gyu-project__copy">
-                    <p class="gyu-project__index" aria-label="1 / 6">
-                      <strong>01</strong><span>/</span><span>06</span>
-                    </p>
-
-                    <div class="gyu-project__heading">
-                      <p class="gyu-project__eyebrow">BRAND EXPERIENCE</p>
-                      <h1 id="gyu-title-01" class="gyu-project__title">
-                        THE SPACE KIDS
-                      </h1>
-                    </div>
-
-                    <p class="gyu-project__description">
-                      우주의 무한한 가능성을 탐험하고<br />
-                      새로운 경험을 만드는 브랜드입니다.
-                    </p>
-                  </div>
-
-                  <button class="gyu-project__button" type="button">
-                    VIEW PROJECT
-                  </button>
-                </div>
-              </article>
-
-              <article
-                id="gyu-project-02"
-                class="gyu-project gyu-project--second"
-                aria-labelledby="gyu-title-02"
-              >
-                <img
-                  class="gyu-project__image"
-                  src="/aseets/images/section-portfolio/portfolio-2.png"
-                  alt="노을빛 미래형 건축 공간"
-                  loading="eager"
-                  decoding="sync"
-                  fetchpriority="high"
+<?php endif; ?>
                 />
                 <div
-                  class="gyu-project__shade gyu-project__shade--second"
+                  class="gyu-project__shade<?= $isFirst ? '' : ' gyu-project__shade--second' ?>"
                   aria-hidden="true"
                 ></div>
 
                 <div class="gyu-project__content">
                   <div class="gyu-project__copy">
-                    <p class="gyu-project__index" aria-label="2 / 6">
-                      <strong>02</strong><span>/</span><span>06</span>
+                    <p class="gyu-project__index" aria-label="<?= $index + 1 ?> / <?= count($slides) ?>">
+                      <strong><?= $number ?></strong><span>/</span><span><?= $slideTotal ?></span>
                     </p>
 
                     <div class="gyu-project__heading">
-                      <p class="gyu-project__eyebrow">BRAND EXPERIENCE</p>
-                      <h2 id="gyu-title-02" class="gyu-project__title">
-                        THE SPACE KIDS
-                      </h2>
+<?php if ($slide['eyebrow'] !== ''): ?>
+                      <p class="gyu-project__eyebrow"><?= e($slide['eyebrow']) ?></p>
+<?php endif; ?>
+                      <<?= $headingTag ?> id="gyu-title-<?= $number ?>" class="gyu-project__title">
+                        <?= e($slide['title']) ?>
+                      </<?= $headingTag ?>>
                     </div>
 
                     <p class="gyu-project__description">
-                      우주의 무한한 가능성을 탐험하고<br />
-                      새로운 경험을 만드는 브랜드입니다.
+                      <?= nl2br(e($slide['content']), false) ?>
                     </p>
                   </div>
 
-                  <button class="gyu-project__button" type="button">
-                    VIEW PROJECT
+                  <button class="gyu-project__button marquee-btn" type="button">
+                    <span class="marquee-text">VIEW PROJECT</span>
                   </button>
                 </div>
+<?php if ($isAdmin): ?>
+                <a class="admin-edit-link" href="/admin/post-edit.php?<?= e(http_build_query(['id' => $slide['id'], 'return' => '/'])) ?>">이 슬라이드 수정</a>
+<?php endif; ?>
               </article>
-
-              <article
-                id="gyu-project-03"
-                class="gyu-project gyu-project--second"
-                aria-labelledby="gyu-title-03"
-              >
-                <img
-                  class="gyu-project__image"
-                  src="/aseets/images/section-portfolio/portfolio-2.png"
-                  alt="노을빛 미래형 건축 공간"
-                />
-                <div
-                  class="gyu-project__shade gyu-project__shade--second"
-                  aria-hidden="true"
-                ></div>
-
-                <div class="gyu-project__content">
-                  <div class="gyu-project__copy">
-                    <p class="gyu-project__index" aria-label="3 / 6">
-                      <strong>03</strong><span>/</span><span>06</span>
-                    </p>
-
-                    <div class="gyu-project__heading">
-                      <p class="gyu-project__eyebrow">BRAND EXPERIENCE</p>
-                      <h2 id="gyu-title-03" class="gyu-project__title">
-                        THE SPACE KIDS
-                      </h2>
-                    </div>
-
-                    <p class="gyu-project__description">
-                      우주의 무한한 가능성을 탐험하고<br />
-                      새로운 경험을 만드는 브랜드입니다.
-                    </p>
-                  </div>
-
-                  <button class="gyu-project__button" type="button">
-                    VIEW PROJECT
-                  </button>
-                </div>
-              </article>
-
-              <article
-                id="gyu-project-04"
-                class="gyu-project gyu-project--second"
-                aria-labelledby="gyu-title-04"
-              >
-                <img
-                  class="gyu-project__image"
-                  src="/aseets/images/section-portfolio/portfolio-2.png"
-                  alt="노을빛 미래형 건축 공간"
-                />
-                <div
-                  class="gyu-project__shade gyu-project__shade--second"
-                  aria-hidden="true"
-                ></div>
-
-                <div class="gyu-project__content">
-                  <div class="gyu-project__copy">
-                    <p class="gyu-project__index" aria-label="4 / 6">
-                      <strong>04</strong><span>/</span><span>06</span>
-                    </p>
-
-                    <div class="gyu-project__heading">
-                      <p class="gyu-project__eyebrow">BRAND EXPERIENCE</p>
-                      <h2 id="gyu-title-04" class="gyu-project__title">
-                        THE SPACE KIDS
-                      </h2>
-                    </div>
-
-                    <p class="gyu-project__description">
-                      우주의 무한한 가능성을 탐험하고<br />
-                      새로운 경험을 만드는 브랜드입니다.
-                    </p>
-                  </div>
-
-                  <button class="gyu-project__button" type="button">
-                    VIEW PROJECT
-                  </button>
-                </div>
-              </article>
+<?php endforeach; ?>
             </div>
           </div>
         </section>
+<?php if ($isAdmin): ?>
+        <nav class="admin-bar" aria-label="관리자 메뉴">
+          <span>관리자 모드</span>
+          <a href="/admin/post-edit.php?<?= e(http_build_query(['category' => 'portfolio', 'return' => '/'])) ?>">포트폴리오 슬라이드 추가</a>
+          <a href="/admin/board.php">게시판</a>
+        </nav>
+<?php endif; ?>
 
         <!-- DIVIDER : Figma 1:47 -->
         <section class="divider" id="divider" data-header-theme="dark">
@@ -533,7 +438,20 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
             </p>
           </div>
           <div class="right-box">
-            <form class="contact-form">
+<?php
+            // JS 없이 제출했을 때 /inquiry.php 가 남긴 결과 메시지와 (실패 시) 입력값
+            $inquiryFlash = json_decode(flash('inquiry') ?? '', true) ?: [];
+            $inquiryOld = $inquiryFlash['old'] ?? [];
+            $inquiryOk = !empty($inquiryFlash['ok']);
+            $inquiryMessage = (string) ($inquiryFlash['message'] ?? '');
+?>
+            <form class="contact-form" method="post" action="/inquiry.php" novalidate data-contact-form>
+              <?= csrf_field() ?>
+              <!-- 봇 차단용 숨김 필드: 사람은 비워 둔다 -->
+              <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+                <label for="website">Website</label>
+                <input type="text" id="website" name="website" value="" tabindex="-1" autocomplete="off" />
+              </div>
               <div class="contact-form-track">
                 <div class="form-row">
                   <label for="name">
@@ -542,7 +460,7 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
                   </label>
 
                   <div class="input-box">
-                    <input type="text" id="name" name="name" placeholder="your Name" required />
+                    <input type="text" id="name" name="name" placeholder="your Name" maxlength="50" value="<?= e($inquiryOld['name'] ?? '') ?>" required />
                   </div>
                 </div>
 
@@ -553,7 +471,7 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
                   </label>
 
                   <div class="input-box">
-                    <input type="email" id="email" name="email" placeholder="your Email" required />
+                    <input type="email" id="email" name="email" placeholder="your Email" maxlength="255" value="<?= e($inquiryOld['email'] ?? '') ?>" required />
                   </div>
                 </div>
 
@@ -564,7 +482,7 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
                   </label>
 
                   <div class="input-box">
-                    <input type="tel" id="phone" name="phone" placeholder="your Phone Number" required />
+                    <input type="tel" id="phone" name="phone" placeholder="your Phone Number" maxlength="30" value="<?= e($inquiryOld['phone'] ?? '') ?>" required />
                   </div>
                 </div>
 
@@ -572,7 +490,7 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
                   <label for="budget"> Budget </label>
 
                   <div class="input-box">
-                    <input type="text" id="budget" name="budget" placeholder="your Budget" />
+                    <input type="text" id="budget" name="budget" placeholder="your Budget" maxlength="100" value="<?= e($inquiryOld['budget'] ?? '') ?>" />
                   </div>
                 </div>
 
@@ -580,7 +498,7 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
                   <label for="schedule"> Schedule </label>
 
                   <div class="input-box">
-                    <input type="text" id="schedule" name="schedule" placeholder="your Schedule" />
+                    <input type="text" id="schedule" name="schedule" placeholder="your Schedule" maxlength="100" value="<?= e($inquiryOld['schedule'] ?? '') ?>" />
                   </div>
                 </div>
 
@@ -588,7 +506,7 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
                   <label for="company"> Company </label>
 
                   <div class="input-box">
-                    <input type="text" id="company" name="company" placeholder="your Company" />
+                    <input type="text" id="company" name="company" placeholder="your Company" maxlength="100" value="<?= e($inquiryOld['company'] ?? '') ?>" />
                   </div>
                 </div>
 
@@ -599,7 +517,7 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
                   </label>
 
                   <div class="input-box">
-                    <textarea id="details" name="details" placeholder="your message" required></textarea>
+                    <textarea id="details" name="details" placeholder="your message" maxlength="5000" data-lenis-prevent required><?= e($inquiryOld['details'] ?? '') ?></textarea>
                   </div>
                 </div>
 
@@ -611,7 +529,7 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
 
                   <div class="input-box">
                     <label class="check-box">
-                      <input type="checkbox" name="privacy" required />
+                      <input type="checkbox" name="privacy" value="1" required />
 
                       <span class="check-ui"></span>
 
@@ -620,7 +538,16 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
                   </div>
                 </div>
 
-                <div class="form-submit">
+                <div class="form-submit" style="position:relative;">
+                  <!-- 제출 결과 메시지: 버튼 위 여백에 겹쳐 띄워 GSAP 스크롤 길이에 영향 없게 함 -->
+                  <p
+                    class="contact-form-message"
+                    role="status"
+                    aria-live="polite"
+                    data-contact-message
+                    style="position:absolute;bottom:100%;left:0;right:0;margin:0 0 1.6rem;text-align:center;font-size:1.6rem;font-weight:500;line-height:1.5;color:<?= $inquiryOk ? '#9ef0b5' : '#ff8a80' ?>;"
+                    <?= $inquiryMessage === '' ? 'hidden' : '' ?>
+                  ><?= e($inquiryMessage) ?></p>
                   <button type="submit" class="marquee-btn">
                     <span class="marquee-text">문의하기</span>
                   </button>
@@ -632,4 +559,5 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading']);
       </section>
     </main>
 
+    <script src="/js/contact-form.js" defer></script>
 <?php view('site/footer', ['isHome' => true]); ?>

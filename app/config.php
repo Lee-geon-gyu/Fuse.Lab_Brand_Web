@@ -16,6 +16,10 @@ $config = [
     'debug' => getenv('APP_DEBUG') === '1',
     // 관리자 회원가입 승인 코드. 비어 있으면 회원가입 불가
     'signup_code' => getenv('ADMIN_SIGNUP_CODE') ?: '',
+    // 메일 보내는 사람 주소. 비어 있으면 no-reply@현재 호스트
+    'mail_from' => getenv('MAIL_FROM') ?: '',
+    // 사이트 고정 주소 (예: https://fuselab.co.kr). 비밀번호 재설정 메일 링크에 사용. 비어 있으면 요청 호스트
+    'site_url' => getenv('SITE_URL') ?: '',
 ];
 
 $local = __DIR__ . '/config.local.php';

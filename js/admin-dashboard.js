@@ -1,7 +1,9 @@
 (() => {
   const PAGE_SIZE = 5;
   const PAGE_GROUP_SIZE = 10;
-  const AXIS_MAX = 600;
+
+  // PHP 페이지는 <body data-dashboard-api> 로 서버 데이터, .html 원본은 목업 데이터
+  const { dashboardApi, inquiryUrl, postEditUrl, today } = document.body.dataset;
 
   const STATUS_BADGES = {
     "접수 완료": "green",
@@ -10,6 +12,7 @@
     "답변 대기": "",
     반려: "pink",
   };
+  // .html 목업 분류 (서버 모드에서는 API 의 boards 를 탭으로 사용)
   const CATEGORY_BADGES = {
     공지사항: "green",
     프로젝트: "purple",
@@ -17,18 +20,33 @@
     개발: "blue",
     운영: "",
   };
-  const POST_TABS = ["ALL", ...Object.keys(CATEGORY_BADGES)];
+  const BOARD_BADGES = {
+    notice: "green",
+    event: "purple",
+    resources: "blue",
+    portfolio: "pink",
+    ...CATEGORY_BADGES,
+  };
+  const DONUT_LABEL = dashboardApi ? "최근 30일 로그인 계정 비율" : "탈퇴 회원 비율";
 
   const monthInput = document.querySelector("#month-input");
   const monthLabel = document.querySelector("#month-label");
   const weekSelect = document.querySelector("#week-select");
   const visitorBars = document.querySelector("#visitor-bars");
+  const visitorAxis = document.querySelectorAll(".bar-chart__axis span");
   const postTabs = document.querySelector("#post-tabs");
 
   const numberFormat = new Intl.NumberFormat("ko-KR");
   const pad = (value) => String(value).padStart(2, "0");
 
-  // 백엔드 연동 전 목업 데이터: 월 키 기반 시드로 매번 같은 값 생성
+  async function requestApi(params) {
+    const response = await fetch(`${dashboardApi}?${new URLSearchParams(params)}`);
+    const data = await response.json().catch(() => ({ ok: false }));
+    if (!response.ok || !data.ok) throw new Error(data.message || "서버 요청에 실패했습니다.");
+    return data;
+  }
+
+  // 목업 데이터(.html 원본 전용): 월 키 기반 시드로 매번 같은 값 생성
   function seededRandom(seed) {
     let state = seed;
     return () => {
@@ -42,11 +60,11 @@
       chatbotRate: 7.4,
       visitorTotal: 6974,
       firstWeek: [483, 309, 189, 387, 349, 77, 232],
-      members: { total: 5877, month: 4485, today: 85, withdrawn: 6.9 },
+      members: { total: 5877, month: 4485, today: 85, rate: 6.9 },
     },
   };
 
-  function getMonthStats(year, month) {
+  function getMockMonthStats(year, month) {
     const key = `${year}-${pad(month)}`;
     const random = seededRandom(year * 100 + month);
     const daysInMonth = new Date(year, month, 0).getDate();
@@ -66,22 +84,47 @@
         total: Math.round(4000 + random() * 3000),
         month: Math.round(500 + random() * 4000),
         today: Math.round(random() * 120),
-        withdrawn: Math.round(random() * 150) / 10,
+        rate: Math.round(random() * 150) / 10,
       },
     };
   }
 
-  function renderBars(year, month, daily, week) {
+  async function loadMonthStats(year, month) {
+    if (!dashboardApi) return getMockMonthStats(year, month);
+    const { stats, members } = await requestApi({ action: "stats", month: `${year}-${pad(month)}` });
+    return {
+      chatbotRate: stats.chatbotRate,
+      visitorTotal: stats.visitorTotal,
+      daily: stats.daily,
+      members: { total: members.total, month: members.month, today: members.today, rate: members.activeRate },
+    };
+  }
+
+  // 축 눈금 3칸: 최대값 / 3 을 1·2·5 × 10^n 단위로 올림
+  function axisStep(maxValue) {
+    const raw = Math.max(maxValue, 1) / 3;
+    const magnitude = 10 ** Math.floor(Math.log10(raw));
+    const normalized = raw / magnitude;
+    const nice = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+    return Math.max(1, nice * magnitude);
+  }
+
+  function renderBars(month, daily, week) {
     const start = (week - 1) * 7;
     const days = daily.slice(start, start + 7);
+    const step = axisStep(Math.max(0, ...days));
+    const axisMax = step * 3;
 
+    visitorAxis.forEach((span, index) => {
+      span.textContent = numberFormat.format(step * (visitorAxis.length - 1 - index));
+    });
     visitorBars.replaceChildren(
       ...days.map((value, index) => {
         const item = document.createElement("li");
         const bar = document.createElement("span");
         const label = document.createElement("span");
         bar.className = "bar-chart__bar";
-        bar.style.setProperty("--ratio", Math.min(value, AXIS_MAX) / AXIS_MAX);
+        bar.style.setProperty("--ratio", Math.min(value, axisMax) / axisMax);
         bar.title = `${numberFormat.format(value)}명`;
         label.textContent = `${pad(month)}. ${pad(start + index + 1)}`;
         item.setAttribute("aria-label", `${month}월 ${start + index + 1}일 방문자 ${value}명`);
@@ -91,30 +134,60 @@
     );
   }
 
-  function renderStats() {
-    const [year, month] = monthInput.value.split("-").map(Number);
-    const stats = getMonthStats(year, month);
-    const weekCount = Math.ceil(stats.daily.length / 7);
-    const selectedWeek = Math.min(Number(weekSelect.value) || 1, weekCount);
+  // 월 바꿀 때 기본 주차: 오늘이 속한 달이면 오늘이 있는 주차, 아니면 1주차
+  function defaultWeek(year, month) {
+    const now = today ? today.split("-").map(Number) : [];
+    return now[0] === year && now[1] === month ? Math.ceil(now[2] / 7) : 1;
+  }
 
+  let monthStats = null;
+  let statsRequest = 0;
+
+  function renderWeek() {
+    const [, month] = monthInput.value.split("-").map(Number);
+    renderBars(month, monthStats.daily, Number(weekSelect.value) || 1);
+  }
+
+  async function renderStats() {
+    const [year, month] = monthInput.value.split("-").map(Number);
+    const requestId = ++statsRequest;
     monthLabel.textContent = `${year}. ${pad(month)}`;
+    document.querySelectorAll(".js-month-name").forEach((node) => {
+      node.textContent = `${month}월`;
+    });
+
+    let stats;
+    try {
+      stats = await loadMonthStats(year, month);
+    } catch (error) {
+      if (requestId !== statsRequest) return;
+      monthStats = null;
+      const item = document.createElement("li");
+      item.textContent = error.message;
+      visitorBars.replaceChildren(item);
+      return;
+    }
+    if (requestId !== statsRequest) return;
+
+    monthStats = stats;
+    const weekCount = Math.ceil(stats.daily.length / 7);
     document.querySelector("#chatbot-rate").textContent = `${stats.chatbotRate}%`;
     document.querySelector("#visitor-total").textContent = numberFormat.format(stats.visitorTotal);
 
     weekSelect.replaceChildren(
       ...Array.from({ length: weekCount }, (_, index) => new Option(`${month}월 ${index + 1}주차`, index + 1)),
     );
-    weekSelect.value = selectedWeek;
-    renderBars(year, month, stats.daily, selectedWeek);
+    weekSelect.value = Math.min(defaultWeek(year, month), weekCount);
+    renderWeek();
 
     const { members } = stats;
     const donut = document.querySelector("#member-donut");
-    donut.style.setProperty("--withdrawn", members.withdrawn);
-    donut.setAttribute("aria-label", `탈퇴 회원 비율 ${members.withdrawn}%`);
-    document.querySelector("#member-withdrawn").textContent = `${members.withdrawn}%`;
+    donut.style.setProperty("--withdrawn", members.rate);
+    donut.setAttribute("aria-label", `${DONUT_LABEL} ${members.rate}%`);
+    document.querySelector("#member-withdrawn").textContent = `${members.rate}%`;
     document.querySelector("#member-total").textContent = `${numberFormat.format(members.total)} 명`;
-    document.querySelector("#member-month").textContent = `${members.month} 명`;
-    document.querySelector("#member-today").textContent = `${members.today} 명`;
+    document.querySelector("#member-month").textContent = `${numberFormat.format(members.month)} 명`;
+    document.querySelector("#member-today").textContent = `${numberFormat.format(members.today)} 명`;
   }
 
   function shiftMonth(offset) {
@@ -142,9 +215,10 @@
     return row;
   }
 
-  function createPagedTable({ rows, pagination, columns, toCells }) {
+  function createPagedTable({ rows, pagination, columns, toCells, emptyText, linkOf }) {
     let items = [];
     let currentPage = 1;
+    let message = emptyText;
 
     function pageButton(label, page, { disabled = false, current = false } = {}) {
       const button = document.createElement("button");
@@ -170,11 +244,17 @@
           ...pageItems.map((item, index) => {
             const row = createRow(toCells(item, offset + index + 1));
             row.children[columns.leftIndex].className = "is-left";
+            const href = linkOf?.(item);
+            if (href) {
+              row.className = "is-link";
+              row.dataset.href = href;
+              row.tabIndex = 0;
+            }
             return row;
           }),
         );
       } else {
-        const row = createRow(["등록된 내용이 없습니다."]);
+        const row = createRow([message]);
         row.className = "empty-row";
         row.firstChild.colSpan = columns.count;
         rows.replaceChildren(row);
@@ -190,9 +270,20 @@
       pagination.replaceChildren(...buttons);
     }
 
+    // 행 클릭·Enter 로 상세 이동
+    const openRow = (event) => {
+      const row = event.target.closest("tr[data-href]");
+      if (row) location.href = row.dataset.href;
+    };
+    rows.addEventListener("click", openRow);
+    rows.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") openRow(event);
+    });
+
     return {
-      setItems(nextItems) {
+      setItems(nextItems, nextMessage = emptyText) {
         items = nextItems;
+        message = nextMessage;
         currentPage = 1;
         render();
       },
@@ -206,53 +297,60 @@
     return list;
   }
 
-  const NAMES = ["홍길동", "윤수로", "윤진원", "이건규", "이혜지", "김윤영"];
-  const pick = (random, list) => list[Math.floor(random() * list.length)];
+  function mockLists() {
+    const NAMES = ["홍길동", "윤수로", "윤진원", "이건규", "이혜지", "김윤영"];
+    const pick = (random, list) => list[Math.floor(random() * list.length)];
 
-  const inquiries = buildMockList(
-    [
-      { author: "홍길동", company: "길동컴퍼니", content: "딸~깍 ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ", date: "2026. 09. 11", status: "접수 완료" },
-      { author: "윤수로", company: "수로TV", content: "못받은돈 떼인돈 찾아드립니다", date: "2026. 09. 10", status: "검토 중" },
-      { author: "윤진원", company: "피자10판", content: "제가 피자 10판 쏘겠습니다~", date: "2026. 08. 07", status: "처리 완료" },
-      { author: "이건규", company: "규니재이", content: "안녕하십니까", date: "2026. 08. 06", status: "답변 대기" },
-      { author: "이혜지", company: "나담배핀다", content: "아 ㅆㅂ 내꺼 왜 반려됐는데", date: "2026. 08. 05", status: "반려" },
-    ],
-    40,
-    (random, index) => ({
-      author: pick(random, NAMES),
-      company: `${pick(random, ["퓨즈", "스튜디오", "랩스", "컴퍼니"])} ${index + 1}`,
-      content: pick(random, ["웹사이트 리뉴얼 견적 문의드립니다", "브랜드 디자인 의뢰", "MVP 개발 일정 상담", "유지보수 비용 문의"]),
-      date: `2026. ${pad(8 - Math.floor(index / 10))}. ${pad(28 - (index % 25))}`,
-      status: pick(random, Object.keys(STATUS_BADGES)),
-    }),
-  );
-
-  const posts = buildMockList(
-    [
-      { category: "공지사항", title: "2026년 하반기 운영 일정 안내", author: "홍길동", date: "09-05", views: 1842, visible: true },
-      { category: "프로젝트", title: "신규 웹 프로젝트 진행 일정 공유", author: "김윤영", date: "09-05", views: 1842, visible: true },
-      { category: "개발", title: "UI/UX 디자인 가이드 개편 안내", author: "김윤영", date: "09-05", views: 1842, visible: true },
-      { category: "운영", title: "프론트엔드 개발 환경 업데이트 안내", author: "김윤영", date: "09-05", views: 1842, visible: true },
-      { category: "디자인", title: "메인 페이지 디자인 시안 안내", author: "김윤영", date: "09-05", views: 1842, visible: true },
-    ],
-    40,
-    (random, index) => {
-      const category = pick(random, Object.keys(CATEGORY_BADGES));
-      return {
-        category,
-        title: `${category} 관련 업데이트 공유 #${index + 1}`,
+    const inquiries = buildMockList(
+      [
+        { author: "홍길동", company: "길동컴퍼니", content: "딸~깍 ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ", date: "2026. 09. 11", status: "접수 완료" },
+        { author: "윤수로", company: "수로TV", content: "못받은돈 떼인돈 찾아드립니다", date: "2026. 09. 10", status: "검토 중" },
+        { author: "윤진원", company: "피자10판", content: "제가 피자 10판 쏘겠습니다~", date: "2026. 08. 07", status: "처리 완료" },
+        { author: "이건규", company: "규니재이", content: "안녕하십니까", date: "2026. 08. 06", status: "답변 대기" },
+        { author: "이혜지", company: "나담배핀다", content: "아 ㅆㅂ 내꺼 왜 반려됐는데", date: "2026. 08. 05", status: "반려" },
+      ],
+      40,
+      (random, index) => ({
         author: pick(random, NAMES),
-        date: `${pad(9 - Math.floor(index / 12))}-${pad(28 - (index % 25))}`,
-        views: Math.round(random() * 3000),
-        visible: random() > 0.2,
-      };
-    },
-  );
+        company: `${pick(random, ["퓨즈", "스튜디오", "랩스", "컴퍼니"])} ${index + 1}`,
+        content: pick(random, ["웹사이트 리뉴얼 견적 문의드립니다", "브랜드 디자인 의뢰", "MVP 개발 일정 상담", "유지보수 비용 문의"]),
+        date: `2026. ${pad(8 - Math.floor(index / 10))}. ${pad(28 - (index % 25))}`,
+        status: pick(random, Object.keys(STATUS_BADGES)),
+      }),
+    );
+
+    const posts = buildMockList(
+      [
+        { category: "공지사항", title: "2026년 하반기 운영 일정 안내", author: "홍길동", date: "09-05", views: 1842, visible: true },
+        { category: "프로젝트", title: "신규 웹 프로젝트 진행 일정 공유", author: "김윤영", date: "09-05", views: 1842, visible: true },
+        { category: "개발", title: "UI/UX 디자인 가이드 개편 안내", author: "김윤영", date: "09-05", views: 1842, visible: true },
+        { category: "운영", title: "프론트엔드 개발 환경 업데이트 안내", author: "김윤영", date: "09-05", views: 1842, visible: true },
+        { category: "디자인", title: "메인 페이지 디자인 시안 안내", author: "김윤영", date: "09-05", views: 1842, visible: true },
+      ],
+      40,
+      (random, index) => {
+        const category = pick(random, Object.keys(CATEGORY_BADGES));
+        return {
+          category,
+          title: `${category} 관련 업데이트 공유 #${index + 1}`,
+          author: pick(random, NAMES),
+          date: `${pad(9 - Math.floor(index / 12))}-${pad(28 - (index % 25))}`,
+          views: Math.round(random() * 3000),
+          visible: random() > 0.2,
+        };
+      },
+    ).map((post) => ({ ...post, board: post.category }));
+
+    const boards = Object.fromEntries(Object.keys(CATEGORY_BADGES).map((label) => [label, label]));
+    return { inquiries, posts, boards };
+  }
 
   const inquiryTable = createPagedTable({
     rows: document.querySelector("#inquiry-rows"),
     pagination: document.querySelector("#inquiry-pagination"),
     columns: { count: 6, leftIndex: 3 },
+    emptyText: dashboardApi ? "접수된 문의가 없습니다." : "등록된 내용이 없습니다.",
+    linkOf: (item) => (inquiryUrl && item.id ? `${inquiryUrl}?id=${encodeURIComponent(item.id)}` : ""),
     toCells: (item, number) => [
       number,
       item.author,
@@ -267,9 +365,11 @@
     rows: document.querySelector("#post-rows"),
     pagination: document.querySelector("#post-pagination"),
     columns: { count: 7, leftIndex: 2 },
+    emptyText: dashboardApi ? "등록된 게시글이 없습니다." : "등록된 내용이 없습니다.",
+    linkOf: (item) => (postEditUrl && item.id ? `${postEditUrl}?id=${encodeURIComponent(item.id)}` : ""),
     toCells: (item, number) => [
       number,
-      createBadge(item.category, CATEGORY_BADGES[item.category]),
+      createBadge(item.category, BOARD_BADGES[item.board]),
       item.title,
       item.author,
       item.date,
@@ -278,24 +378,50 @@
     ],
   });
 
+  let posts = [];
+
   function selectTab(tab) {
     postTabs.querySelectorAll("button").forEach((button) => {
       button.setAttribute("aria-selected", String(button.dataset.tab === tab));
     });
-    postTable.setItems(tab === "ALL" ? posts : posts.filter((post) => post.category === tab));
+    postTable.setItems(tab === "ALL" ? posts : posts.filter((post) => post.board === tab));
   }
 
-  postTabs.replaceChildren(
-    ...POST_TABS.map((tab) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.role = "tab";
-      button.dataset.tab = tab;
-      button.textContent = tab;
-      button.addEventListener("click", () => selectTab(tab));
-      return button;
-    }),
-  );
+  function renderTabs(boards) {
+    const tabs = [["ALL", "ALL"], ...Object.entries(boards)];
+    postTabs.replaceChildren(
+      ...tabs.map(([key, label]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.role = "tab";
+        button.dataset.tab = key;
+        button.textContent = label;
+        button.addEventListener("click", () => selectTab(key));
+        return button;
+      }),
+    );
+  }
+
+  async function loadLists() {
+    if (!dashboardApi) {
+      const lists = mockLists();
+      posts = lists.posts;
+      renderTabs(lists.boards);
+      inquiryTable.setItems(lists.inquiries);
+      selectTab("ALL");
+      return;
+    }
+    try {
+      const lists = await requestApi({ action: "lists" });
+      posts = lists.posts;
+      renderTabs(lists.boards);
+      inquiryTable.setItems(lists.inquiries);
+      selectTab("ALL");
+    } catch (error) {
+      inquiryTable.setItems([], error.message);
+      postTable.setItems([], error.message);
+    }
+  }
 
   document.querySelector("#month-prev").addEventListener("click", () => shiftMonth(-1));
   document.querySelector("#month-next").addEventListener("click", () => shiftMonth(1));
@@ -307,9 +433,10 @@
   monthInput.addEventListener("change", () => {
     if (monthInput.value) renderStats();
   });
-  weekSelect.addEventListener("change", renderStats);
+  weekSelect.addEventListener("change", () => {
+    if (monthStats) renderWeek();
+  });
 
   renderStats();
-  inquiryTable.setItems(inquiries);
-  selectTab("ALL");
+  loadLists();
 })();

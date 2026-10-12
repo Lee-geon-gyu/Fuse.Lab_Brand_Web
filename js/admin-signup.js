@@ -40,6 +40,9 @@ confirmInput.addEventListener("input", () => {
   message.textContent = "";
 });
 
-idInput.addEventListener("input", () => {
-  message.textContent = "";
-});
+const emailInput = document.querySelector("#admin-email");
+for (const input of [idInput, emailInput]) {
+  input?.addEventListener("input", () => {
+    message.textContent = "";
+  });
+}

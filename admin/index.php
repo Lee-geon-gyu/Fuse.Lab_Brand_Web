@@ -2,10 +2,21 @@
 require __DIR__ . '/../app/bootstrap.php';
 require_admin();
 
+$monthStart = new DateTimeImmutable('first day of this month midnight');
+$monthName = $monthStart->format('n') . '월';
+$stats = dashboard_month_stats($monthStart);
+$members = dashboard_admin_stats($monthStart);
+
 view('admin/head', [
     'pageTitle' => '대시보드',
     'styles' => ['/css/admin-dashboard.css', '/css/admin-layout.css'],
     'scripts' => ['/js/admin-dashboard.js'],
+    'bodyData' => [
+        'dashboard-api' => '/admin/dashboard-api.php',
+        'inquiry-url' => '/admin/inquiries.php',
+        'post-edit-url' => '/admin/post-edit.php',
+        'today' => date('Y-m-d'),
+    ],
 ]);
 view('admin/layout-start', ['active' => 'dashboard']);
 ?>
@@ -21,9 +32,9 @@ view('admin/layout-start', ['active' => 'dashboard']);
           </button>
           <label class="month-nav__picker">
             <img src="/aseets/icons/admin/dashboard/calendar-month.svg" alt="" width="24" height="24" />
-            <span id="month-label">2026. 09</span>
+            <span id="month-label"><?= e($monthStart->format('Y. m')) ?></span>
             <img class="month-nav__caret" src="/aseets/icons/admin/dashboard/arrow-down-12.svg" alt="" width="12" height="12" />
-            <input id="month-input" type="month" value="2026-09" aria-label="조회 월 선택" />
+            <input id="month-input" type="month" value="<?= e($monthStart->format('Y-m')) ?>" aria-label="조회 월 선택" />
           </label>
           <button class="month-nav__step" id="month-next" type="button" aria-label="다음 달">
             <img src="/aseets/icons/admin/dashboard/arrow-20.svg" alt="" width="20" height="20" />
@@ -34,7 +45,7 @@ view('admin/layout-start', ['active' => 'dashboard']);
       <section class="chatbot-banner" aria-labelledby="chatbot-title">
         <div>
           <h2 id="chatbot-title">챗봇 현황</h2>
-          <p>최근 회원들의 챗봇 사용률 현황 <strong id="chatbot-rate">7.4%</strong></p>
+          <p><span class="js-month-name"><?= e($monthName) ?></span> 방문자 대비 챗봇 사용률 <strong id="chatbot-rate"><?= e((string) $stats['chatbotRate']) ?>%</strong></p>
         </div>
         <a class="chatbot-banner__link" href="/admin/chatbot.php">챗봇 관리 바로가기</a>
       </section>
@@ -44,8 +55,8 @@ view('admin/layout-start', ['active' => 'dashboard']);
           <div class="visitor-card__head">
             <h2 id="visitor-title">방문자 현황</h2>
             <div class="visitor-card__total">
-              <strong id="visitor-total">6,974</strong>
-              <span>전체 방문자 수</span>
+              <strong id="visitor-total"><?= e(number_format($stats['visitorTotal'])) ?></strong>
+              <span><span class="js-month-name"><?= e($monthName) ?></span> 방문자 수</span>
             </div>
             <label class="week-select">
               <select id="week-select" aria-label="조회 주차"></select>
@@ -53,10 +64,10 @@ view('admin/layout-start', ['active' => 'dashboard']);
             </label>
           </div>
           <div class="bar-chart">
-            <div class="bar-chart__axis" aria-hidden="true">
-              <span>600</span>
-              <span>400</span>
-              <span>200</span>
+            <div class="bar-chart__axis" id="visitor-axis" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
               <span>0</span>
             </div>
             <ol class="bar-chart__bars" id="visitor-bars"></ol>
@@ -65,22 +76,18 @@ view('admin/layout-start', ['active' => 'dashboard']);
 
         <section class="dash-card member-card" aria-labelledby="member-title">
           <div class="card-head">
-            <h2 id="member-title">회원 현황</h2>
-            <a class="more-link more-link--small" href="#">
-              전체보기
-              <img src="/aseets/icons/admin/dashboard/arrow-right-14-primary.svg" alt="" width="14" height="14" />
-            </a>
+            <h2 id="member-title">관리자 계정 현황</h2>
           </div>
-          <div class="donut" id="member-donut" role="img" aria-label="탈퇴 회원 비율 6.9%">
+          <div class="donut" id="member-donut" role="img" aria-label="최근 30일 로그인 계정 비율 <?= e((string) $members['activeRate']) ?>%" style="--withdrawn: <?= e((string) $members['activeRate']) ?>">
             <div class="donut__hole">
-              <span>탈퇴 회원</span>
-              <strong id="member-withdrawn">6.9%</strong>
+              <span>최근 30일 로그인</span>
+              <strong id="member-withdrawn"><?= e((string) $members['activeRate']) ?>%</strong>
             </div>
           </div>
           <dl class="member-stats">
-            <div><dt>전체 회원</dt><dd id="member-total">5,877 명</dd></div>
-            <div><dt>이번 달 가입</dt><dd id="member-month">4485 명</dd></div>
-            <div><dt>오늘 가입</dt><dd id="member-today">85 명</dd></div>
+            <div><dt>전체 계정</dt><dd id="member-total"><?= e(number_format($members['total'])) ?> 명</dd></div>
+            <div><dt><span class="js-month-name"><?= e($monthName) ?></span> 가입</dt><dd id="member-month"><?= e(number_format($members['month'])) ?> 명</dd></div>
+            <div><dt>오늘 가입</dt><dd id="member-today"><?= e(number_format($members['today'])) ?> 명</dd></div>
           </dl>
         </section>
       </div>
@@ -88,7 +95,7 @@ view('admin/layout-start', ['active' => 'dashboard']);
       <section class="dash-card list-card" aria-labelledby="inquiry-title">
         <div class="card-head card-head--list">
           <h2 id="inquiry-title">최근 견적문의</h2>
-          <a class="more-link" href="#">
+          <a class="more-link" href="/admin/inquiries.php">
             전체보기
             <img src="/aseets/icons/admin/dashboard/arrow-right-20-primary.svg" alt="" width="20" height="20" />
           </a>

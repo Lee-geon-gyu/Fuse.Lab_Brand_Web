@@ -1,70 +1,62 @@
 <?php
 require __DIR__ . '/app/bootstrap.php';
 
-view('site/head', ['pageTitle' => '포트폴리오 목록']);
+$category = (string) ($_GET['category'] ?? '');
+if (!isset(PORTFOLIO_CATEGORIES[$category])) {
+    $category = '';
+}
+$page = min(50, max(1, (int) ($_GET['page'] ?? 1)));
+
+// 더보기(js/portfolio-list.js): ?partial=1&page=N → N 페이지 항목 HTML 만 JSON 으로
+if (isset($_GET['partial'])) {
+    $list = portfolio_public_list($category, ($page - 1) * PORTFOLIO_PAGE_SIZE, PORTFOLIO_PAGE_SIZE);
+    ob_start();
+    view('site/portfolio-items', ['items' => $list['items'], 'rowStart' => intdiv(($page - 1) * PORTFOLIO_PAGE_SIZE, 3)]);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(
+        ['ok' => true, 'html' => ob_get_clean(), 'count' => count($list['items']), 'hasMore' => $list['hasMore']],
+        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+    );
+    exit;
+}
+
+track_visit();
+
+// 첫 화면은 1 ~ $page 페이지를 한 번에 (새로고침해도 불러온 만큼 유지)
+$list = portfolio_public_list($category, 0, $page * PORTFOLIO_PAGE_SIZE);
+$filters = ['' => 'ALL'] + PORTFOLIO_CATEGORIES;
+
+view('site/head', ['pageTitle' => '포트폴리오 목록', 'styles' => ['/css/portfolio-list.css']]);
 ?>
 <?php view('site/header', ['isHome' => false, 'headerTheme' => 'dark']); ?>
 
     <main>
       <section class="portfolio-sub-sec">
-        <div class="portfolio-sub-grid">
+        <div class="portfolio-sub-grid" data-portfolio-list data-endpoint="/portfolio.php" data-category="<?= e($category) ?>" data-page="<?= $page ?>">
           <div class="head-box">
             <div class="left-box">
               <h2>WEB EXPERIENCES CRAFTED</h2>
               <h3>portfolio</h3>
             </div>
             <div class="right-box">
-              <ul class="filter-list">
-                <li>
-                  <button type="button" class="marquee-btn active" aria-pressed="true"><span class="marquee-text">ALL</span></button>
-                </li>
-                <li>
-                  <button type="button" class="marquee-btn" aria-pressed="false"><span class="marquee-text">MVP</span></button>
-                </li>
-                <li>
-                  <button type="button" class="marquee-btn" aria-pressed="false"><span class="marquee-text">Branding</span></button>
-                </li>
-                <li>
-                  <button type="button" class="marquee-btn" aria-pressed="false"><span class="marquee-text">UI/UX</span></button>
-                </li>
-                <li>
-                  <button type="button" class="marquee-btn" aria-pressed="false"><span class="marquee-text">Front</span></button>
-                </li>
-                <li>
-                  <button type="button" class="marquee-btn" aria-pressed="false"><span class="marquee-text">Detail</span></button>
-                </li>
-              </ul>
+              <form class="portfolio-filter-form" method="get" action="/portfolio.php">
+                <ul class="filter-list">
+<?php foreach ($filters as $key => $label): ?>
+                  <li>
+                    <button type="submit" name="category" value="<?= e($key) ?>" data-category="<?= e($key) ?>" class="marquee-btn<?= $key === $category ? ' active' : '' ?>" aria-pressed="<?= $key === $category ? 'true' : 'false' ?>"><span class="marquee-text"><?= e($label) ?></span></button>
+                  </li>
+<?php endforeach; ?>
+                </ul>
+              </form>
             </div>
           </div>
           <div class="body-box">
-            <div class="top-box">
-              <ul class="body-list">
-                <li class="body-list-item">
-                  <a href="#"><img src="/aseets/imgs/portfolio-sub/jw.png" alt="중외제약" /> <span>JW 중외제약</span></a>
-                </li>
-                <li class="body-list-item margin-item">
-                  <a href="#"><img src="/aseets/imgs/portfolio-sub/cj.png" alt="올리브영" /> <span>CJ 올리브영</span></a>
-                </li>
-                <li class="body-list-item">
-                  <a href="/portfolio-detail.php"><img src="/aseets/imgs/portfolio-sub/kumu.png" alt="쿠무" /> <span>쿠무</span></a>
-                </li>
-              </ul>
+            <div class="portfolio-rows" data-portfolio-rows aria-live="polite">
+<?php view('site/portfolio-items', ['items' => $list['items'], 'rowStart' => 0]); ?>
             </div>
-            <div class="bottom-box">
-              <ul class="body-list">
-                <li class="body-list-item">
-                  <a href="#"><img src="/aseets/imgs/portfolio-sub/star.png" alt="스타스케이프" /> <span>스타스케이프</span></a>
-                </li>
-                <li class="body-list-item margin-item">
-                  <a href="#"><img src="/aseets/imgs/portfolio-sub/Geonil.png" alt="건일제약" /> <span>건일제약</span></a>
-                </li>
-                <li class="body-list-item">
-                  <a href="#"><img src="/aseets/imgs/portfolio-sub/eatgo.png" alt="잇고" /> <span>잇고</span></a>
-                </li>
-              </ul>
-            </div>
+            <p class="portfolio-empty" data-portfolio-empty<?= $list['items'] ? ' hidden' : '' ?>>등록된 포트폴리오가 없습니다.</p>
             <div class="btn-box">
-              <button class="plus-btn" type="button" aria-label="추가">
+              <button class="plus-btn" type="button" aria-label="포트폴리오 더보기" data-portfolio-more<?= $list['hasMore'] ? '' : ' hidden' ?>>
                 <img src="/aseets/icons/portfoilo-sub/add-ico.svg" alt="플러스아이콘" />
               </button>
             </div>
@@ -72,5 +64,6 @@ view('site/head', ['pageTitle' => '포트폴리오 목록']);
         </div>
       </section>
     </main>
+    <script src="/js/portfolio-list.js" defer></script>
 
 <?php view('site/footer', ['isHome' => false]); ?>

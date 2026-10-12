@@ -8,11 +8,13 @@ if (current_admin() !== null) {
 $signupCode = (string) app_config()['signup_code'];
 $adminId = '';
 $adminName = '';
+$adminEmail = '';
 $message = $signupCode === '' ? '현재 관리자 회원가입이 닫혀 있습니다.' : '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $signupCode !== '') {
     $adminId = trim((string) ($_POST['adminId'] ?? ''));
     $adminName = trim((string) ($_POST['adminName'] ?? ''));
+    $adminEmail = trim((string) ($_POST['adminEmail'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
     $passwordConfirm = (string) ($_POST['passwordConfirm'] ?? '');
     $approvalCode = trim((string) ($_POST['approvalCode'] ?? ''));
@@ -27,14 +29,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $signupCode !== '') {
         $message = '비밀번호가 일치하지 않습니다.';
     } elseif ($adminName === '' || mb_strlen($adminName) > 50) {
         $message = '이름을 50자 이내로 입력해 주세요.';
+    } elseif (!admin_email_valid($adminEmail)) {
+        $message = '이메일을 올바른 형식(' . ADMIN_EMAIL_MAX . '자 이내)으로 입력해 주세요.';
     } elseif (!hash_equals($signupCode, $approvalCode)) {
         $message = '승인 코드가 올바르지 않습니다.';
     } elseif (admin_login_id_exists($adminId)) {
         $message = '이미 사용 중인 ID입니다.';
+    } elseif (admin_email_exists($adminEmail)) {
+        $message = '이미 다른 계정에 등록된 이메일입니다.';
     } else {
         try {
-            db()->prepare('INSERT INTO admins (login_id, password_hash, name) VALUES (?, ?, ?)')
-                ->execute([$adminId, password_hash($password, PASSWORD_DEFAULT), $adminName]);
+            db()->prepare('INSERT INTO admins (login_id, password_hash, name, email) VALUES (?, ?, ?, ?)')
+                ->execute([$adminId, password_hash($password, PASSWORD_DEFAULT), $adminName, $adminEmail]);
             flash('login', '회원가입이 완료되었습니다. 로그인해 주세요.');
             redirect('/admin/login.php');
         } catch (PDOException $exception) {
@@ -82,6 +88,11 @@ view('admin/head', [
         <div class="field">
           <label for="admin-name">이름 <span class="required" aria-hidden="true">*</span></label>
           <input id="admin-name" name="adminName" type="text" value="<?= e($adminName) ?>" placeholder="이름을 입력해 주세요" autocomplete="name" maxlength="50" required />
+        </div>
+
+        <div class="field">
+          <label for="admin-email">이메일 <span class="required" aria-hidden="true">*</span></label>
+          <input id="admin-email" name="adminEmail" type="email" value="<?= e($adminEmail) ?>" placeholder="ID/비밀번호 찾기에 사용할 이메일을 입력해 주세요" autocomplete="email" maxlength="<?= ADMIN_EMAIL_MAX ?>" required />
         </div>
 
         <div class="field">

@@ -2,12 +2,14 @@
 /**
  * 관리자 좌측 메뉴 + 본문 영역 시작. 본문 뒤에 admin/layout-end 로 닫는다.
  * 페이지에서 require_admin() 을 먼저 호출한 상태를 전제로 한다.
- * @var string $active 'dashboard' | 'board' | 'chatbot'
+ * @var string $active 'dashboard' | 'inquiries' | 'board' | 'portfolios' | 'chatbot'
  */
 $admin = current_admin();
 $menu = [
     'dashboard' => ['/admin/', '대시보드'],
+    'inquiries' => ['/admin/inquiries.php', '견적문의'],
     'board' => ['/admin/board.php', '게시판'],
+    'portfolios' => ['/admin/portfolios.php', '포트폴리오'],
     'chatbot' => ['/admin/chatbot.php', '챗봇 설정'],
 ];
 ?>

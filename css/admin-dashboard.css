@@ -512,6 +512,16 @@ a:focus-visible,
   color: var(--text-disabled);
 }
 
+/* 상세로 이동하는 행 (PHP 대시보드) */
+.dash-table tr.is-link {
+  cursor: pointer;
+}
+
+.dash-table tr.is-link:hover td,
+.dash-table tr.is-link:focus-visible td {
+  background: rgba(0, 0, 0, 0.03);
+}
+
 .badge {
   display: inline-flex;
   align-items: center;

@@ -6,7 +6,11 @@ view('admin/head', [
     'pageTitle' => '게시판 목록',
     'styles' => ['/css/admin-board.css', '/css/admin-layout.css'],
     'scripts' => ['/js/custom-select.js', '/js/admin-board.js'],
-    'bodyData' => ['editor-url' => '/admin/post-edit.php'],
+    'bodyData' => [
+        'editor-url' => '/admin/post-edit.php',
+        'posts-api' => '/admin/posts-api.php',
+        'csrf' => csrf_token(),
+    ],
 ]);
 view('admin/layout-start', ['active' => 'board']);
 ?>
@@ -21,6 +25,7 @@ view('admin/layout-start', ['active' => 'board']);
                 <option value="notice">공지사항</option>
                 <option value="event">이벤트</option>
                 <option value="resources">자료실</option>
+                <option value="portfolio">포트폴리오</option>
                 <option value="all">전체</option>
               </select>
               <img src="/aseets/icons/admin/board-category-arrow.svg" alt="" width="20" height="20" />

@@ -6,7 +6,11 @@ view('admin/head', [
     'pageTitle' => '게시글 작성',
     'styles' => ['/css/admin-board.css', '/css/admin-post-edit.css', '/css/admin-layout.css'],
     'scripts' => ['/js/custom-select.js', '/js/admin-post-edit.js'],
-    'bodyData' => ['board-url' => '/admin/board.php'],
+    'bodyData' => [
+        'board-url' => '/admin/board.php',
+        'posts-api' => '/admin/posts-api.php',
+        'csrf' => csrf_token(),
+    ],
 ]);
 view('admin/layout-start', ['active' => 'board']);
 ?>
@@ -34,8 +38,31 @@ view('admin/layout-start', ['active' => 'board']);
               <option value="notice">공지사항</option>
               <option value="event">이벤트</option>
               <option value="resources">자료실</option>
+              <option value="portfolio">포트폴리오</option>
             </select>
             <img src="/aseets/icons/admin/board-category-arrow.svg" alt="" width="20" height="20" />
+          </div>
+        </div>
+
+        <p class="editor-hint" data-board-only="portfolio" hidden>
+          메인 포트폴리오 슬라이드로 노출됩니다. 제목은 큰 제목, 내용은 설명 문구(줄바꿈 유지)로 쓰이고 먼저 등록한 글이 앞에 나옵니다.
+        </p>
+
+        <div class="editor-row" data-board-only="portfolio" hidden>
+          <label class="editor-label" for="post-eyebrow">상단 문구</label>
+          <input class="editor-input" id="post-eyebrow" type="text" maxlength="60" placeholder="예: BRAND EXPERIENCE" />
+        </div>
+
+        <div class="editor-row" data-board-only="portfolio" hidden>
+          <span class="editor-label">배경 이미지</span>
+          <div class="editor-files">
+            <label class="file-button">
+              <img src="/aseets/icons/admin/all-inbox.svg" alt="" width="24" height="24" />
+              이미지 선택
+              <input id="post-image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+            </label>
+            <img class="image-preview" id="image-preview" alt="배경 이미지 미리보기" hidden />
+            <span class="editor-hint">가로형 1920×1080 이상 권장, JPG·PNG·WEBP·GIF 10MB 이하</span>
           </div>
         </div>
 

@@ -219,6 +219,35 @@ input[type="radio"]:checked {
   display: none;
 }
 
+.editor-row[hidden],
+.editor-hint[hidden],
+.image-preview[hidden] {
+  display: none;
+}
+
+.editor-hint {
+  margin: 0;
+  color: #868686;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.image-preview {
+  display: block;
+  width: min(480px, 100%);
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #f7f7f7;
+}
+
+.file-list a {
+  overflow: hidden;
+  color: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @media (max-width: 720px) {
   .editor-shell {
     padding: 24px 16px;
