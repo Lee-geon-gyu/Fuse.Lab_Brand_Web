@@ -122,6 +122,7 @@ img {
 }
 
 .header[data-theme="light"] {
+  --rolling-hover-color: #9b6cff;
   color: var(--c-light);
   background-color: rgba(255, 255, 255, 0);
 }

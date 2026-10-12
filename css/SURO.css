@@ -502,7 +502,7 @@ footer {
 }
 
 .rolling-link:is(:hover, :focus-visible) .rolling-stack {
-  color: var(--color-primary);
+  color: var(--rolling-hover-color, var(--color-primary));
   transform: translateY(-50%);
 }
 
