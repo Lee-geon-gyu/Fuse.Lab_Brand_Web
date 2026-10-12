@@ -64,8 +64,9 @@ flowchart LR
 | 관리자 | head(Pretendard) + 좌측 메뉴(대시보드·견적문의·게시판·포트폴리오·챗봇 설정·로그아웃) + 본문 | 퍼블리싱에는 관리자 메뉴가 없어 PHP 조합 시 새로 추가 |
 | 관리자 인증 | head + 가운데 카드 | 로그인·회원가입은 메뉴 없이 단독 |
 
-GNB / footer 메뉴: Home `#hero`, Portfolio `#gyu-main`, Services `#gyu-mvp`, Why Us `#why-us`, Contact `#contact`.
-메인에서는 해시만, 다른 페이지에서는 `/#...` 로 메인 섹션으로 이동한다.
+GNB 메뉴: Home `#hero`, Portfolio `/portfolio.php`, Services `#gyu-mvp`, Why Us `#why-us`, Contact `#contact`.
+footer 메뉴: Portfolio 만 `#gyu-main`, 나머지는 GNB 와 같음.
+섹션 링크는 메인에서는 해시만, 다른 페이지에서는 `/#...` 로 메인 섹션으로 이동한다.
 
 ## 4. 화면별 기능
 
@@ -118,7 +119,7 @@ GNB / footer 메뉴: Home `#hero`, Portfolio `#gyu-main`, Services `#gyu-mvp`, W
 | 게시판 분류 | `공지사항/이벤트/자료실/포트폴리오` 로 통일 (`POST_BOARDS`). 대시보드 탭도 같은 목록 |
 | 대시보드 회원 현황 | 사용자 회원 기능이 없어 관리자 계정 기준으로 표시. 사용자 회원 기능을 만들면 다시 결정 |
 | 챗봇 사용률 | 선택 월 '챗봇을 연 세션 / 방문 세션' (둘 다 세션당 하루 1회) |
-| 포트폴리오 진입 경로 | 메인 슬라이드 VIEW PROJECT → 글작성에서 고른 `portfolios` 상세 → 상세의 "목록으로" → 목록. 연결 안 함이거나 대상이 숨김·삭제면 퍼블리싱 동작(다음 슬라이드) 유지. GNB Portfolio 는 `#gyu-main` 그대로 |
+| 포트폴리오 진입 경로 | GNB Portfolio → 목록. 메인 슬라이드 VIEW PROJECT → 글작성에서 고른 `portfolios` 상세 → 상세의 "목록으로" → 목록. 연결 안 함이거나 대상이 숨김·삭제면 퍼블리싱 동작(다음 슬라이드) 유지 |
 | 포트폴리오 데이터 | 메인 슬라이드 = 게시판 `포트폴리오` 글(`posts.portfolio_id` 로 상세 연결), 목록/상세 = `portfolios` 테이블로 분리 |
 | 포트폴리오 시드 | 원본에 상세가 있는 쿠무 외 5개는 분류·소개 문구를 임의로 넣음 (`db/seed-portfolios.sql`). 실제 내용으로 교체 필요 |
 | 계정 찾기 메일 | 로컬은 `app/storage/mail.log`. 카페24 `mail()` 발송 여부는 배포 후 확인 필요 |

@@ -15,7 +15,7 @@ $home = $isHome ? '' : '/';
         <nav class="gnb" aria-label="주 메뉴">
           <ul class="gnb__list">
             <li><a href="<?= $home ?>#hero">Home</a></li>
-            <li><a href="<?= $home ?>#gyu-main">Portfolio</a></li>
+            <li><a href="/portfolio.php">Portfolio</a></li>
             <li><a href="<?= $home ?>#gyu-mvp">Services</a></li>
             <li><a href="<?= $home ?>#why-us">Why Us</a></li>
             <li><a href="<?= $home ?>#contact">Contact</a></li>

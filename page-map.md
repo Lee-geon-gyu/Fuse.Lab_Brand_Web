@@ -47,7 +47,7 @@ PHP 파일 목록. 파일을 추가/삭제하면 이 표도 함께 수정한다.
 | `app/stats.php` | `track_visit()`, `track_chatbot_use()` (세션당 하루 1회 `visit_stats` 집계), 대시보드 집계 함수 |
 | `app/mail.php` | `send_mail()` — 운영 `mail()`, 로컬(debug) 은 `app/storage/mail.log` 에 기록 |
 | `app/views/site/head.php` | 사용자 `<head>` + `<body>` 시작 (`pageTitle`, `bodyClass`, `isHome` = 메인 전용 Lenis, `styles` = 페이지 CSS) |
-| `app/views/site/header.php` | 사용자 GNB (`isHome`, `headerTheme`) |
+| `app/views/site/header.php` | 사용자 GNB (`isHome`, `headerTheme`). Portfolio → `/portfolio.php`, 나머지는 메인 섹션 |
 | `app/views/site/footer.php` | 사용자 footer + 챗봇 위젯 + 공통 스크립트 + 문서 끝 (`isHome`) |
 | `app/views/site/chatbot.php` | 사용자 챗봇 위젯 마크업 (설정값 반영) |
 | `app/views/site/portfolio-items.php` | 포트폴리오 목록 항목 (3개씩 한 줄) |
