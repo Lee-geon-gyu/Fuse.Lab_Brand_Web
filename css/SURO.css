@@ -468,7 +468,7 @@ footer {
   transform: scale(0.84);
 }
 
-.footer-nav a {
+.rolling-link {
   display: block;
   overflow: hidden;
 
@@ -501,10 +501,15 @@ footer {
   height: 1.5em;
 }
 
-.footer-nav a:hover .rolling-stack,
-.footer-nav a:focus-visible .rolling-stack {
+.rolling-link:is(:hover, :focus-visible) .rolling-stack {
   color: var(--color-primary);
   transform: translateY(-50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rolling-stack {
+    transition: none;
+  }
 }
 
 /* 포트폴리오 서브페이지  */

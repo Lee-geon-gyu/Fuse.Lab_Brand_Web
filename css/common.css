@@ -119,10 +119,6 @@ img {
   font-weight: 500;
   font-size: max(14px, calc(18 * var(--px)));
   line-height: normal;
-  transition: opacity 0.2s ease;
-}
-.gnb__list a:hover {
-  opacity: 0.6;
 }
 
 .header[data-theme="light"] {
