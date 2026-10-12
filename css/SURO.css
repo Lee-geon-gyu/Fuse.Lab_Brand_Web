@@ -326,6 +326,7 @@ body {
   padding: 2rem 4rem;
 
   border: 2px solid #fff;
+  border-radius: 0;
   background: transparent;
 
   color: #fff;
@@ -339,7 +340,7 @@ body {
     color 0.35s ease;
 }
 
-.marquee-btn:hover {
+.marquee-btn:is(:hover, :focus-visible, .is-gyu-pointer-hover) {
   background-color: #fff;
   color: #161c22;
 }
@@ -357,11 +358,11 @@ body {
   opacity: 0;
 }
 
-.marquee-btn:is(:hover, :focus-visible) .marquee-text {
+.marquee-btn:is(:hover, :focus-visible, .is-gyu-pointer-hover) .marquee-text {
   opacity: 0;
 }
 
-.marquee-btn:is(:hover, :focus-visible) .marquee-viewport {
+.marquee-btn:is(:hover, :focus-visible, .is-gyu-pointer-hover) .marquee-viewport {
   opacity: 1;
 }
 
@@ -371,7 +372,7 @@ body {
 
   width: max-content;
   height: 100%;
-  padding-left: 4rem;
+  padding-left: var(--marquee-inset, 4rem);
 
   white-space: nowrap;
   will-change: transform;
@@ -382,14 +383,14 @@ body {
 
   flex-shrink: 0;
 
-  padding-right: 4rem;
+  padding-right: var(--marquee-inset, 4rem);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .marquee-btn:is(:hover, :focus-visible) .marquee-text {
+  .marquee-btn:is(:hover, :focus-visible, .is-gyu-pointer-hover) .marquee-text {
     opacity: 1;
   }
-  .marquee-btn:is(:hover, :focus-visible) .marquee-viewport {
+  .marquee-btn:is(:hover, :focus-visible, .is-gyu-pointer-hover) .marquee-viewport {
     opacity: 0;
   }
 }

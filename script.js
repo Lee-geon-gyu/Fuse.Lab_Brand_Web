@@ -8,15 +8,19 @@
 
   if (!story || !stage || !track || projects.length === 0) return;
 
-  if ("scrollRestoration" in window.history) {
-    window.history.scrollRestoration = "manual";
-  }
-
   const navigationEntry = window.performance
     .getEntriesByType?.("navigation")
     .at?.(0);
   const shouldResetOnLoad = navigationEntry?.type === "reload";
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const scrollToPosition = (top, immediate = false) => {
+    const skipAnimation = immediate || reducedMotion.matches;
+    if (window.lenis?.scrollTo) {
+      window.lenis.scrollTo(top, { immediate: skipAnimation, force: immediate });
+      return;
+    }
+    window.scrollTo({ top, behavior: skipAnimation ? "instant" : "smooth" });
+  };
   const transitionCount = Math.max(projects.length - 1, 0);
   const holdScrollRatio = 0.65;
   const transitionScrollRatio = 1.85;
@@ -203,7 +207,10 @@
   const requestRender = () => {
     targetTimeline = getTimelinePosition();
 
-    if (reducedMotion.matches) {
+    // Lenis already interpolates the scroll position; avoid a second easing pass.
+    if (reducedMotion.matches || window.lenis?.scrollTo) {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
       displayTimeline = targetTimeline;
       render(displayTimeline);
       return;
@@ -216,10 +223,7 @@
 
   const scrollToProject = (index) => {
     const projectIndex = clamp(index, 0, projects.length - 1);
-    window.scrollTo({
-      top: getStoryTop() + projectIndex * segmentLength,
-      behavior: reducedMotion.matches ? "auto" : "smooth",
-    });
+    scrollToPosition(getStoryTop() + projectIndex * segmentLength);
   };
 
   const resetToHero = () => {
@@ -231,7 +235,7 @@
     targetTimeline = 0;
     displayTimeline = 0;
     render(0);
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    scrollToPosition(0, true);
   };
 
   themeButton?.addEventListener("click", () => {
@@ -255,6 +259,7 @@
         const projectIndex = projects.indexOf(target);
         if (projectIndex < 0) return;
         event.preventDefault();
+        event.stopPropagation();
         scrollToProject(projectIndex);
       });
     });
@@ -285,10 +290,7 @@
 
     const nextSection = story.nextElementSibling;
     if (nextSection) {
-      nextSection.scrollIntoView({
-        behavior: reducedMotion.matches ? "auto" : "smooth",
-        block: "start",
-      });
+      scrollToPosition(nextSection.getBoundingClientRect().top + window.scrollY);
     }
   };
 
@@ -313,9 +315,15 @@
     return matchedButton;
   };
 
+  const setVisualButtonHover = (button, isHovered) => {
+    if (button.classList.contains("is-gyu-pointer-hover") === isHovered) return;
+    button.classList.toggle("is-gyu-pointer-hover", isHovered);
+    button.dispatchEvent(new Event("marqueehoverchange"));
+  };
+
   const clearVisualButtonHover = () => {
     projectButtons.forEach((button) => {
-      button.classList.remove("is-gyu-pointer-hover");
+      setVisualButtonHover(button, false);
     });
     stage.style.cursor = "";
   };
@@ -324,7 +332,7 @@
     const visualButton = findVisualButton(event.clientX, event.clientY);
 
     projectButtons.forEach((button) => {
-      button.classList.toggle("is-gyu-pointer-hover", button === visualButton);
+      setVisualButtonHover(button, button === visualButton);
     });
     stage.style.cursor = visualButton ? "pointer" : "";
   });
@@ -581,10 +589,12 @@
 
     const requestDeckRender = () => {
       targetPosition = readPosition();
-      if (reducedMotion.matches) {
+      if (reducedMotion.matches || window.lenis?.scrollTo) {
         if (frame) window.cancelAnimationFrame(frame);
         frame = 0;
-        renderedPosition = Math.round(targetPosition);
+        renderedPosition = reducedMotion.matches
+          ? Math.round(targetPosition)
+          : targetPosition;
         renderDeck(renderedPosition);
       } else if (!frame) {
         previousFrameTime = performance.now();
@@ -597,10 +607,7 @@
       const focusedControl = deck.contains(document.activeElement);
       if (focusedControl) deck.focus({ preventScroll: true });
       sectionTop = section.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({
-        top: sectionTop + destination * segment + hold * 0.5,
-        behavior: reducedMotion.matches ? "auto" : "smooth",
-      });
+      scrollToPosition(sectionTop + destination * segment + hold * 0.5);
       requestDeckRender();
     };
 
@@ -750,7 +757,7 @@ marqueeBtns.forEach((btn) => {
   };
 
   const stopMarquee = () => {
-    if (btn.matches(":hover, :focus-visible")) return;
+    if (btn.matches(":hover, :focus-visible, .is-gyu-pointer-hover")) return;
     marqueeTween.pause();
     gsap.set(track, { x: 0 });
   };
@@ -759,6 +766,10 @@ marqueeBtns.forEach((btn) => {
   btn.addEventListener("mouseleave", stopMarquee);
   btn.addEventListener("focus", startMarquee);
   btn.addEventListener("blur", stopMarquee);
+  btn.addEventListener("marqueehoverchange", () => {
+    if (btn.classList.contains("is-gyu-pointer-hover")) startMarquee();
+    else stopMarquee();
+  });
 });
 
 // why-sec
