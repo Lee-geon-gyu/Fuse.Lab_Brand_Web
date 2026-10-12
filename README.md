@@ -20,7 +20,7 @@
 - Windows: `setup.bat` 더블클릭
 - macOS / Linux: `./setup.sh`
 
-Docker 확인 → `.env` 생성(없을 때만) → 컨테이너 빌드/기동 → DB 연결 확인 → `db/schema.sql` 적용 → 접속 주소 출력. 다시 실행해도 안전.
+Docker 확인 → `.env` 생성(없을 때만) → 컨테이너 빌드/기동 → DB 연결 확인 → `db/schema.sql` 적용 → `db/dump.sql` 적용(빈 DB 일 때만) → 접속 주소 출력. 다시 실행해도 안전.
 
 | 서비스 | 주소 |
 | --- | --- |
@@ -44,9 +44,24 @@ Docker 확인 → `.env` 생성(없을 때만) → 컨테이너 빌드/기동 �
   - 로컬은 메일을 실제로 보내지 않고 `app/storage/mail.log` 에 남긴다 (재설정 링크도 여기서 확인)
   - 이메일이 없는 계정(이메일 기능 이전 가입)은 phpMyAdmin 에서 `admins.email` 을 채워야 찾기 가능
 
-### 로컬 시드 데이터
+### 로컬 공유 데이터 (`db/dump.sql`)
 
-setup 은 스키마만 적용한다. 시안 데이터가 필요하면 한 번 실행 (데이터가 이미 있으면 아무것도 넣지 않음)
+DB 데이터는 Docker 볼륨에 있어서 git 으로 공유되지 않는다. 그래서 콘텐츠 테이블(`portfolios`, `posts`, `post_files`, `chatbot_settings`) 데이터만 `db/dump.sql` 로 커밋한다.
+계정(`admins`)·견적문의·비밀번호 재설정·방문 집계는 넣지 않는다 (공개 저장소). 계정은 `db/schema.sql` 의 기본 관리자를 쓴다.
+
+- setup 은 `posts`·`portfolios` 가 둘 다 비어 있을 때만 `db/dump.sql` 을 넣는다. 로컬에서 고친 데이터는 덮어쓰지 않는다
+- 덤프로 초기화: `docker compose down -v` (로컬 DB 삭제) → setup 다시 실행
+- 덤프 갱신 (내 로컬 데이터를 공유할 때, cmd·PowerShell·bash 공통):
+
+```
+docker compose exec -T db mariadb-dump -ufuselab -pfuselab --no-tablespaces --no-create-info --insert-ignore --complete-insert --skip-extended-insert --skip-dump-date --skip-comments --skip-add-locks --skip-disable-keys --skip-triggers --default-character-set=utf8mb4 -r /tmp/dump.sql fuselab portfolios posts post_files chatbot_settings
+docker compose cp db:/tmp/dump.sql db/dump.sql
+```
+
+컨테이너 안에서 파일로 쓰고 복사하는 이유: PowerShell 의 `>` 리다이렉트는 UTF-16 으로 저장해 한글이 깨진다.
+업로드한 이미지(`uploads/posts/`)는 git 제외라서 덤프에 업로드 이미지 경로가 들어가면 다른 PC 에서는 깨진다. 공유할 이미지는 `aseets/` 경로를 쓴다.
+
+덤프 없이 시안 데이터만 넣을 때는 아래를 한 번씩 실행 (데이터가 이미 있으면 아무것도 넣지 않음. 카페24 는 phpMyAdmin 에서 같은 파일 실행)
 
 ```
 docker compose exec -T db mariadb -ufuselab -pfuselab fuselab < db/seed-portfolios.sql

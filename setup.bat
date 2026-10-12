@@ -3,7 +3,7 @@ rem Windows local dev setup. ASCII only: cmd misparses UTF-8 batch files.
 setlocal
 cd /d "%~dp0"
 
-echo [1/5] Checking Docker
+echo [1/6] Checking Docker
 docker --version >nul 2>&1
 if errorlevel 1 (
     echo Docker Desktop is not installed: https://www.docker.com/products/docker-desktop/
@@ -15,7 +15,7 @@ if errorlevel 1 (
     goto :fail
 )
 
-echo [2/5] Preparing .env
+echo [2/6] Preparing .env
 if exist .env goto :env_exists
 copy .env.example .env >nul
 echo Created .env from .env.example
@@ -29,14 +29,14 @@ set DB_PORT_HOST=3310
 set ADMIN_SIGNUP_CODE=fuselab-dev
 for /f "usebackq eol=# tokens=1,* delims==" %%a in (".env") do set "%%a=%%b"
 
-echo [3/5] Building and starting containers
+echo [3/6] Building and starting containers
 docker compose up -d --build
 if errorlevel 1 (
     echo Failed to start. If a port is in use, change it in .env and run again.
     goto :fail
 )
 
-echo [4/5] Waiting for database
+echo [4/6] Waiting for database
 set /a tries=0
 :wait_db
 docker compose exec -T web php -r "require 'app/bootstrap.php'; db();" >nul 2>&1
@@ -50,12 +50,33 @@ ping -n 3 127.0.0.1 >nul
 goto :wait_db
 
 :ok
-echo [5/5] Applying db\schema.sql
+echo [5/6] Applying db\schema.sql
 docker compose exec -T db mariadb -ufuselab -pfuselab fuselab < db\schema.sql
 if errorlevel 1 (
     echo Failed to apply db\schema.sql
     goto :fail
 )
+
+rem Load shared content only into an empty DB so local edits are never overwritten
+echo [6/6] Loading db\dump.sql (empty DB only)
+set CONTENT_ROWS=
+for /f %%n in ('docker compose exec -T db mariadb -ufuselab -pfuselab -N -s fuselab -e "SELECT (SELECT COUNT(*) FROM posts) + (SELECT COUNT(*) FROM portfolios)"') do set CONTENT_ROWS=%%n
+if "%CONTENT_ROWS%"=="" (
+    echo Failed to check existing data
+    goto :fail
+)
+if not "%CONTENT_ROWS%"=="0" (
+    echo Skipped: DB already has data. To reset: docker compose down -v, then run setup.bat again
+    goto :done
+)
+docker compose exec -T db mariadb -ufuselab -pfuselab fuselab < db\dump.sql
+if errorlevel 1 (
+    echo Failed to apply db\dump.sql
+    goto :fail
+)
+echo Loaded db\dump.sql
+
+:done
 
 echo.
 echo Done

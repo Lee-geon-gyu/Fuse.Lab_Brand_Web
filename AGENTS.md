@@ -14,7 +14,8 @@ fuse.lab 브랜드 웹사이트. 정적 HTML 퍼블리싱 위에 필요한 기�
 
 ## 로컬 개발
 
-- `setup.bat` (Windows) / `./setup.sh` (macOS·Linux) — Docker 기동 + DB 연결 확인
+- `setup.bat` (Windows) / `./setup.sh` (macOS·Linux) — Docker 기동 + DB 연결 확인 + `db/schema.sql` 적용 + 빈 DB 면 `db/dump.sql` 적용
+- DB 데이터는 git 에 없으므로 공유할 콘텐츠는 `db/dump.sql` 로 갱신해 커밋 (명령은 README). 계정·견적문의 등 개인정보 테이블은 덤프에 넣지 않는다
 - 사이트 `http://localhost:8088`, phpMyAdmin `:8089`, MariaDB `localhost:3310` (`fuselab`/`fuselab`)
 - 포트는 `.env` (`.env.example` 참고), 종료 `docker compose down`
 - PHP CLI 는 컨테이너에서: `docker compose exec web php ...`
