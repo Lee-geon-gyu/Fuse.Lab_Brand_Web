@@ -31,3 +31,13 @@ function e(?string $value): string
 {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
+
+/**
+ * app/views/{$name}.php 를 $vars 를 변수로 풀어 출력한다.
+ *   view('site/head', ['pageTitle' => '포트폴리오']);
+ */
+function view(string $name, array $vars = []): void
+{
+    extract($vars, EXTR_SKIP);
+    require __DIR__ . '/views/' . $name . '.php';
+}

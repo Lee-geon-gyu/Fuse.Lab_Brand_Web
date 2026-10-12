@@ -23,18 +23,24 @@ fuse.lab 브랜드 웹사이트. 정적 HTML 퍼블리싱 위에 필요한 기�
 
 | 경로 | 내용 |
 | --- | --- |
-| `*.html`, `sub-pages/` | 퍼블리싱 페이지 (사용자/관리자) |
+| `*.html`, `sub-pages/` | 퍼블리싱 원본 (사용자/관리자). PHP 로 옮겨도 삭제하지 않고 유지 |
+| `index.php`, `portfolio*.php`, `admin/` | 퍼블리싱 화면을 공통 레이아웃으로 조합한 PHP 페이지 |
 | `css/`, `js/`, `script.js` | 스타일·스크립트. `GYU.css` / `SURO.css` / `WON.css` 는 팀원별 파일 |
 | `aseets/` | 이미지·아이콘 (폴더명 오타지만 경로가 HTML 에 박혀 있으므로 변경 금지) |
-| `app/` | PHP 공통 코드. `.htaccess` 로 웹 접근 차단 |
+| `app/` | PHP 공통 코드 (`app/views/` = 레이아웃 partial). `.htaccess` 로 웹 접근 차단 |
 | `docker/`, `docker-compose.yml`, `setup.*` | 로컬 개발 전용. 배포 대상 아님 |
 | `page-map.md` | PHP 파일 목록 표 |
+| `docs/design.md` | 사이트맵·화면 흐름·화면별 기능·DB 초안·미정 사항 |
 
 외부 라이브러리는 CDN 사용 (GSAP, ScrollTrigger, three.js r128, Pretendard).
 
 ## PHP 규칙
 
-- 모든 페이지 최상단: `require __DIR__ . '/app/bootstrap.php';` (하위 폴더는 상대경로 조정)
+- 모든 페이지 최상단: `require __DIR__ . '/app/bootstrap.php';` (`admin/` 은 `/../app/bootstrap.php`)
+- 레이아웃은 `view()` 로 조합: 사용자 `site/head` → `site/header` → 본문 → `site/footer`,
+  관리자 `admin/head` → `admin/layout-start` → 본문 → `admin/layout-end` → `admin/foot` (로그인·회원가입은 layout 생략)
+- PHP 페이지의 에셋·링크는 루트 기준 절대경로(`/css/...`, `/admin/board.php`). `.html` 원본은 상대경로 그대로 둔다.
+- `.html` 과 `.php` 가 함께 쓰는 JS 에서 페이지 이동 경로는 `<body data-*>` 로 받는다 (예: `data-editor-url`), 없으면 `.html` 경로.
 - PHP 8.2 문법까지만. 8.3+ 기능(typed class constants, `json_validate`, `|>` 등) 금지.
 - DB 는 `db()` (PDO, utf8mb4) + prepared statement 만 사용. 문자열로 쿼리 조립 금지.
 - 출력은 `e()` 로 이스케이프. 비밀번호는 `password_hash` / `password_verify`.
@@ -46,7 +52,9 @@ fuse.lab 브랜드 웹사이트. 정적 HTML 퍼블리싱 위에 필요한 기�
 ## 문서 유지
 
 - PHP 파일을 추가·삭제·역할 변경하면 **같은 작업에서** `page-map.md` 표를 갱신한다.
-  - 열: `파일 | 구분 | 설명 | 웹 접근`
+  - 열: `URL | 파일 | 화면 | 퍼블리싱 원본 | 레이아웃` (공통 파일은 별도 표)
+- 퍼블리싱 `.html` 을 수정했다면 대응하는 `.php` 본문에도 같은 변경을 반영한다.
+  로그인·회원가입·챗봇 `.html` 의 인라인 `<style>`/`<script>` 는 PHP 용으로 `css/admin-{login,signup,chatbot}.css`, `js/admin-{login,signup,chatbot}.js` 에 분리돼 있으니 함께 수정한다.
 - 실행 방법·포트·배포 절차가 바뀌면 `README.md` 도 갱신한다.
 
 ## 배포 (카페24)

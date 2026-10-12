@@ -2,7 +2,7 @@
   const storageKey = "fuselab.board.posts";
   const draftKey = "fuselab.board.drafts";
   const flashKey = "fuselab.board.flash";
-  const boardUrl = "admin-board.html";
+  const boardUrl = document.body.dataset.boardUrl || "admin-board.html";
 
   const form = document.querySelector("#editor-form");
   const titleInput = document.querySelector("#post-title");

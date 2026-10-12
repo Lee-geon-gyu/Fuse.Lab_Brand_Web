@@ -1,7 +1,7 @@
 (() => {
   const storageKey = "fuselab.board.posts";
   const flashKey = "fuselab.board.flash";
-  const editorUrl = "admin-post-edit.html";
+  const editorUrl = document.body.dataset.editorUrl || "admin-post-edit.html";
   const pageSize = 13;
   const pageGroupSize = 8;
   const template = document.querySelector("#post-row-template");

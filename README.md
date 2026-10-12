@@ -33,9 +33,10 @@ Docker 확인 → `.env` 생성(없을 때만) → 컨테이너 빌드/기동 �
 ## 구조
 
 - 저장소 루트 = 웹 루트 (카페24 `www/` 에 그대로 업로드)
-- `app/` — PHP 공통 코드 (bootstrap, 설정, DB). `.htaccess` 로 웹 접근 차단
-- 페이지 PHP 는 최상단에서 `require __DIR__ . '/app/bootstrap.php';`
-- PHP 파일 목록: [page-map.md](page-map.md)
+- `*.html`, `sub-pages/` — 퍼블리싱 원본 (유지)
+- `index.php`, `portfolio*.php`, `admin/` — 퍼블리싱 화면을 공통 레이아웃으로 조합한 PHP 페이지 (관리자: http://localhost:8088/admin/)
+- `app/` — PHP 공통 코드 (bootstrap, 설정, DB, `views/` 레이아웃). `.htaccess` 로 웹 접근 차단
+- PHP 파일 목록: [page-map.md](page-map.md) / 화면 설계: [docs/design.md](docs/design.md)
 
 ## 카페24 배포
 

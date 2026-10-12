@@ -1,0 +1,190 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+body {
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  color: #222;
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  display: grid;
+  min-height: 100vh;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 40px 20px;
+}
+
+.signup-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: min(1200px, 100%);
+  padding: 40px 20px;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.signup-card__heading {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 16px;
+}
+
+h1 {
+  margin: 0;
+  color: #000;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.signup-card__intro {
+  min-height: 42px;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.field label {
+  width: fit-content;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.required {
+  color: #b42318;
+}
+
+.field__row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.field input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 12px;
+  outline: none;
+  background: #f7f7f7;
+  color: #222;
+  font: 500 16px/1 "Pretendard Variable", Pretendard, sans-serif;
+}
+
+.field input::placeholder {
+  color: #868686;
+  opacity: 1;
+}
+
+.field input:focus-visible {
+  outline: 2px solid #6a00ff;
+  outline-offset: 1px;
+}
+
+.field__row input {
+  flex: 1;
+}
+
+.action {
+  display: inline-flex;
+  flex: 0 0 200px;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 50px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 71px;
+  background: #6a00ff;
+  color: #fff;
+  font: 600 16px/1 "Pretendard Variable", Pretendard, sans-serif;
+  cursor: pointer;
+}
+
+.action:hover {
+  background: #5900d6;
+}
+
+.action:focus-visible {
+  outline: 2px solid #222;
+  outline-offset: 3px;
+}
+
+.signup-card__footer {
+  display: flex;
+  justify-content: center;
+}
+
+.form-message {
+  margin: 0;
+  color: #b42318;
+  font-size: 14px;
+  text-align: center;
+}
+
+.form-message:empty {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  main {
+    padding: 24px 16px;
+  }
+
+  .signup-card {
+    gap: 20px;
+    padding: 32px 20px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  .signup-card__intro,
+  .field label {
+    font-size: 16px;
+  }
+
+  .field__row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .field__row input {
+    flex: none;
+  }
+
+  .field__row .action {
+    align-self: flex-end;
+    flex-basis: 46px;
+    height: 46px;
+  }
+}
