@@ -45,6 +45,9 @@ fuse.lab 브랜드 웹사이트. 정적 HTML 퍼블리싱 위에 필요한 기�
 - PHP 8.2 문법까지만. 8.3+ 기능(typed class constants, `json_validate`, `|>` 등) 금지.
 - DB 는 `db()` (PDO, utf8mb4) + prepared statement 만 사용. 문자열로 쿼리 조립 금지.
 - 출력은 `e()` 로 이스케이프. 비밀번호는 `password_hash` / `password_verify`.
+- 변수(DB·설정값)로 출력하는 모든 칸은 텍스트 넘침 처리: 표 셀·한 줄 레이블 → 말줄임 + `title`, 카드 제목 → line-clamp, 본문·메모 → 줄바꿈(`overflow-wrap: anywhere`). flex/grid 자식은 `min-width: 0` 확인. 사용자 화면 공통 보정은 `css/site-overflow.css`.
+- 사용자 페이지에서 관리자가 바꿀 문구는 `<?= slot('키', '기본 문구') ?>` (여러 줄 `'multiline'`, HTML `'html'`, 가공 전 값 `slot_value()`)로 적는다. 키·기본값·유형은 문자열 리터럴로 (관리자 > 서브페이지 편집의 문구 탭이 소스를 읽어 칸을 만듦). 자세한 내용은 README.
+- 사용자 페이지는 `site/head`·`site/footer` 를 거쳐야 서브페이지 관리의 CSS·JS·HTML 블록이 붙는다 (`subpage_current()`).
 - 상태 변경 요청(POST)은 CSRF 토큰 검증: 폼에 `<?= csrf_field() ?>`, 처리 시 `csrf_valid()`.
 - 관리자 페이지(로그인·회원가입·중복확인 제외)는 bootstrap 바로 다음에 `require_admin();`.
 - 테이블 추가·변경은 `db/schema.sql` 에 `CREATE TABLE IF NOT EXISTS` 로 적는다 (setup 이 매번 적용, 카페24 는 phpMyAdmin 에서 실행).

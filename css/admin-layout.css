@@ -101,11 +101,15 @@
   outline-offset: 2px;
 }
 
+/* 관리자 이름: 한 줄 말줄임 (전체는 title) */
 .admin-nav__user {
+  overflow: hidden;
   padding: 0 12px 8px;
   color: #131416;
   font-size: 14px;
   font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-content {
@@ -147,11 +151,17 @@
   }
 
   .admin-nav__user {
+    max-width: 160px;
     padding: 0 4px;
   }
 
   .admin-nav a,
   .admin-nav__bottom button {
     padding: 8px 10px;
+    white-space: nowrap;
+  }
+
+  .admin-nav__list {
+    flex-wrap: wrap;
   }
 }

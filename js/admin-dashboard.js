@@ -20,10 +20,8 @@
     개발: "blue",
     운영: "",
   };
+  // 서버 게시판 키별 색. 목록에 없는 키(관리자가 새로 만든 게시판)는 기본 회색 배지
   const BOARD_BADGES = {
-    notice: "green",
-    event: "purple",
-    resources: "blue",
     portfolio: "pink",
     ...CATEGORY_BADGES,
   };
@@ -201,6 +199,7 @@
     const badge = document.createElement("span");
     badge.className = tone ? `badge badge--${tone}` : "badge";
     badge.textContent = text;
+    badge.title = text;
     return badge;
   }
 
@@ -208,8 +207,13 @@
     const row = document.createElement("tr");
     cells.forEach((cell) => {
       const td = document.createElement("td");
-      if (cell instanceof Node) td.append(cell);
-      else td.textContent = cell;
+      if (cell instanceof Node) {
+        td.append(cell);
+      } else {
+        td.textContent = cell;
+        // 칸이 좁아 말줄임될 수 있으므로 전체 값을 title 로
+        td.title = cell;
+      }
       row.append(td);
     });
     return row;
@@ -396,6 +400,7 @@
         button.role = "tab";
         button.dataset.tab = key;
         button.textContent = label;
+        button.title = label;
         button.addEventListener("click", () => selectTab(key));
         return button;
       }),

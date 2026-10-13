@@ -37,6 +37,7 @@
       option.setAttribute("role", "option");
       option.dataset.value = nativeOption.value;
       option.textContent = nativeOption.textContent;
+      option.title = nativeOption.textContent;
       option.tabIndex = -1;
       menu.append(option);
       return option;
@@ -63,6 +64,7 @@
     function sync() {
       const selected = select.selectedOptions[0];
       text.textContent = selected?.textContent || "선택";
+      text.title = text.textContent;
       trigger.setAttribute("aria-label", `${accessibleLabel}: ${text.textContent}`);
       options.forEach((option) => {
         option.setAttribute("aria-selected", String(option.dataset.value === select.value));

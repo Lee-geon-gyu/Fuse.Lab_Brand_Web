@@ -1,4 +1,4 @@
-// 관리자 포트폴리오 목록(admin/portfolios.php)·편집(admin/portfolio-edit.php) 보조 동작.
+// 관리자 포트폴리오 목록(admin/portfolios.php)·편집(admin/portfolio-edit.php)·게시판 관리(admin/boards.php) 보조 동작.
 // 저장·삭제 등은 모두 서버 폼 POST 로 처리하고, 여기서는 편의 기능만 붙인다.
 (() => {
   // 분류 필터: 고르면 바로 이동

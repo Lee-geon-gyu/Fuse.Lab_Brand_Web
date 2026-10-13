@@ -3,6 +3,7 @@ require __DIR__ . '/../app/bootstrap.php';
 require_admin();
 
 $settings = chatbot_settings();
+$ai = chatbot_ai_public();
 $defaultIcon = '/aseets/icons/admin/all-inbox.svg';
 
 view('admin/head', [
@@ -84,6 +85,28 @@ view('admin/layout-start', ['active' => 'chatbot']);
           <button class="delete-button" id="delete-settings" type="button">삭제</button>
           <button class="quiet-button" id="cancel-settings" type="button">취소</button>
           <button class="quiet-button" id="draft-settings" type="button">임시저장</button>
+          <button class="save-button" type="submit">저장</button>
+        </div>
+      </form>
+
+      <form class="settings-card" id="chatbot-ai" autocomplete="off">
+        <div class="settings-card__heading">
+          <h2>AI 연동 (Claude API)</h2>
+          <p class="settings-card__desc" id="ai-status"><?= $ai['configured'] ? '연결됨 · 키 ' . e($ai['maskedKey']) : '미설정 · 규칙 기반 자동 응답을 사용 중입니다.' ?></p>
+        </div>
+
+        <div class="form-row">
+          <label for="ai-key">API 키</label>
+          <input class="text-field" id="ai-key" name="apiKey" type="password" maxlength="255" autocomplete="new-password" spellcheck="false" placeholder="<?= $ai['configured'] ? '변경할 때만 새 키를 입력' : 'sk-ant-...' ?>" />
+        </div>
+
+        <div class="form-row">
+          <label for="ai-model">모델</label>
+          <input class="text-field" id="ai-model" name="model" type="text" maxlength="100" spellcheck="false" placeholder="<?= e(CHATBOT_AI_DEFAULT_MODEL) ?>" value="<?= e($ai['model']) ?>" />
+        </div>
+
+        <div class="form-actions">
+          <button class="delete-button" id="delete-ai-key" type="button"<?= $ai['configured'] ? '' : ' hidden' ?>>키 삭제</button>
           <button class="save-button" type="submit">저장</button>
         </div>
       </form>

@@ -1,0 +1,109 @@
+/* 관리자 표 게시판 편집 (admin/board-table.php). admin-board.css / admin-portfolios.css 위에 덧씀 */
+
+.board-table__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.table-toolbar__group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* 열이 많으면 .table-scroll 안에서 가로 스크롤 */
+.table-editor {
+  width: max-content;
+  min-width: 100%;
+  table-layout: auto;
+}
+
+.table-editor th,
+.table-editor td {
+  vertical-align: top;
+  text-align: left;
+}
+
+.table-editor th {
+  min-width: 220px;
+  max-width: 320px;
+}
+
+.table-editor th.table-editor__no,
+.table-editor th.table-editor__manage {
+  min-width: 0;
+  width: 64px;
+  text-align: center;
+}
+
+.table-editor th.table-editor__manage {
+  width: 140px;
+}
+
+.table-editor td:first-child {
+  color: #868686;
+  text-align: center;
+}
+
+.table-editor__column {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-editor__column .order-controls {
+  flex: none;
+  gap: 2px;
+}
+
+.table-editor__column .order-move {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+}
+
+.table-editor__column-name,
+.table-editor__cell {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  outline: none;
+  background: #f7f7f7;
+  color: #222;
+  font: inherit;
+  font-size: 16px;
+}
+
+.table-editor__column-name {
+  flex: 1;
+  height: 36px;
+  padding: 0 10px;
+  background: #fff;
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+/* 긴 내용은 칸 안에서 줄바꿈되고 높이가 늘어난다 (JS autoGrow) */
+.table-editor__cell {
+  display: block;
+  min-height: 36px;
+  padding: 7px 10px;
+  overflow: hidden;
+  resize: none;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.table-editor__column-name:focus,
+.table-editor__cell:focus {
+  border-color: #6a00ff;
+}

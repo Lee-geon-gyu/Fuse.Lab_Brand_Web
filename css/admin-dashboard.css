@@ -439,8 +439,10 @@ a:focus-visible,
 
 .post-tabs button {
   flex: none;
+  max-width: 240px;
   height: 42px;
   padding: 10px 20px;
+  overflow: hidden;
   border: 0;
   border-bottom: 2px solid transparent;
   background: #fff;
@@ -448,6 +450,8 @@ a:focus-visible,
   font-size: 18px;
   font-weight: 500;
   letter-spacing: -0.378px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .post-tabs button[aria-selected="true"] {
@@ -487,14 +491,15 @@ a:focus-visible,
   font-weight: 500;
 }
 
+/* 입력값이 긴 칸은 한 줄 말줄임 (전체 값은 JS 가 title 로 넣음) */
 .dash-table td {
+  overflow: hidden;
   font-weight: 500;
+  text-overflow: ellipsis;
 }
 
 .dash-table .is-left {
-  overflow: hidden;
   text-align: left;
-  text-overflow: ellipsis;
 }
 
 .dash-table td:first-child,
@@ -523,17 +528,21 @@ a:focus-visible,
 }
 
 .badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   min-width: 68px;
+  max-width: 100%;
   padding: 4px 12px;
+  overflow: hidden;
   border-radius: 71px;
   background: #f2f2f2;
   color: #222;
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
+  text-align: center;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .badge--green {

@@ -1,0 +1,24 @@
+/* 관리자가 만든 서브페이지 (page.php) 기본 틀. 본문 스타일은 페이지별 CSS(서브페이지 관리)에서 */
+
+.custom-page {
+  min-height: 60vh;
+  padding: calc(var(--header-h, 80px) + 40px) var(--gutter, 20px) 80px;
+  overflow-wrap: anywhere;
+}
+
+.custom-page__preview {
+  margin: 0 0 24px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #fff4d6;
+  color: #7a5200;
+  font-size: 14px;
+}
+
+.custom-page--empty {
+  text-align: center;
+}
+
+.custom-page--empty a {
+  color: #6a00ff;
+}

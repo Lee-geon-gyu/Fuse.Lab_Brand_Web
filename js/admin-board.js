@@ -116,8 +116,11 @@
     row.querySelector(".post-number").textContent = post.no;
     titleButton.dataset.postId = post.id;
     titleButton.textContent = post.title;
+    titleButton.title = post.title;
     titleButton.setAttribute("aria-label", `${post.title} 열기`);
-    row.querySelector(".post-author").textContent = post.author;
+    const author = row.querySelector(".post-author");
+    author.textContent = post.author;
+    author.title = post.author;
     row.querySelector(".post-date").textContent = post.date;
     row.querySelector(".post-views").textContent = Number(post.views).toLocaleString("ko-KR");
     row.querySelector(".post-visibility").textContent = post.visible ? "노출" : "숨김";
@@ -211,7 +214,7 @@
     if (!savePosts()) return;
     const params = post
       ? new URLSearchParams({ id: post.id })
-      : new URLSearchParams({ category: categoryFilter.value === "all" ? "notice" : categoryFilter.value });
+      : new URLSearchParams({ category: categoryFilter.value === "all" ? categoryFilter.options[0].value : categoryFilter.value });
     location.href = `${editorUrl}?${params}`;
   }
 
@@ -224,6 +227,12 @@
   }
 
   categoryFilter.addEventListener("change", () => {
+    // 포트폴리오-sub·표 게시판은 글 목록이 아니라 각자의 관리 화면으로 (PHP 가 data-href 를 넣음)
+    const href = categoryFilter.selectedOptions[0]?.dataset.href;
+    if (href) {
+      location.href = href;
+      return;
+    }
     currentPage = 1;
     selectedIds.clear();
     render();

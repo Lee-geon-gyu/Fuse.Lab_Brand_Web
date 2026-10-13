@@ -201,13 +201,17 @@ view('admin/layout-start', ['active' => 'inquiries']);
                 <tr class="empty-row"><td colspan="7"><?= $status !== '' || $query !== '' ? '조건에 맞는 문의가 없습니다.' : '접수된 문의가 없습니다.' ?></td></tr>
 <?php endif; ?>
 <?php foreach ($rows as $row): ?>
-<?php $rowUrl = inquiries_admin_url($status, $query, $page, (int) $row['id']); ?>
+<?php
+$rowUrl = inquiries_admin_url($status, $query, $page, (int) $row['id']);
+$rowCompany = $row['company'] !== '' ? $row['company'] : '-';
+$rowDetails = mb_substr(preg_replace('/\s+/u', ' ', $row['details']), 0, 80);
+?>
                 <tr<?= $detail !== null && (int) $detail['id'] === (int) $row['id'] ? ' class="is-selected" aria-current="true"' : '' ?>>
                   <td><?= (int) $row['id'] ?></td>
-                  <td><a class="post-title" href="<?= e($rowUrl) ?>"><?= e($row['name']) ?></a></td>
-                  <td class="inquiry-ellipsis"><?= e($row['company'] !== '' ? $row['company'] : '-') ?></td>
-                  <td><?= e($row['phone']) ?></td>
-                  <td class="inquiry-ellipsis"><a class="post-title" href="<?= e($rowUrl) ?>"><?= e(mb_substr(preg_replace('/\s+/u', ' ', $row['details']), 0, 80)) ?></a></td>
+                  <td><a class="post-title" href="<?= e($rowUrl) ?>" title="<?= e($row['name']) ?>"><?= e($row['name']) ?></a></td>
+                  <td class="is-ellipsis" title="<?= e($rowCompany) ?>"><?= e($rowCompany) ?></td>
+                  <td class="is-ellipsis" title="<?= e($row['phone']) ?>"><?= e($row['phone']) ?></td>
+                  <td><a class="post-title" href="<?= e($rowUrl) ?>" title="<?= e($rowDetails) ?>"><?= e($rowDetails) ?></a></td>
                   <td><span class="status-badge status-badge--<?= e($row['status']) ?>"><?= e(inquiry_status_label($row['status'])) ?></span></td>
                   <td><?= e(substr($row['created_at'], 0, 10)) ?></td>
                 </tr>

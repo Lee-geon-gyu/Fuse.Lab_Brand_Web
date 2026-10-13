@@ -108,7 +108,9 @@
   function fillForm(data) {
     titleInput.value = data.title || "";
     contentInput.value = data.content || "";
-    categorySelect.value = data.category || "notice";
+    // 없는 게시판(삭제됨 등)이면 첫 게시판
+    categorySelect.value = data.category || "";
+    if (categorySelect.selectedIndex < 0) categorySelect.selectedIndex = 0;
     categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
     if (eyebrowInput) eyebrowInput.value = data.eyebrow || "";
     if (portfolioSelect) {
@@ -135,6 +137,7 @@
         const label = document.createElement(file.url ? "a" : "span");
         const remove = document.createElement("button");
         label.textContent = name;
+        label.title = name;
         if (file.url) {
           label.href = file.url;
           label.download = name;
@@ -348,7 +351,7 @@
       fillForm(editingPost);
     } else {
       // 새 글: ?category= 로 게시판 미리 선택
-      fillForm({ category: params.get("category") || "notice" });
+      fillForm({ category: params.get("category") || "" });
     }
     savedSnapshot = snapshot();
 

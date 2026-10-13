@@ -24,9 +24,10 @@ track_visit();
 
 // 첫 화면은 1 ~ $page 페이지를 한 번에 (새로고침해도 불러온 만큼 유지)
 $list = portfolio_public_list($category, 0, $page * PORTFOLIO_PAGE_SIZE);
+// slot() 문구는 관리자 > 서브페이지 관리 > portfolio.php 에서 수정
 $filters = ['' => 'ALL'] + PORTFOLIO_CATEGORIES;
 
-view('site/head', ['pageTitle' => '포트폴리오 목록', 'styles' => ['/css/portfolio-list.css']]);
+view('site/head', ['pageTitle' => slot_value('page_title', '포트폴리오 목록'), 'styles' => ['/css/portfolio-list.css']]);
 ?>
 <?php view('site/header', ['isHome' => false, 'headerTheme' => 'dark']); ?>
 
@@ -35,8 +36,8 @@ view('site/head', ['pageTitle' => '포트폴리오 목록', 'styles' => ['/css/p
         <div class="portfolio-sub-grid" data-portfolio-list data-endpoint="/portfolio.php" data-category="<?= e($category) ?>" data-page="<?= $page ?>">
           <div class="head-box">
             <div class="left-box">
-              <h2>WEB EXPERIENCES CRAFTED</h2>
-              <h3>portfolio</h3>
+              <h2><?= slot('heading', 'WEB EXPERIENCES CRAFTED') ?></h2>
+              <h3><?= slot('subheading', 'portfolio') ?></h3>
             </div>
             <div class="right-box">
               <form class="portfolio-filter-form" method="get" action="/portfolio.php">
@@ -54,7 +55,7 @@ view('site/head', ['pageTitle' => '포트폴리오 목록', 'styles' => ['/css/p
             <div class="portfolio-rows" data-portfolio-rows aria-live="polite">
 <?php view('site/portfolio-items', ['items' => $list['items'], 'rowStart' => 0]); ?>
             </div>
-            <p class="portfolio-empty" data-portfolio-empty<?= $list['items'] ? ' hidden' : '' ?>>등록된 포트폴리오가 없습니다.</p>
+            <p class="portfolio-empty" data-portfolio-empty<?= $list['items'] ? ' hidden' : '' ?>><?= slot('empty_text', '등록된 포트폴리오가 없습니다.') ?></p>
             <div class="btn-box">
               <button class="plus-btn" type="button" aria-label="포트폴리오 더보기" data-portfolio-more<?= $list['hasMore'] ? '' : ' hidden' ?>>
                 <img src="/aseets/icons/portfoilo-sub/add-ico.svg" alt="플러스아이콘" />

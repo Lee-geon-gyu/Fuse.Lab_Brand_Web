@@ -124,7 +124,7 @@ if ($id > 0) {
     $existing = $stmt->fetch() ?: fail('게시글을 찾을 수 없습니다.', 404);
 }
 
-if (!isset(POST_BOARDS[$board])) {
+if (board_type($board) !== 'post') {
     fail('게시판을 선택해 주세요.');
 }
 if ($title === '' || $content === '') {

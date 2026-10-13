@@ -11,7 +11,7 @@ foreach (array_chunk($items, 3) as $rowIndex => $row):
               <ul class="body-list">
 <?php foreach ($row as $position => $item): ?>
                 <li class="body-list-item<?= $position === 1 ? ' margin-item' : '' ?>">
-                  <a href="/portfolio-detail.php?id=<?= (int) $item['id'] ?>"><img src="<?= e($item['thumbnail']) ?>" alt="<?= e($item['title']) ?>" /> <span><?= e($item['title']) ?></span></a>
+                  <a href="/portfolio-detail.php?id=<?= (int) $item['id'] ?>"><img src="<?= e($item['thumbnail']) ?>" alt="<?= e($item['title']) ?>" /> <span title="<?= e($item['title']) ?>"><?= e($item['title']) ?></span></a>
                 </li>
 <?php endforeach; ?>
               </ul>

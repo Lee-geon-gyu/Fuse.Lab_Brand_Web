@@ -28,6 +28,9 @@ require __DIR__ . '/db.php';
 require __DIR__ . '/csrf.php';
 require __DIR__ . '/auth.php';
 require __DIR__ . '/posts.php';
+require __DIR__ . '/board-tables.php';
+require __DIR__ . '/slots.php';
+require __DIR__ . '/subpages.php';
 require __DIR__ . '/stats.php';
 require __DIR__ . '/inquiries.php';
 require __DIR__ . '/portfolios.php';
@@ -44,6 +47,16 @@ function redirect(string $url): never
 {
     header('Location: ' . $url);
     exit;
+}
+
+/** 회사 연락처: footer·챗봇 위젯·챗봇 AI 프롬프트가 같은 값을 쓴다 */
+function site_contact(): array
+{
+    return [
+        'email' => 'hello@fuselab.example',
+        'phone' => '02-0000-2026',
+        'address' => '서울특별시 성동구 성수이로 00길 00, 4F',
+    ];
 }
 
 /** 다음 요청에서 한 번만 보여줄 메시지. 인자 2개면 저장, 1개면 꺼내고 삭제 */

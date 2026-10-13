@@ -16,10 +16,14 @@ PHP 파일 목록은 [page-map.md](../page-map.md).
 | 관리자 | 회원가입 | `admin-signup.html` | `/admin/signup.php` |
 | 관리자 | 대시보드 | `admin-dashboard.html` | `/admin/index.php` |
 | 관리자 | 게시판 목록 | `admin-board.html` | `/admin/board.php` |
+| 관리자 | 게시판 관리 | 없음 (게시판·포트폴리오 관리 스타일 재사용) | `/admin/boards.php` |
+| 관리자 | 표 게시판 편집 | 없음 (게시판 표 스타일 재사용) | `/admin/board-table.php?board=` |
 | 관리자 | 게시글 작성/수정 | `admin-post-edit.html` | `/admin/post-edit.php` |
 | 관리자 | 챗봇 설정 | `admin-chatbot.html` | `/admin/chatbot.php` |
 | 관리자 | 견적문의 관리 | 없음 (PHP 로 새로 구성) | `/admin/inquiries.php` |
-| 관리자 | 포트폴리오 관리 | 없음 (PHP 로 새로 구성) | `/admin/portfolios.php`, `/admin/portfolio-edit.php` |
+| 관리자 | 포트폴리오 관리 (게시판 `포트폴리오-sub`) | 없음 (PHP 로 새로 구성) | `/admin/portfolios.php`, `/admin/portfolio-edit.php` |
+| 관리자 | 서브페이지 관리 | 없음 (게시판 표·챗봇 설정 카드 스타일 재사용) | `/admin/subpages.php`, `/admin/subpage-edit.php?file=`·`?id=` |
+| 사용자 | 만든 서브페이지 | 없음 (관리자가 HTML·CSS·JS 작성) | `/page/{주소}` → `page.php` |
 | 관리자 | 비밀번호 재설정 | 없음 (로그인 카드 스타일 재사용) | `/admin/reset-password.php` |
 
 `source/purple-flux.html` 은 히어로 효과 실험 파일이라 화면에서 제외.
@@ -45,6 +49,8 @@ flowchart LR
     login --> dash["대시보드"]
     dash --> inquiries["견적문의 관리"]
     dash --> board["게시판 목록"]
+    dash --> boards["게시판 관리"]
+    boards -. 게시판 선택지 .-> board
     board --> edit["게시글 작성/수정"]
     edit --> board
     dash --> portfolios["포트폴리오 관리"]
@@ -61,7 +67,7 @@ flowchart LR
 | 영역 | 구성 | 비고 |
 | --- | --- | --- |
 | 사용자 | head(폰트·공통 CSS) + header(GNB) + 본문 + footer + 공통 스크립트 | 메인만 로더(`#loader`)와 `body.is-loading` 사용, header 테마 메인 `light` / 서브 `dark` |
-| 관리자 | head(Pretendard) + 좌측 메뉴(대시보드·견적문의·게시판·포트폴리오·챗봇 설정·로그아웃) + 본문 | 퍼블리싱에는 관리자 메뉴가 없어 PHP 조합 시 새로 추가 |
+| 관리자 | head(Pretendard) + 좌측 메뉴(대시보드·견적문의·게시판·게시판 관리·서브페이지 관리·챗봇 설정·로그아웃) + 본문 | 퍼블리싱에는 관리자 메뉴가 없어 PHP 조합 시 새로 추가. 포트폴리오 프로젝트 항목은 게시판 `포트폴리오-sub`, 서브페이지 관리는 페이지별 HTML·CSS·JS + `slot()` 문구 |
 | 관리자 인증 | head + 가운데 카드 | 로그인·회원가입은 메뉴 없이 단독 |
 
 GNB 메뉴: Home `#hero`, Portfolio `/portfolio.php`, Services `#gyu-mvp`, Why Us `#why-us`, Contact `#contact`.
@@ -88,10 +94,12 @@ footer 메뉴: Portfolio 만 `#gyu-main`, 나머지는 GNB 와 같음.
 | 회원가입 | ID(중복확인)*, 비밀번호*, 비밀번호 확인*, 이름*, 이메일*, 승인 코드* | ✅ ID 중복 확인, 이메일 중복 거부, 승인 코드(`signup_code` 설정) 검증 후 관리자 생성. 이메일 입력은 PHP 화면에만 추가 |
 | 대시보드 | 월 선택, 챗봇 사용률, 방문자 주간 그래프·월 합계, 관리자 계정 현황(전체·선택 월 가입·오늘 가입·최근 30일 로그인 비율), 최근 견적문의(상태), 최근 게시글(게시판 탭) | ✅ `dashboard-api.php`. 사용자 회원 기능이 없어 '회원 현황'은 관리자 계정 기준으로 표시 |
 | 견적문의 관리 | 상태별 건수, 상태 필터·검색·페이지, 상세, 상태·메모 저장, 삭제 | ✅ 퍼블리싱 시안 없음, 게시판 스타일 재사용 |
-| 게시판 목록 | 게시판 선택(공지사항·이벤트·자료실·포트폴리오), 검색(제목+내용·제목·내용·작성자), 노출된 글만, 체크 일괄 노출/숨김/삭제, 13개/페이지 | ✅ DB 목록(`posts-api.php?action=list`, 검색·페이지는 브라우저에서), 일괄 노출/숨김/삭제 |
+| 게시판 목록 | 게시판 선택(`boards` 테이블 목록 + 전체), 검색(제목+내용·제목·내용·작성자), 노출된 글만, 체크 일괄 노출/숨김/삭제, 13개/페이지 | ✅ DB 목록(`posts-api.php?action=list`, 검색·페이지는 브라우저에서), 일괄 노출/숨김/삭제 |
+| 게시판 관리 | 표(순서·키·이름·유형·글/행 수·표 편집·삭제), 게시판 추가(키+이름+유형), 이름 저장, 순서 이동, 삭제(글·첨부 또는 표 데이터 함께, 확인창) | ✅ 퍼블리싱 시안 없음. 키·유형은 변경 불가, 포트폴리오는 삭제 불가(이름 변경만) |
+| 표 게시판 편집 | 열 추가·이름·좌우 이동·삭제, 행 추가·위아래 이동·삭제, 칸 입력(긴 내용 줄바꿈·높이 자동) / 저장 | ✅ 표 전체를 `board_tables` 1행(JSON)으로 저장. 열 30·행 1,000·칸 1,000자. 빈 행은 저장 시 제외, 저장 안 하고 나가면 경고 |
 | 게시글 작성/수정 | 제목, 노출 여부, 게시판, 내용, 파일첨부 / 포트폴리오일 때 상단 문구·배경 이미지 추가 / 취소·임시저장·저장(·삭제) | ✅ 저장/수정/삭제, 첨부·이미지 업로드(`uploads/posts/`). 임시저장은 브라우저(localStorage)에 글 내용만 |
 | 포트폴리오 관리 | 표(썸네일·제목·분류·노출·순서), 분류 필터, 일괄 노출/숨김/삭제, 순서 이동 / 등록·수정(이미지 3종) | ✅ 퍼블리싱 시안 없음, 게시판 스타일 재사용 |
-| 챗봇 설정 | AI 이름, 안내문구, 아이콘, 테마 색상, 말투(친근·차분·따뜻·간결), 환영 메시지 / 삭제·취소·임시저장·저장 | ✅ 설정 1건 저장(`chatbot-api.php`), 임시저장은 브라우저, 삭제는 기본값 복귀. 아이콘은 PNG/JPEG/WEBP 1MB |
+| 챗봇 설정 | AI 이름, 안내문구, 아이콘, 테마 색상, 말투(친근·차분·따뜻·간결), 환영 메시지 / 삭제·취소·임시저장·저장 / AI 연동: Claude API 키·모델, 키 삭제 | ✅ 설정 1건 저장(`chatbot-api.php`), 임시저장은 브라우저, 삭제는 기본값 복귀(AI 키는 유지). 아이콘은 PNG/JPEG/WEBP 1MB. AI 답변은 `/chatbot-chat.php`, 실패 시 규칙 기반 |
 
 견적문의 상태: 접수 완료 · 검토 중 · 답변 대기 · 처리 완료 · 반려
 
@@ -104,7 +112,11 @@ footer 메뉴: Portfolio 만 `#gyu-main`, 나머지는 GNB 와 같음.
 | `admins` | id, login_id(UNIQUE), password_hash, name, email, created_at, last_login_at | 로그인, 회원가입, 계정 찾기, 대시보드 |
 | `password_resets` | id, admin_id, token_hash(UNIQUE), expires_at, used_at, created_at | 비밀번호 재설정 |
 | `inquiries` | id, name, email, phone, budget, schedule, company, details, status, admin_memo, privacy_agreed_at, ip, created_at, updated_at | 메인 폼, 견적문의 관리, 대시보드 |
-| `posts` | id, board, title, eyebrow, portfolio_id, content, image, is_visible, admin_id, views, created_at, updated_at | 게시판, 글작성, 메인 포트폴리오, 대시보드 |
+| `boards` | board_key(PK), name(중복 불가), type(post/table/portfolio), sort_order, created_at | 게시판 관리, 게시판 목록·글작성 선택지(post 만, 그 외는 각 관리 화면으로 이동), 대시보드 탭 |
+| `board_tables` | board_key(PK), col_names(JSON 열 이름), row_data(JSON 행×칸), updated_at | 표 게시판 편집 |
+| `page_slots` | file + slot_key(PK), value, updated_at | 서브페이지 관리, 각 PHP 의 `slot()` 출력 (행 없으면 코드의 기본값) |
+| `subpages` | id, file(기존 PHP, UNIQUE), slug(만든 페이지, UNIQUE), title, html, css, js, is_visible, created_at, updated_at | 서브페이지 관리, 사용자 페이지 CSS·JS·HTML 주입, `/page/{slug}` |
+| `posts` | id, board(= boards.board_key), title, eyebrow, portfolio_id, content, image, is_visible, admin_id, views, created_at, updated_at | 게시판, 글작성, 메인 포트폴리오, 대시보드 |
 | `post_files` | id, post_id, original_name, stored_name, size, created_at | 글작성 |
 | `portfolios` | id, title, category, client, type, project_date, summary, site_url, thumbnail, hero_image, detail_image, sort_order, is_visible, created_at, updated_at | 포트폴리오 목록/상세/관리 |
 | `chatbot_settings` | id(=1), ai_name, guide_text, icon, theme_color, tone, welcome_message, updated_at | 챗봇 설정, 챗봇 위젯 |
@@ -116,11 +128,12 @@ footer 메뉴: Portfolio 만 `#gyu-main`, 나머지는 GNB 와 같음.
 
 | 항목 | 내용 |
 | --- | --- |
-| 게시판 분류 | `공지사항/이벤트/자료실/포트폴리오` 로 통일 (`POST_BOARDS`). 대시보드 탭도 같은 목록 |
+| 게시판 분류 | `boards` 테이블에서 관리 (관리자 > 게시판 관리). 기본은 `포트폴리오` 하나 — 예전 고정 목록(공지사항/이벤트/자료실)은 없앰. 대시보드 탭·게시판 목록·글작성 선택지 모두 같은 목록. `portfolio` 는 메인 슬라이드용이라 삭제 불가 |
 | 대시보드 회원 현황 | 사용자 회원 기능이 없어 관리자 계정 기준으로 표시. 사용자 회원 기능을 만들면 다시 결정 |
 | 챗봇 사용률 | 선택 월 '챗봇을 연 세션 / 방문 세션' (둘 다 세션당 하루 1회) |
 | 포트폴리오 진입 경로 | GNB Portfolio → 목록. 메인 슬라이드 VIEW PROJECT → 글작성에서 고른 `portfolios` 상세 → 상세의 "목록으로" → 목록. 연결 안 함이거나 대상이 숨김·삭제면 퍼블리싱 동작(다음 슬라이드) 유지 |
 | 포트폴리오 데이터 | 메인 슬라이드 = 게시판 `포트폴리오` 글(`posts.portfolio_id` 로 상세 연결), 목록/상세 = `portfolios` 테이블로 분리 |
 | 포트폴리오 시드 | 원본에 상세가 있는 쿠무 외 5개는 분류·소개 문구를 임의로 넣음 (`db/seed-portfolios.sql`). 실제 내용으로 교체 필요 |
+| 메일 발송 (SMTP) | **할 일.** 지금 `send_mail()`(`app/mail.php`)은 PHP `mail()` 사용, 카페24 발송·스팸 여부 미확인. 사용처는 관리자 ID 찾기·비밀번호 재설정뿐. SMTP(카페24 메일 또는 외부 발송 서비스)로 바꾸고 설정값(host·port·user·pass·암호화)은 `app/config.local.php` 에 두기. 그 뒤 견적문의 메일(관리자 새 문의 알림 / 고객 접수 확인 / 관리자 답변 발송) 중 필요한 것 결정 |
 | 계정 찾기 메일 | 로컬은 `app/storage/mail.log`. 카페24 `mail()` 발송 여부는 배포 후 확인 필요 |
 | 견적문의 알림 | 문의 접수 시 관리자 알림 메일은 보내지 않음. 필요하면 `send_mail()` 로 추가 |

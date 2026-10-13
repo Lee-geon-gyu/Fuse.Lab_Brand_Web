@@ -1,4 +1,5 @@
-// 사용자 챗봇 위젯: 규칙 기반 응답 (키워드 → 안내 + 링크). 설정·연락처는 #chatbot 의 data-* 로 받는다
+// 사용자 챗봇 위젯. data-ai-url 이 있으면 서버(Claude)로 답하고, 없거나 실패하면 규칙 기반 응답 (키워드 → 안내 + 링크).
+// 설정·연락처는 #chatbot 의 data-* 로 받는다
 (() => {
   const root = document.querySelector("#chatbot");
   if (!root) return;
@@ -12,6 +13,9 @@
   const data = root.dataset;
   const tone = ["friendly", "calm", "warm", "concise"].includes(data.tone) ? data.tone : "friendly";
   let tracked = false;
+  let waiting = false;
+  // AI 에 보내는 대화 기록 (환영 메시지 제외, user/assistant 번갈아)
+  const history = [];
 
   const links = {
     contact: { label: "견적 문의하기", href: data.contactUrl },
@@ -106,10 +110,27 @@
     scrollToEnd();
   }
 
-  function ask(question) {
+  // AI 답변. 실패하면 null → 규칙 기반 답변 사용
+  async function aiReply() {
+    if (!data.aiUrl) return null;
+    const body = new FormData();
+    body.append("csrf_token", data.csrf || "");
+    body.append("messages", JSON.stringify(history));
+    try {
+      const response = await fetch(data.aiUrl, { method: "POST", body });
+      const result = await response.json();
+      return response.ok && result.ok && typeof result.reply === "string" ? result.reply : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function ask(question) {
     const text = question.trim();
-    if (!text) return;
+    if (!text || waiting) return;
+    waiting = true;
     addMessage(text, "user");
+    history.push({ role: "user", content: text });
     const reply = replies[intentOf(text)];
     const typing = document.createElement("p");
     typing.className = "chatbot__msg chatbot__msg--bot chatbot__msg--typing";
@@ -117,10 +138,13 @@
     typing.textContent = "···";
     log.append(typing);
     scrollToEnd();
-    setTimeout(() => {
-      typing.remove();
-      addMessage(reply[tone], "bot", reply.links);
-    }, 400);
+    const [answer] = await Promise.all([aiReply(), new Promise((resolve) => setTimeout(resolve, 400))]);
+    const replyText = answer || reply[tone];
+    typing.remove();
+    addMessage(replyText, "bot", reply.links);
+    history.push({ role: "assistant", content: replyText });
+    if (history.length > 10) history.splice(0, history.length - 10); // 서버는 최근 대화만 쓴다
+    waiting = false;
   }
 
   function track() {

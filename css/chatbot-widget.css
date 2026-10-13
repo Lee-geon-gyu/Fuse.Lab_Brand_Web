@@ -124,10 +124,17 @@
   white-space: nowrap;
 }
 
+/* 관리자가 입력한 안내문구: 최대 2줄, 넘치면 말줄임 (전체는 title) */
 .chatbot__title span {
+  display: -webkit-box;
+  overflow: hidden;
   font-size: 13px;
   line-height: 1.4;
   opacity: 0.85;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .chatbot__close {

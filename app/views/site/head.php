@@ -7,6 +7,8 @@
  * @var string[]    $styles    페이지 전용 CSS 경로 (공통 CSS 뒤에 로드)
  */
 $styles ??= [];
+// 서브페이지 관리에서 이 페이지에 넣은 CSS (관리자 입력 그대로)
+$subpage = subpage_current();
 ?>
 <!doctype html>
 <html lang="ko">
@@ -36,8 +38,14 @@ $styles ??= [];
     <link rel="stylesheet" href="/css/WON.css" />
     <link rel="stylesheet" href="/css/SURO.css" />
     <link rel="stylesheet" href="/css/chatbot-widget.css" />
+    <link rel="stylesheet" href="/css/site-overflow.css" />
 <?php foreach ($styles as $href): ?>
     <link rel="stylesheet" href="<?= e($href) ?>" />
 <?php endforeach; ?>
+<?php if ($subpage !== null && trim($subpage['css']) !== ''): ?>
+    <style data-subpage-css>
+<?= subpage_inline($subpage['css'], 'style') ?>
+    </style>
+<?php endif; ?>
   </head>
   <body<?= isset($bodyClass) ? ' class="' . e($bodyClass) . '"' : '' ?>>

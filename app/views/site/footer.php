@@ -4,13 +4,13 @@
  * @var bool $isHome
  */
 $home = $isHome ? '' : '/';
-// 연락처: footer 와 챗봇 응답이 같은 값을 쓴다
-$siteContact = [
-    'email' => 'hello@fuselab.example',
-    'phone' => '02-0000-2026',
-    'address' => '서울특별시 성동구 성수이로 00길 00, 4F',
-];
+$siteContact = site_contact();
+// 서브페이지 관리: 기존 PHP 페이지는 본문 아래 HTML 블록, 모든 서브페이지는 JS (관리자 입력 그대로)
+$subpage = subpage_current();
 ?>
+<?php if ($subpage !== null && $subpage['file'] !== null && trim($subpage['html']) !== ''): ?>
+    <div class="subpage-html"><?= $subpage['html'] ?></div>
+<?php endif; ?>
     <footer class="footer" data-header-theme="dark">
       <div class="footer-grid">
         <div class="left-box">
@@ -63,5 +63,10 @@ $siteContact = [
     <script src="/js/smooth-scroll.js"></script>
 <?php endif; ?>
     <script src="/js/chatbot-widget.js"></script>
+<?php if ($subpage !== null && trim($subpage['js']) !== ''): ?>
+    <script data-subpage-js>
+<?= subpage_inline($subpage['js'], 'script') ?>
+    </script>
+<?php endif; ?>
   </body>
 </html>

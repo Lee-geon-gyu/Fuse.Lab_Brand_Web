@@ -6,8 +6,12 @@
   gap: 12px;
 }
 
-a.pill-button {
-  text-decoration: none;
+/* 제목 옆 보조 설명 (예: 포트폴리오-sub · 포트폴리오 목록·상세 페이지) */
+.page-header__sub {
+  margin-left: 8px;
+  color: #868686;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .portfolio-table {

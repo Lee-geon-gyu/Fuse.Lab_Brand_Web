@@ -56,17 +56,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $rows = portfolio_admin_list($category);
 $message = flash('portfolio');
 $lastIndex = count($rows) - 1;
+// 게시판 관리의 포트폴리오-sub 게시판 = 이 화면. 제목은 게시판 이름을 따른다
+$boardName = board_list()[BOARD_PORTFOLIO_SUB] ?? '포트폴리오';
 
 view('admin/head', [
-    'pageTitle' => '포트폴리오 관리',
+    'pageTitle' => $boardName,
     'styles' => ['/css/admin-board.css', '/css/admin-portfolios.css', '/css/admin-layout.css'],
     'scripts' => ['/js/custom-select.js', '/js/admin-portfolios.js'],
 ]);
-view('admin/layout-start', ['active' => 'portfolios']);
+view('admin/layout-start', ['active' => 'board']);
 ?>
     <main class="board-shell">
       <header class="page-header">
-        <h1>포트폴리오 관리</h1>
+        <h1><?= e($boardName) ?> <span class="page-header__sub">포트폴리오 목록·상세 페이지</span></h1>
         <div class="page-header__bottom">
           <p class="post-count">총 <strong><?= count($rows) ?></strong>건</p>
           <div class="page-header__actions">
@@ -82,6 +84,8 @@ view('admin/layout-start', ['active' => 'portfolios']);
               </div>
               <noscript><button class="pill-button pill-button--muted" type="submit">보기</button></noscript>
             </form>
+            <a class="pill-button pill-button--muted" href="/admin/board.php">게시판 목록</a>
+            <a class="pill-button pill-button--muted" href="/admin/boards.php">게시판 관리</a>
             <a class="pill-button pill-button--primary" href="/admin/portfolio-edit.php">등록</a>
           </div>
         </div>
@@ -132,7 +136,7 @@ view('admin/layout-start', ['active' => 'portfolios']);
                 <tr>
                   <td><input class="row-check" type="checkbox" name="ids[]" value="<?= (int) $row['id'] ?>" aria-label="<?= e($row['title']) ?> 선택" /></td>
                   <td><img class="portfolio-thumb" src="<?= e($row['thumbnail']) ?>" alt="" width="64" height="64" loading="lazy" /></td>
-                  <td><a class="post-title" href="/admin/portfolio-edit.php?id=<?= (int) $row['id'] ?>"><?= e($row['title']) ?></a></td>
+                  <td><a class="post-title" href="/admin/portfolio-edit.php?id=<?= (int) $row['id'] ?>" title="<?= e($row['title']) ?>"><?= e($row['title']) ?></a></td>
                   <td><?= e(PORTFOLIO_CATEGORIES[$row['category']] ?? $row['category']) ?></td>
                   <td><?= $row['is_visible'] ? '노출' : '<span class="is-hidden-label">숨김</span>' ?></td>
                   <td>

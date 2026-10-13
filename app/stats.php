@@ -130,8 +130,8 @@ function dashboard_recent_inquiries(int $limit = 50): array
 function dashboard_recent_posts(int $limit = 100): array
 {
     $stmt = db()->prepare(
-        'SELECT p.id, p.board, p.title, p.is_visible, p.views, p.created_at, a.name AS author
-         FROM posts p LEFT JOIN admins a ON a.id = p.admin_id
+        'SELECT p.id, p.board, b.name AS board_name, p.title, p.is_visible, p.views, p.created_at, a.name AS author
+         FROM posts p LEFT JOIN admins a ON a.id = p.admin_id LEFT JOIN boards b ON b.board_key = p.board
          ORDER BY p.id DESC LIMIT ?'
     );
     $stmt->bindValue(1, $limit, PDO::PARAM_INT);
@@ -140,7 +140,7 @@ function dashboard_recent_posts(int $limit = 100): array
     return array_map(static fn (array $row): array => [
         'id' => (int) $row['id'],
         'board' => $row['board'],
-        'category' => POST_BOARDS[$row['board']] ?? $row['board'],
+        'category' => $row['board_name'] ?? $row['board'],
         'title' => $row['title'],
         'author' => $row['author'] ?? '(삭제된 관리자)',
         'date' => date('m-d', strtotime($row['created_at'])),

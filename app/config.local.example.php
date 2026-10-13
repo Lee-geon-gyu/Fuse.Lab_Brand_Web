@@ -16,4 +16,6 @@ return [
     'mail_from' => 'no-reply@example.com',
     // 사이트 주소 (비밀번호 재설정 메일 링크용, 끝에 / 없이)
     'site_url' => 'https://example.com',
+    // 관리자에서 기존 PHP 페이지 소스 직접 수정 허용. 관리자 계정이 털리면 서버 코드 실행까지 가능하므로 필요 없으면 false
+    'source_edit' => true,
 ];

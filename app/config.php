@@ -20,6 +20,8 @@ $config = [
     'mail_from' => getenv('MAIL_FROM') ?: '',
     // 사이트 고정 주소 (예: https://fuselab.co.kr). 비밀번호 재설정 메일 링크에 사용. 비어 있으면 요청 호스트
     'site_url' => getenv('SITE_URL') ?: '',
+    // 관리자 > 서브페이지 편집에서 기존 PHP 페이지 소스 직접 수정 허용 (false 면 소스 탭 숨김)
+    'source_edit' => getenv('SOURCE_EDIT') !== '0',
 ];
 
 $local = __DIR__ . '/config.local.php';

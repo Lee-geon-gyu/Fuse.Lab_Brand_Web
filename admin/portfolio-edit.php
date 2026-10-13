@@ -125,7 +125,7 @@ view('admin/head', [
     'styles' => ['/css/admin-board.css', '/css/admin-post-edit.css', '/css/admin-portfolios.css', '/css/admin-layout.css'],
     'scripts' => ['/js/custom-select.js', '/js/admin-portfolios.js'],
 ]);
-view('admin/layout-start', ['active' => 'portfolios']);
+view('admin/layout-start', ['active' => 'board']);
 ?>
     <main class="editor-shell">
       <form class="editor-card" id="portfolio-form" method="post" enctype="multipart/form-data"

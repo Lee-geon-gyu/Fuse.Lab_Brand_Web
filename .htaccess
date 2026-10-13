@@ -13,3 +13,9 @@ Options -Indexes
 </FilesMatch>
 
 RedirectMatch 404 ^/docker(/|$)
+
+# 관리자가 만든 서브페이지: /page/{slug} → page.php?slug={slug}
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^page/([a-z0-9]+(?:-[a-z0-9]+)*)/?$ page.php?slug=$1 [L,QSA]
+</IfModule>

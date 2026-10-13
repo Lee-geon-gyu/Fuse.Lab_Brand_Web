@@ -2,6 +2,12 @@
 require __DIR__ . '/../app/bootstrap.php';
 require_admin();
 
+// ?board=키 로 들어오면 그 게시판을 먼저 보여 준다 (게시판 관리의 '글 보기')
+$boards = board_list('post');
+$selectedBoard = (string) ($_GET['board'] ?? '');
+// 글 목록이 아닌 게시판(포트폴리오-sub, 표)은 고르면 각자의 관리 화면으로 이동 (js/admin-board.js)
+$otherBoards = array_filter(board_admin_list(), static fn (array $board): bool => $board['type'] !== 'post');
+
 view('admin/head', [
     'pageTitle' => '게시판 목록',
     'styles' => ['/css/admin-board.css', '/css/admin-layout.css'],
@@ -22,14 +28,17 @@ view('admin/layout-start', ['active' => 'board']);
           <div class="page-header__actions">
             <div class="select-box select-box--category" data-custom-select>
               <select id="category-filter" aria-label="게시판 종류">
-                <option value="notice">공지사항</option>
-                <option value="event">이벤트</option>
-                <option value="resources">자료실</option>
-                <option value="portfolio">포트폴리오</option>
+<?php foreach ($boards as $key => $name): ?>
+                <option value="<?= e($key) ?>"<?= (string) $key === $selectedBoard ? ' selected' : '' ?>><?= e($name) ?></option>
+<?php endforeach; ?>
                 <option value="all">전체</option>
+<?php foreach ($otherBoards as $board): ?>
+                <option value="<?= e($board['board_key']) ?>" data-href="<?= e(board_admin_url($board['board_key'], $board['type'])) ?>"><?= e($board['name']) ?> ↗</option>
+<?php endforeach; ?>
               </select>
               <img src="/aseets/icons/admin/board-category-arrow.svg" alt="" width="20" height="20" />
             </div>
+            <a class="pill-button pill-button--muted" href="/admin/boards.php">게시판 관리</a>
             <button class="pill-button pill-button--primary" id="new-post" type="button">글쓰기</button>
           </div>
         </div>
@@ -102,7 +111,7 @@ view('admin/layout-start', ['active' => 'board']);
         <td><input class="row-check" type="checkbox" /></td>
         <td class="post-number"></td>
         <td class="post-title-cell"><button class="post-title" type="button"></button></td>
-        <td class="post-author"></td>
+        <td class="post-author is-ellipsis"></td>
         <td class="post-date"></td>
         <td class="post-views"></td>
         <td class="post-visibility"></td>

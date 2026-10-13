@@ -2,7 +2,9 @@
 /**
  * 챗봇 설정 JSON API (관리자 전용). 응답: { ok: bool, message?: string, settings?: {...} }
  *   POST action=save   (multipart) → aiName, guideText, themeColor, tone, welcomeMessage, icon(파일)?, remove_icon=1?
- *   POST action=delete             → 설정 행 삭제(기본값 복귀) + 업로드 아이콘 파일 삭제
+ *   POST action=delete             → 설정 행 삭제(기본값 복귀) + 업로드 아이콘 파일 삭제 (AI 키는 유지)
+ *   POST action=save_ai            → apiKey(빈 값이면 기존 키 유지), model → { ai: {configured, maskedKey, model} }
+ *   POST action=delete_ai_key      → API 키 삭제 (규칙 기반 응답으로 복귀) → { ai }
  * POST 는 모두 csrf_token 필요.
  */
 require __DIR__ . '/../app/bootstrap.php';
@@ -55,6 +57,20 @@ $action = $_POST['action'] ?? '';
 if ($action === 'delete') {
     chatbot_reset();
     respond(['ok' => true, 'settings' => settings_payload()]);
+}
+
+if ($action === 'save_ai') {
+    try {
+        chatbot_ai_save((string) ($_POST['apiKey'] ?? ''), (string) ($_POST['model'] ?? ''));
+    } catch (RuntimeException $exception) {
+        fail($exception->getMessage());
+    }
+    respond(['ok' => true, 'ai' => chatbot_ai_public()]);
+}
+
+if ($action === 'delete_ai_key') {
+    chatbot_ai_remove_key();
+    respond(['ok' => true, 'ai' => chatbot_ai_public()]);
 }
 
 if ($action !== 'save') {

@@ -1,6 +1,7 @@
 <?php
 /**
- * 사용자 챗봇 위젯 (site/footer 에서 include). 응답은 js/chatbot-widget.js 의 규칙 기반.
+ * 사용자 챗봇 위젯 (site/footer 에서 include). AI 키가 있으면 /chatbot-chat.php(Claude) 로 답하고,
+ * 키가 없거나 실패하면 js/chatbot-widget.js 의 규칙 기반 응답을 쓴다.
  * @var bool                                           $isHome
  * @var array{email: string, phone: string, address: string} $contact footer 와 같은 연락처
  */
@@ -12,6 +13,9 @@ $chatbotHome = $isHome ? '' : '/';
       id="chatbot"
       style="--chatbot-color: <?= e($chatbot['theme_color']) ?>; --chatbot-on-color: <?= e(chatbot_contrast_color($chatbot['theme_color'])) ?>"
       data-open-url="/chatbot-open.php"
+<?php if (chatbot_ai()['api_key'] !== ''): ?>
+      data-ai-url="/chatbot-chat.php"
+<?php endif; ?>
       data-csrf="<?= e(csrf_token()) ?>"
       data-tone="<?= e($chatbot['tone']) ?>"
       data-contact-url="<?= e($chatbotHome) ?>#contact"
@@ -31,9 +35,9 @@ $chatbotHome = $isHome ? '' : '/';
 <?php endif; ?>
           </span>
           <div class="chatbot__title">
-            <strong id="chatbot-title"><?= e($chatbot['ai_name']) ?></strong>
+            <strong id="chatbot-title" title="<?= e($chatbot['ai_name']) ?>"><?= e($chatbot['ai_name']) ?></strong>
 <?php if ($chatbot['guide_text'] !== ''): ?>
-            <span><?= e($chatbot['guide_text']) ?></span>
+            <span title="<?= e($chatbot['guide_text']) ?>"><?= e($chatbot['guide_text']) ?></span>
 <?php endif; ?>
           </div>
           <button class="chatbot__close" type="button" aria-label="챗봇 닫기">

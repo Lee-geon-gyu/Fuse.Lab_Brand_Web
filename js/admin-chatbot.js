@@ -62,6 +62,7 @@
     currentIconName = value.iconName;
     iconPreview.src = currentIconData || defaultIcon;
     uploadName.textContent = currentIconName || (chatbotApi && currentIconData ? "등록된 아이콘" : "");
+    uploadName.title = uploadName.textContent;
     iconInput.value = "";
     updateColorPreview();
   }
@@ -172,6 +173,7 @@
       currentIconName = file.name;
       iconPreview.src = currentIconData;
       uploadName.textContent = currentIconName;
+      uploadName.title = currentIconName;
     };
     reader.readAsDataURL(file);
   });
@@ -223,5 +225,49 @@
     }
   } else {
     apply(read(draftKey) || read(savedKey) || defaults);
+  }
+
+  // ---- AI 연동 (PHP 페이지 전용). 키는 서버에만 저장하고 화면에는 가린 값만 보인다 ----
+  const aiForm = document.querySelector("#chatbot-ai");
+  if (chatbotApi && aiForm) {
+    const aiStatus = document.querySelector("#ai-status");
+    const aiKeyInput = aiForm.elements.apiKey;
+    const aiDeleteButton = document.querySelector("#delete-ai-key");
+
+    const showAi = (ai) => {
+      aiStatus.textContent = ai.configured
+        ? `연결됨 · 키 ${ai.maskedKey}`
+        : "미설정 · 규칙 기반 자동 응답을 사용 중입니다.";
+      aiKeyInput.value = "";
+      aiKeyInput.placeholder = ai.configured ? "변경할 때만 새 키를 입력" : "sk-ant-...";
+      aiForm.elements.model.value = ai.model;
+      aiDeleteButton.hidden = !ai.configured;
+    };
+
+    aiForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const body = new FormData();
+      body.append("action", "save_ai");
+      body.append("apiKey", aiKeyInput.value.trim());
+      body.append("model", aiForm.elements.model.value.trim());
+      try {
+        showAi((await requestApi(body)).ai);
+        notify("AI 연동 설정을 저장했습니다.");
+      } catch (error) {
+        notify(error.message);
+      }
+    });
+
+    aiDeleteButton.addEventListener("click", async () => {
+      if (!confirm("API 키를 삭제할까요? 챗봇은 규칙 기반 자동 응답으로 돌아갑니다.")) return;
+      const body = new FormData();
+      body.append("action", "delete_ai_key");
+      try {
+        showAi((await requestApi(body)).ai);
+        notify("API 키를 삭제했습니다.");
+      } catch (error) {
+        notify(error.message);
+      }
+    });
   }
 })();

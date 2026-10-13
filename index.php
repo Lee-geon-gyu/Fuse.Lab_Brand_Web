@@ -87,9 +87,9 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading', 'isHo
 
                     <div class="gyu-project__heading">
 <?php if ($slide['eyebrow'] !== ''): ?>
-                      <p class="gyu-project__eyebrow"><?= e($slide['eyebrow']) ?></p>
+                      <p class="gyu-project__eyebrow" title="<?= e($slide['eyebrow']) ?>"><?= e($slide['eyebrow']) ?></p>
 <?php endif; ?>
-                      <<?= $headingTag ?> id="gyu-title-<?= $number ?>" class="gyu-project__title">
+                      <<?= $headingTag ?> id="gyu-title-<?= $number ?>" class="gyu-project__title" title="<?= e($slide['title']) ?>">
                         <?= e($slide['title']) ?>
                       </<?= $headingTag ?>>
                     </div>

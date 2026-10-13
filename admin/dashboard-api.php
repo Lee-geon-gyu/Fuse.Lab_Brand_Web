@@ -38,7 +38,7 @@ if ($action === 'lists') {
         'ok' => true,
         'inquiries' => dashboard_recent_inquiries(),
         'posts' => dashboard_recent_posts(),
-        'boards' => POST_BOARDS,
+        'boards' => board_list('post'),
     ]);
 }
 

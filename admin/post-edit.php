@@ -37,10 +37,9 @@ view('admin/layout-start', ['active' => 'board']);
           <span class="editor-label" id="post-category-label">게시판</span>
           <div class="select-box" data-custom-select>
             <select id="post-category" aria-labelledby="post-category-label">
-              <option value="notice">공지사항</option>
-              <option value="event">이벤트</option>
-              <option value="resources">자료실</option>
-              <option value="portfolio">포트폴리오</option>
+<?php foreach (board_list('post') as $key => $name): ?>
+              <option value="<?= e($key) ?>"><?= e($name) ?></option>
+<?php endforeach; ?>
             </select>
             <img src="/aseets/icons/admin/board-category-arrow.svg" alt="" width="20" height="20" />
           </div>
