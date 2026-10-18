@@ -1,0 +1,21 @@
+DirectoryIndex index.php index.html
+Options -Indexes
+
+# 설정/문서/개발용 파일은 웹에서 접근 차단
+<FilesMatch "(^\.|\.(md|yml|yaml|sql|bat|sh|ini|log)$|^Dockerfile$)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+RedirectMatch 404 ^/docker(/|$)
+
+# 관리자가 만든 서브페이지: /page/{slug} → page.php?slug={slug}
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^page/([a-z0-9]+(?:-[a-z0-9]+)*)/?$ page.php?slug=$1 [L,QSA]
+</IfModule>

@@ -1,0 +1,18 @@
+/* js/motion.js 글자 등장: 단어 단위로 줄바꿈되도록 묶고 글자마다 transform 을 받을 수 있게 함 */
+.fx-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.fx-char {
+  display: inline-block;
+}
+
+/* From Idea to System. 핀 동안 서비스 섹션이 그 아래에 미리 깔리도록 겹침 순서 지정. 위치(margin-top)는 js/motion.js 가 계산 */
+.fx-divider-pin .divider {
+  z-index: 2;
+}
+
+.fx-divider-pin .gyu-mvp {
+  z-index: 1;
+}

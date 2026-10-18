@@ -172,6 +172,7 @@ input[type="radio"]:checked {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  max-width: 100%;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -189,7 +190,10 @@ input[type="radio"]:checked {
   font-size: 14px;
 }
 
-.file-list span {
+/* 파일명이 길면 한 줄 말줄임 (전체는 title) */
+.file-list span,
+.file-list a {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -197,6 +201,7 @@ input[type="radio"]:checked {
 
 .file-list button {
   display: grid;
+  flex: none;
   place-items: center;
   width: 20px;
   height: 20px;
@@ -217,6 +222,32 @@ input[type="radio"]:checked {
 
 .editor-actions [hidden] {
   display: none;
+}
+
+.editor-row[hidden],
+.editor-hint[hidden],
+.image-preview[hidden] {
+  display: none;
+}
+
+.editor-hint {
+  margin: 0;
+  color: #868686;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.image-preview {
+  display: block;
+  width: min(480px, 100%);
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #f7f7f7;
+}
+
+.file-list a {
+  color: inherit;
 }
 
 @media (max-width: 720px) {

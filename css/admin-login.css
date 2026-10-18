@@ -1,0 +1,292 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+body {
+  background: #edf0f3;
+  color: #222;
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+main {
+  display: grid;
+  min-height: 100vh;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 32px 20px;
+}
+
+.login-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: min(600px, 100%);
+  padding: 40px 20px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.login-card__heading {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 16px;
+}
+
+h1 {
+  margin: 0;
+  color: #000;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.field label {
+  width: fit-content;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.field input,
+.recovery-field input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 12px;
+  outline: none;
+  background: #f7f7f7;
+  color: #222;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+input::placeholder {
+  color: #868686;
+  opacity: 1;
+}
+
+input:focus-visible {
+  outline: 2px solid #6a00ff;
+  outline-offset: 1px;
+}
+
+.login-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  min-height: 42px;
+}
+
+.login-links a,
+.login-links button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #868686;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-decoration: underline;
+  text-underline-offset: 1px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.login-links a:focus-visible,
+.login-links button:focus-visible {
+  outline: 2px solid #6a00ff;
+  outline-offset: 3px;
+}
+
+.login-links__divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1px;
+  height: 21px;
+}
+
+.login-links__divider img {
+  display: block;
+  transform: rotate(90deg);
+}
+
+.login-card__footer {
+  display: flex;
+  justify-content: center;
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 50px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 71px;
+  background: #6a00ff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.primary-button:hover {
+  background: #5900d6;
+}
+
+.primary-button:focus-visible {
+  outline: 2px solid #222;
+  outline-offset: 3px;
+}
+
+.feedback {
+  margin: 0;
+  color: #b42318;
+  font-size: 14px;
+  text-align: center;
+}
+
+.feedback:empty {
+  display: none;
+}
+
+.feedback.is-success {
+  color: #1a7f37;
+}
+
+.recovery-dialog {
+  width: min(480px, calc(100% - 32px));
+  padding: 28px;
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 14px 45px rgba(0, 0, 0, 0.18);
+}
+
+.recovery-dialog::backdrop {
+  background: rgba(22, 28, 34, 0.48);
+}
+
+.recovery-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.recovery-dialog h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.recovery-dialog__close {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: #f0f0f0;
+  color: #222;
+  font-size: 23px;
+  cursor: pointer;
+}
+
+.recovery-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 24px 0;
+}
+
+.recovery-tabs button {
+  flex: 1;
+  height: 42px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+}
+
+.recovery-tabs button[aria-selected="true"] {
+  border-color: #6a00ff;
+  color: #6a00ff;
+  font-weight: 600;
+}
+
+.recovery-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recovery-panel[hidden] {
+  display: none;
+}
+
+.recovery-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recovery-field label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.recovery-panel .primary-button {
+  align-self: center;
+}
+
+@media (max-width: 640px) {
+  main {
+    padding: 24px 16px;
+  }
+
+  .login-card {
+    padding: 32px 20px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  .field label {
+    font-size: 16px;
+  }
+
+  .login-links {
+    gap: 14px;
+  }
+
+  .login-links a,
+  .login-links button {
+    font-size: 14px;
+  }
+}

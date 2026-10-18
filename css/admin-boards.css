@@ -1,0 +1,100 @@
+/* 관리자 게시판 관리 (admin-board.css / admin-portfolios.css 위에 덧씀) */
+
+.board-create__controls {
+  flex-wrap: wrap;
+}
+
+.board-input {
+  height: 48px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  outline: none;
+  background: #f7f7f7;
+  color: #222;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.board-input::placeholder {
+  color: #868686;
+  opacity: 1;
+}
+
+.board-input:focus {
+  border-color: #6a00ff;
+}
+
+.board-input--key {
+  width: 220px;
+}
+
+.board-input--name {
+  flex: 1;
+  min-width: 160px;
+}
+
+.boards-table {
+  min-width: 760px;
+}
+
+.boards-table .col-order {
+  width: 120px;
+}
+
+.boards-table .col-key {
+  width: 180px;
+}
+
+.boards-table .col-count {
+  width: 100px;
+}
+
+.boards-table .col-type {
+  width: 100px;
+}
+
+.boards-table .col-manage {
+  width: 240px;
+}
+
+.board-input--type {
+  width: 130px;
+  cursor: pointer;
+}
+
+/* 이동 버튼(글 보기/표 편집) | 삭제(또는 삭제 불가) 두 칸 고정 → 행마다 위치가 같다 */
+.board-manage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.board-manage > * {
+  width: 100%;
+  padding: 0 12px;
+  text-align: center;
+}
+
+.boards-table td {
+  height: 64px;
+}
+
+.board-rename {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.board-rename .board-input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  font-size: 16px;
+}
+
+.board-key {
+  color: #868686;
+  font-family: ui-monospace, Consolas, monospace;
+}

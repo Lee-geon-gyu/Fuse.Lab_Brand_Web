@@ -22,21 +22,20 @@
   ScrollTrigger.addEventListener("refresh", () => lenis.resize());
 
   const isReload = performance.getEntriesByType("navigation")[0]?.type === "reload";
-  const startScroll = () => {
-    lenis.start();
-    ScrollTrigger.refresh();
-    // Restore the hero after GSAP measures the layout and the loader unlocks scroll.
+  const resetScroll = () => {
     if (isReload) lenis.scrollTo(0, { immediate: true });
   };
 
   if (document.body.classList.contains("is-loading")) {
+    // 위치 계산(ScrollTrigger.refresh)은 js/loader.js 가 로더를 닫기 전에 끝내 둠. 닫힌 뒤엔 스크롤만 풀어 줌
     lenis.stop();
-    window.addEventListener("loader:done", startScroll, { once: true });
+    window.addEventListener("loader:done", () => {
+      lenis.start();
+      resetScroll();
+    }, { once: true });
+  } else {
+    // ?noloader: 로더 없이 바로 보이므로 폰트가 바뀐 뒤 위치를 다시 계산
+    window.addEventListener("load", resetScroll, { once: true });
+    document.fonts?.ready.then(() => ScrollTrigger.refresh());
   }
-
-  window.addEventListener("load", () => {
-    if (document.body.classList.contains("is-loading")) ScrollTrigger.refresh();
-    else startScroll();
-  }, { once: true });
-  document.fonts?.ready.then(() => ScrollTrigger.refresh());
 })();

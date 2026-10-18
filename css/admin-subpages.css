@@ -1,0 +1,275 @@
+/* 서브페이지 관리 목록(admin/subpages.php)·편집(admin/subpage-edit.php)
+   목록은 admin-board/portfolios/boards.css, 편집은 admin-chatbot.css 설정 카드 위에 덧씀 */
+
+/* ---- 목록 ---- */
+.subpage-slug-prefix {
+  color: #868686;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 16px;
+}
+
+.subpages-table {
+  min-width: 860px;
+}
+
+.subpages-table .col-url {
+  width: 260px;
+}
+
+.subpages-table .col-kind,
+.subpages-table .col-state {
+  width: 130px;
+}
+
+.subpages-table .col-manage {
+  width: 220px;
+}
+
+.subpages-table th:first-child,
+.subpages-table th:nth-child(2),
+.subpages-table td:first-child,
+.subpages-table td:nth-child(2) {
+  text-align: left;
+}
+
+.subpage-name {
+  color: #131416;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.subpage-url {
+  color: #6a00ff;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.subpage-name:hover,
+.subpage-url:hover {
+  text-decoration: underline;
+}
+
+/* ---- 편집 ---- */
+.subpage-back {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.subpage-back a {
+  color: #868686;
+  text-decoration: none;
+}
+
+.subpage-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-card__desc a {
+  color: #6a00ff;
+  overflow-wrap: anywhere;
+}
+
+.subpage-hidden {
+  color: #b26b00;
+}
+
+.subpage-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+}
+
+.subpage-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 71px;
+  background: #f0f0f0;
+  color: #222;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.subpage-tabs button span {
+  color: #868686;
+  font-size: 13px;
+}
+
+.subpage-tabs button[aria-selected="true"] {
+  background: #f1e9ff;
+  color: #6a00ff;
+}
+
+.subpage-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.subpage-panel[hidden] {
+  display: none;
+}
+
+.subpage-panel__help {
+  margin: 0;
+  color: #868686;
+  font-size: 14px;
+}
+
+/* 코드 입력 (HTML·CSS·JS) */
+.subpage-code {
+  width: 100%;
+  height: auto;
+  min-height: 420px;
+  padding: 16px 20px;
+  border: 0;
+  border-radius: 12px;
+  outline: none;
+  background: #1e1f24;
+  color: #e8e8ea;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  tab-size: 2;
+  white-space: pre;
+  overflow: auto;
+  resize: vertical;
+}
+
+.subpage-code::placeholder {
+  color: #6b6f78;
+}
+
+/* 소스 탭: 기존 PHP 파일 직접 편집 */
+.subpage-code--source {
+  min-height: 640px;
+}
+
+.subpage-warning {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #fff4d6;
+  color: #7a5200;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.subpage-backups ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.subpage-backups li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 10px;
+  background: #f7f7f7;
+  font-size: 14px;
+}
+
+.subpage-backups .quiet-button {
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 71px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* 문구 탭: 슬롯 키는 길 수 있어 말줄임 (전체는 title) */
+[data-panel="texts"] .form-row > label {
+  display: block;
+  overflow: hidden;
+  padding-top: 8px;
+  padding-right: 12px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subpage-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.subpage-textarea {
+  width: 100%;
+  min-height: 0;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 12px;
+  outline: none;
+  background: #f7f7f7;
+  color: #222;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.subpage-textarea--code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 14px;
+}
+
+.subpage-field__help {
+  color: #868686;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.subpage-type {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: #eef2f7;
+  color: #464c53;
+  font-weight: 600;
+}
+
+.subpage-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  font-size: 16px;
+}
+
+.subpage-empty {
+  margin: 0;
+  color: #666;
+  overflow-wrap: anywhere;
+}
+
+.subpage-preview {
+  display: inline-flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 24px;
+  border-radius: 71px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+}

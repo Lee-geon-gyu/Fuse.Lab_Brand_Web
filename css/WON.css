@@ -1,0 +1,58 @@
+/* 관리자로 로그인했을 때만 출력되는 메인 편집 링크 (index.php) */
+.admin-edit-link {
+  position: absolute;
+  top: calc(var(--header-h, 80px) + 24px);
+  right: 40px;
+  z-index: 20;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: #6a00ff;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  pointer-events: auto;
+}
+
+.admin-bar {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.88);
+  color: #fff;
+  font-size: 14px;
+}
+
+.admin-bar a {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #fff;
+  color: #111;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin-edit-link:hover,
+.admin-bar a:hover {
+  filter: brightness(0.9);
+}
+
+@media (max-width: 767px) {
+  .admin-edit-link {
+    right: 20px;
+  }
+
+  .admin-bar {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    justify-content: center;
+  }
+}

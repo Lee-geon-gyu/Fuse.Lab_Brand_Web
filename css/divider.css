@@ -50,11 +50,9 @@
 }
 @keyframes divider-flow { to { transform: translateX(-50%); } }
 
-/* 진입 연출 */
+/* 진입 연출 (문구는 js/motion.js 글자 등장) */
 .divider.is-pre .divider__sphere { opacity: 0; transform: scale(0.8); }
-.divider.is-pre .divider__text { opacity: 0; transform: translate(-50%, calc(-50% + 30px)); }
 .divider__sphere { transition: opacity 1s var(--ease-out), transform 1.2s var(--ease-out); }
-.divider__text { transition: opacity 1s var(--ease-out) .2s, transform 1s var(--ease-out) .2s; }
 
 @media (max-width: 768px) {
   .divider__text { white-space: normal; width: 100%; }
@@ -64,5 +62,5 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .divider__track { animation: none; }
-  .divider__sphere, .divider__text { transition: none; }
+  .divider__sphere { transition: none; }
 }

@@ -1,0 +1,167 @@
+/* 관리자 공통 레이아웃: 좌측 메뉴 + 본문 (PHP 관리자 페이지 전용) */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.admin-nav {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 32px;
+  width: 220px;
+  height: 100vh;
+  height: 100dvh;
+  padding: 32px 16px 24px;
+  border-right: 1px solid #e1e5ea;
+  background: #fff;
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
+}
+
+.admin-nav__logo {
+  display: inline-flex;
+  padding: 0 12px;
+}
+
+.admin-nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-nav a {
+  display: block;
+  padding: 12px;
+  border-radius: 10px;
+  color: #464c53;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.admin-nav a:hover {
+  background: #f4f5f7;
+  color: #131416;
+}
+
+.admin-nav a[aria-current="page"] {
+  background: #f1e9ff;
+  color: #6a00ff;
+  font-weight: 700;
+}
+
+.admin-nav a:focus-visible {
+  outline: 2px solid #6a00ff;
+  outline-offset: 2px;
+}
+
+.admin-nav__bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.admin-nav__bottom a,
+.admin-nav__bottom button {
+  color: #8a949e;
+  font-size: 14px;
+}
+
+.admin-nav__bottom form {
+  margin: 0;
+}
+
+.admin-nav__bottom button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font-family: inherit;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-nav__bottom button:hover {
+  background: #f4f5f7;
+  color: #131416;
+}
+
+.admin-nav__bottom button:focus-visible {
+  outline: 2px solid #6a00ff;
+  outline-offset: 2px;
+}
+
+/* 관리자 이름: 한 줄 말줄임 (전체는 title) */
+.admin-nav__user {
+  overflow: hidden;
+  padding: 0 12px 8px;
+  color: #131416;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-content {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .admin-nav {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    width: auto;
+    height: auto;
+    padding: 12px 16px;
+    border-right: 0;
+    border-bottom: 1px solid #e1e5ea;
+  }
+
+  .admin-nav__logo {
+    padding: 0;
+  }
+
+  .admin-nav__list,
+  .admin-nav__bottom {
+    flex-direction: row;
+    margin-top: 0;
+  }
+
+  .admin-nav__bottom {
+    align-items: center;
+    margin-left: auto;
+  }
+
+  .admin-nav__user {
+    max-width: 160px;
+    padding: 0 4px;
+  }
+
+  .admin-nav a,
+  .admin-nav__bottom button {
+    padding: 8px 10px;
+    white-space: nowrap;
+  }
+
+  .admin-nav__list {
+    flex-wrap: wrap;
+  }
+}

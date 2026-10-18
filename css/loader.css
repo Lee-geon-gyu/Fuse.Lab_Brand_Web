@@ -3,10 +3,10 @@
   position: fixed; inset: 0; z-index: 200;
   overflow: hidden;
   background: var(--c-bg-loader);
-  opacity: 1; transform: scale(1);
-  transition: opacity .8s ease, transform .8s var(--ease-out);
+  clip-path: inset(0 0 0 0);
+  transition: clip-path .9s cubic-bezier(.76, 0, .24, 1) .35s, opacity .2s ease;
 }
-.loader.is-done { opacity: 0; transform: scale(1.04); pointer-events: none; }
+.loader.is-done { clip-path: inset(0 0 100% 0); pointer-events: none; }
 
 .loader__ring {
   position: absolute; left: calc(50% + 0.5px); top: calc(50% - 0.5px);
@@ -33,6 +33,8 @@
 .loader__line:nth-child(2) { animation-delay: .6s; }
 .loader__line:nth-child(3) { animation-delay: .85s; }
 .loader__line--accent { font-family: var(--f-serif); font-weight: 500; font-style: italic; color: var(--c-primary); }
+/* 첫 화면 폰트를 받는 동안은 문구 등장을 멈춰 둠 (app/views/site/head.php) */
+.fonts-pending .loader__line { animation-play-state: paused; }
 
 @keyframes loader-ring-in {
   from { opacity: 0; transform: translate(-50%, -50%) scale(.85) rotate(0deg); }
@@ -43,7 +45,46 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* LOADER → HERO 전환: 문구가 위로 빠지고 → 로더가 위로 걷히며 → 히어로가 차례로 등장 */
+.loader.is-done .loader__line { animation: loader-line-out .55s cubic-bezier(.55, 0, .75, .2) both; }
+.loader.is-done .loader__line:nth-child(1) { animation-delay: 0s; }
+.loader.is-done .loader__line:nth-child(2) { animation-delay: .06s; }
+.loader.is-done .loader__line:nth-child(3) { animation-delay: .12s; }
+.loader.is-done img.loader__ring { animation: loader-ring-out .6s ease-in both; }
+@keyframes loader-line-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-40px); }
+}
+@keyframes loader-ring-out {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to   { opacity: 0; transform: translate(-50%, -50%) scale(1.15); }
+}
+
+body.hero-intro .hero__visual { animation: hero-visual-in 1.6s var(--ease-out) .3s backwards; }
+body.hero-intro .hero__title  { animation: hero-title-in 1.1s var(--ease-out) .8s backwards; }
+body.hero-intro .hero__info   { animation: hero-rise-in .9s var(--ease-out) .7s backwards; }
+body.hero-intro .hero__logo   { animation: hero-rise-in .9s var(--ease-out) .8s backwards; }
+body.hero-intro .header__inner { animation: hero-header-in .8s var(--ease-out) 1s backwards; }
+@keyframes hero-visual-in {
+  from { opacity: 0; transform: scale(1.12); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes hero-title-in {
+  from { transform: translateY(45%); clip-path: inset(-20% -5% 100% -5%); }
+  to   { transform: translateY(0); clip-path: inset(-20% -5% -30% -5%); }
+}
+@keyframes hero-rise-in {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-header-in {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .loader, .loader__ring, .loader__line { animation-duration: .01s; animation-delay: 0s; transition-duration: .2s; }
-  .loader.is-done { transform: none; }
+  .loader.is-done { clip-path: none; opacity: 0; transition: opacity .2s ease; }
+  body.hero-intro .hero__visual, body.hero-intro .hero__title, body.hero-intro .hero__info,
+  body.hero-intro .hero__logo, body.hero-intro .header__inner { animation: none; }
 }

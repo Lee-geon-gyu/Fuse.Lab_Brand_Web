@@ -1,0 +1,124 @@
+<?php
+require __DIR__ . '/../app/bootstrap.php';
+require_admin();
+
+// ?board=키 로 들어오면 그 게시판을 먼저 보여 준다 (게시판 관리의 '글 보기')
+$boards = board_list('post');
+$selectedBoard = (string) ($_GET['board'] ?? '');
+// 글 목록이 아닌 게시판(포트폴리오-sub, 표)은 고르면 각자의 관리 화면으로 이동 (js/admin-board.js)
+$otherBoards = array_filter(board_admin_list(), static fn (array $board): bool => $board['type'] !== 'post');
+
+view('admin/head', [
+    'pageTitle' => '게시판 목록',
+    'styles' => ['/css/admin-board.css', '/css/admin-layout.css'],
+    'scripts' => ['/js/custom-select.js', '/js/admin-board.js'],
+    'bodyData' => [
+        'editor-url' => '/admin/post-edit.php',
+        'posts-api' => '/admin/posts-api.php',
+        'csrf' => csrf_token(),
+    ],
+]);
+view('admin/layout-start', ['active' => 'board']);
+?>
+    <main class="board-shell">
+      <header class="page-header">
+        <h1>게시판 목록</h1>
+        <div class="page-header__bottom">
+          <p class="post-count">총 <strong id="post-count">0</strong>건</p>
+          <div class="page-header__actions">
+            <div class="select-box select-box--category" data-custom-select>
+              <select id="category-filter" aria-label="게시판 종류">
+<?php foreach ($boards as $key => $name): ?>
+                <option value="<?= e($key) ?>"<?= (string) $key === $selectedBoard ? ' selected' : '' ?>><?= e($name) ?></option>
+<?php endforeach; ?>
+                <option value="all">전체</option>
+<?php foreach ($otherBoards as $board): ?>
+                <option value="<?= e($board['board_key']) ?>" data-href="<?= e(board_admin_url($board['board_key'], $board['type'])) ?>"><?= e($board['name']) ?> ↗</option>
+<?php endforeach; ?>
+              </select>
+              <img src="/aseets/icons/admin/board-category-arrow.svg" alt="" width="20" height="20" />
+            </div>
+            <a class="pill-button pill-button--muted" href="/admin/boards.php">게시판 관리</a>
+            <button class="pill-button pill-button--primary" id="new-post" type="button">글쓰기</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="board-card" aria-label="게시글 목록">
+        <div class="board-card__content">
+          <form class="search-toolbar" id="search-form" role="search">
+            <div class="search-toolbar__controls">
+              <div class="select-box select-box--scope" data-custom-select>
+                <select id="search-scope" aria-label="검색 범위">
+                  <option value="all">제목+내용</option>
+                  <option value="title">제목</option>
+                  <option value="content">내용</option>
+                  <option value="author">작성자</option>
+                </select>
+                <img src="/aseets/icons/admin/board-search-arrow.svg" alt="" width="20" height="20" />
+              </div>
+              <input id="search-query" type="search" placeholder="검색어 입력" aria-label="검색어 입력" />
+              <button class="pill-button pill-button--muted" type="submit">검색</button>
+            </div>
+            <label class="visible-filter">
+              <input id="visible-only" type="checkbox" />
+              <span>노출된 글만</span>
+            </label>
+          </form>
+
+          <div class="table-scroll">
+            <table class="post-table">
+              <colgroup>
+                <col class="col-check" />
+                <col class="col-number" />
+                <col class="col-title" />
+                <col class="col-author" />
+                <col class="col-date" />
+                <col class="col-views" />
+                <col class="col-visible" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th scope="col"><input id="select-page" type="checkbox" aria-label="현재 페이지 글 모두 선택" /></th>
+                  <th scope="col">no.</th>
+                  <th scope="col">제목</th>
+                  <th scope="col">작성자</th>
+                  <th scope="col">등록일</th>
+                  <th scope="col">조회</th>
+                  <th scope="col">노출</th>
+                </tr>
+              </thead>
+              <tbody id="post-rows"></tbody>
+            </table>
+          </div>
+
+          <div class="bulk-row">
+            <div class="bulk-row__actions">
+              <button class="pill-button pill-button--muted" id="show-selected" type="button">노출</button>
+              <button class="pill-button pill-button--muted" id="hide-selected" type="button">숨김</button>
+              <button class="pill-button pill-button--danger" id="delete-selected" type="button">삭제</button>
+            </div>
+            <span id="page-summary" aria-live="polite">1 / 1페이지</span>
+          </div>
+        </div>
+
+        <nav class="pagination" id="pagination" aria-label="게시글 페이지 이동"></nav>
+      </section>
+    </main>
+
+    <template id="post-row-template">
+      <tr>
+        <td><input class="row-check" type="checkbox" /></td>
+        <td class="post-number"></td>
+        <td class="post-title-cell"><button class="post-title" type="button"></button></td>
+        <td class="post-author is-ellipsis"></td>
+        <td class="post-date"></td>
+        <td class="post-views"></td>
+        <td class="post-visibility"></td>
+      </tr>
+    </template>
+
+    <div class="toast" id="board-toast" role="status" aria-live="polite" hidden></div>
+<?php
+view('admin/layout-end');
+view('admin/foot');

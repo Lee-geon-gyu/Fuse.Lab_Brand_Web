@@ -1,7 +1,10 @@
 (() => {
   const storageKey = "fuselab.board.posts";
   const flashKey = "fuselab.board.flash";
-  const editorUrl = "admin-post-edit.html";
+  const editorUrl = document.body.dataset.editorUrl || "admin-post-edit.html";
+  // PHP 페이지는 <body data-posts-api> 로 서버 저장, .html 원본은 localStorage
+  const postsApi = document.body.dataset.postsApi;
+  const csrfToken = document.body.dataset.csrf || "";
   const pageSize = 13;
   const pageGroupSize = 8;
   const template = document.querySelector("#post-row-template");
@@ -17,7 +20,7 @@
   const visibleOnly = document.querySelector("#visible-only");
   const toast = document.querySelector("#board-toast");
 
-  let posts = loadPosts();
+  let posts = postsApi ? [] : loadPosts();
   let currentPage = 1;
   let appliedQuery = "";
   let pagePosts = [];
@@ -39,6 +42,19 @@
     }));
   }
 
+  async function requestApi(params, body = null) {
+    const url = `${postsApi}?${new URLSearchParams(params)}`;
+    const response = await fetch(url, body ? { method: "POST", body } : {});
+    const data = await response.json().catch(() => ({ ok: false }));
+    if (!response.ok || !data.ok) throw new Error(data.message || "서버 요청에 실패했습니다.");
+    return data;
+  }
+
+  async function fetchPosts() {
+    const data = await requestApi({ action: "list" });
+    posts = data.posts.map((post) => ({ ...post, id: String(post.id), no: post.id }));
+  }
+
   function loadPosts() {
     try {
       const stored = JSON.parse(localStorage.getItem(storageKey));
@@ -49,6 +65,7 @@
   }
 
   function savePosts() {
+    if (postsApi) return true;
     try {
       localStorage.setItem(storageKey, JSON.stringify(posts));
       return true;
@@ -99,8 +116,11 @@
     row.querySelector(".post-number").textContent = post.no;
     titleButton.dataset.postId = post.id;
     titleButton.textContent = post.title;
+    titleButton.title = post.title;
     titleButton.setAttribute("aria-label", `${post.title} 열기`);
-    row.querySelector(".post-author").textContent = post.author;
+    const author = row.querySelector(".post-author");
+    author.textContent = post.author;
+    author.title = post.author;
     row.querySelector(".post-date").textContent = post.date;
     row.querySelector(".post-views").textContent = Number(post.views).toLocaleString("ko-KR");
     row.querySelector(".post-visibility").textContent = post.visible ? "노출" : "숨김";
@@ -194,7 +214,7 @@
     if (!savePosts()) return;
     const params = post
       ? new URLSearchParams({ id: post.id })
-      : new URLSearchParams({ category: categoryFilter.value === "all" ? "notice" : categoryFilter.value });
+      : new URLSearchParams({ category: categoryFilter.value === "all" ? categoryFilter.options[0].value : categoryFilter.value });
     location.href = `${editorUrl}?${params}`;
   }
 
@@ -207,6 +227,12 @@
   }
 
   categoryFilter.addEventListener("change", () => {
+    // 포트폴리오-sub·표 게시판은 글 목록이 아니라 각자의 관리 화면으로 (PHP 가 data-href 를 넣음)
+    const href = categoryFilter.selectedOptions[0]?.dataset.href;
+    if (href) {
+      location.href = href;
+      return;
+    }
     currentPage = 1;
     selectedIds.clear();
     render();
@@ -247,9 +273,28 @@
     if (!titleButton) return;
     const post = posts.find((item) => item.id === titleButton.dataset.postId);
     if (!post) return;
-    post.views += 1;
+    if (!postsApi) post.views += 1;
     openEditor(post);
   });
+
+  async function changeSelectedOnServer(action, selectedCount) {
+    const body = new FormData();
+    body.append("csrf_token", csrfToken);
+    body.append("action", "bulk");
+    body.append("op", action);
+    selectedIds.forEach((id) => body.append("ids[]", id));
+    try {
+      await requestApi({}, body);
+      selectedIds.clear();
+      await fetchPosts();
+      render();
+      notify(action === "delete"
+        ? `${selectedCount}건을 삭제했습니다.`
+        : `${selectedCount}건을 ${action === "show" ? "노출" : "숨김"} 처리했습니다.`);
+    } catch (error) {
+      notify(error.message);
+    }
+  }
 
   function changeSelected(action) {
     if (!selectedIds.size) {
@@ -258,8 +303,13 @@
     }
 
     const selectedCount = selectedIds.size;
+    if (action === "delete" && !confirm(`선택한 게시글 ${selectedCount}건을 삭제할까요?`)) return;
+    if (postsApi) {
+      changeSelectedOnServer(action, selectedCount);
+      return;
+    }
+
     if (action === "delete") {
-      if (!confirm(`선택한 게시글 ${selectedCount}건을 삭제할까요?`)) return;
       posts = posts.filter((post) => !selectedIds.has(post.id));
     } else {
       posts.forEach((post) => {
@@ -282,4 +332,9 @@
 
   render();
   showFlash();
+  if (postsApi) {
+    fetchPosts()
+      .then(render)
+      .catch((error) => notify(error.message));
+  }
 })();
