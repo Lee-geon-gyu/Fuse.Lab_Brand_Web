@@ -64,3 +64,62 @@
     link.append(clip);
   });
 })();
+
+// 문의 폼 개인정보 수집·이용 안내 아코디언
+(() => {
+  document.querySelectorAll('.contact-inner .check-text span[aria-controls]').forEach((trigger) => {
+    const panel = document.getElementById(trigger.getAttribute('aria-controls'));
+    if (!panel) return;
+
+    const track = trigger.closest('.contact-form-track');
+    const inner = panel.querySelector('.privacy-details-inner');
+    if (!track || !inner) return;
+
+    const measure = () => {
+      track.style.setProperty('--privacy-height', `${inner.offsetHeight}px`);
+    };
+    measure();
+    track.classList.add('has-privacy-accordion');
+    new ResizeObserver(measure).observe(inner);
+
+    // 여백을 미리 넣지 않고 실제 폼 높이에 맞춰 이동량만 갱신한다.
+    // 기존 타임라인의 진행률을 사용하므로 페이지 refresh나 강제 스크롤이 필요 없다.
+    const connectScroll = () => {
+      const section = trigger.closest('.contact-sec');
+      const rightBox = section?.querySelector('.right-box');
+      const scrollTrigger = window.ScrollTrigger?.getAll().find((item) => item.trigger === section);
+      if (!rightBox || !scrollTrigger?.animation || !window.gsap) return;
+
+      const animation = scrollTrigger.animation;
+      const setY = window.gsap.quickSetter(track, 'y', 'px');
+      const syncScroll = () => {
+        const distance = Math.max(0, track.scrollHeight - rightBox.clientHeight);
+        setY(-distance * animation.progress());
+      };
+
+      animation.eventCallback('onUpdate', syncScroll);
+      new ResizeObserver(syncScroll).observe(panel);
+      syncScroll();
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', connectScroll, { once: true });
+    } else {
+      connectScroll();
+    }
+
+    const toggle = (event) => {
+      // label 안의 문구를 눌러도 동의 체크 상태는 바꾸지 않는다.
+      event.preventDefault();
+      const isOpen = trigger.getAttribute('aria-expanded') !== 'true';
+      trigger.setAttribute('aria-expanded', String(isOpen));
+      panel.setAttribute('aria-hidden', String(!isOpen));
+      panel.inert = !isOpen;
+      panel.classList.toggle('is-open', isOpen);
+    };
+
+    trigger.addEventListener('click', toggle);
+    trigger.addEventListener('keydown', (event) => {
+      if ((event.key === 'Enter' || event.key === ' ') && !event.repeat) toggle(event);
+    });
+  });
+})();

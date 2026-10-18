@@ -257,8 +257,12 @@ body {
   font-weight: 500;
   line-height: 1.5;
 }
-.contact-inner .form-row-privacy {
-  align-items: center;
+.contact-inner .contact-form-track .form-row-privacy {
+  align-items: flex-start;
+}
+
+.contact-inner .form-row-privacy > .form-label {
+  padding-top: 1.6rem;
 }
 
 .contact-inner .form-row-privacy .input-box {
@@ -266,11 +270,12 @@ body {
 }
 
 .contact-inner .check-box {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 1.2rem;
 
-  width: 100%;
+  width: fit-content;
+  max-width: 100%;
 
   cursor: pointer;
 }
@@ -302,6 +307,62 @@ body {
 
   font-size: 1.8rem;
   font-weight: 500;
+}
+.contact-inner .check-text span {
+  color: #fff;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.3rem;
+}
+.contact-inner .check-text span:focus-visible,
+.contact-inner .check-box input:focus-visible + .check-ui {
+  outline: 2px solid #fff;
+  outline-offset: 0.4rem;
+}
+.contact-inner .contact-form-track.has-privacy-accordion {
+  overflow-anchor: none;
+}
+.contact-inner .privacy-details {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  transition: height 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s ease, visibility 0.28s;
+}
+.contact-inner .privacy-details.is-open {
+  height: var(--privacy-height);
+  visibility: visible;
+  opacity: 1;
+}
+.contact-inner .privacy-details-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+.contact-inner .privacy-content {
+  max-height: 24rem;
+  margin-top: 1.6rem;
+  padding: 2rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.2);
+  color: #ddd;
+  font-size: 1.4rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.contact-inner .privacy-content p + p {
+  margin-top: 1.2rem;
+}
+.contact-inner .privacy-content strong {
+  display: block;
+  color: #fff;
+  font-weight: 600;
+}
+@media (prefers-reduced-motion: reduce) {
+  .contact-inner .privacy-details {
+    transition: none;
+  }
 }
 
 .contact-inner .check-box input:checked + .check-ui::after {
