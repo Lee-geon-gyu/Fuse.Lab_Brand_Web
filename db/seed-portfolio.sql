@@ -1,6 +1,6 @@
--- 메인 포트폴리오 슬라이드 초기 데이터 (퍼블리싱 시안 4개). schema.sql → seed-portfolios.sql 다음에 한 번만 실행.
+-- 메인 포트폴리오 슬라이드 초기 데이터 (퍼블리싱 시안 2개). schema.sql → seed-portfolios.sql 다음에 한 번만 실행.
 -- 포트폴리오 글이 하나라도 있으면 아무것도 넣지 않는다.
--- 각 슬라이드의 VIEW PROJECT 는 portfolios 순서상 1~4번째 항목에 연결 (portfolios 가 비어 있으면 연결 없음)
+-- 각 슬라이드의 VIEW PROJECT 는 portfolios 순서상 1~2번째 항목에 연결 (portfolios 가 비어 있으면 연결 없음)
 INSERT INTO posts (board, title, eyebrow, portfolio_id, content, image, admin_id)
 SELECT seed.board, seed.title, seed.eyebrow,
        (SELECT f.id FROM portfolios f
@@ -13,12 +13,6 @@ FROM (
   UNION ALL SELECT 2, 'portfolio', 'THE SPACE KIDS', 'BRAND EXPERIENCE',
          '우주의 무한한 가능성을 탐험하고\n새로운 경험을 만드는 브랜드입니다.',
          '/aseets/images/section-portfolio/portfolio-2.png', (SELECT MIN(id) FROM admins)
-  UNION ALL SELECT 3, 'portfolio', 'THE SPACE KIDS', 'BRAND EXPERIENCE',
-         '우주의 무한한 가능성을 탐험하고\n새로운 경험을 만드는 브랜드입니다.',
-         '/aseets/images/section-portfolio/portfolio-3.png', (SELECT MIN(id) FROM admins)
-  UNION ALL SELECT 4, 'portfolio', 'THE SPACE KIDS', 'BRAND EXPERIENCE',
-         '우주의 무한한 가능성을 탐험하고\n새로운 경험을 만드는 브랜드입니다.',
-         '/aseets/images/section-portfolio/portfolio-4.png', (SELECT MIN(id) FROM admins)
 ) AS seed
 WHERE NOT EXISTS (SELECT 1 FROM posts WHERE board = 'portfolio')
 ORDER BY seed.sort;

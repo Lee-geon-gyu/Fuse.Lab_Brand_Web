@@ -26,8 +26,6 @@ INSERT IGNORE INTO `portfolios` (`id`, `title`, `category`, `client`, `type`, `p
 
 INSERT IGNORE INTO `posts` (`id`, `board`, `title`, `eyebrow`, `portfolio_id`, `content`, `image`, `is_visible`, `admin_id`, `views`, `created_at`, `updated_at`) VALUES (1,'portfolio','THE SPACE KIDS','BRAND EXPERIENCE',1,'우주의 무한한 가능성을 탐험하고\r\n새로운 경험을 만드는 브랜드입니다.','/aseets/images/section-portfolio/portfolio-1.png',1,1,0,'2026-10-12 21:49:46','2026-10-12 22:49:36');
 INSERT IGNORE INTO `posts` (`id`, `board`, `title`, `eyebrow`, `portfolio_id`, `content`, `image`, `is_visible`, `admin_id`, `views`, `created_at`, `updated_at`) VALUES (2,'portfolio','THE SPACE KIDS','BRAND EXPERIENCE',2,'우주의 무한한 가능성을 탐험하고\n새로운 경험을 만드는 브랜드입니다.','/aseets/images/section-portfolio/portfolio-2.png',1,1,0,'2026-10-12 21:49:46','2026-10-12 22:48:32');
-INSERT IGNORE INTO `posts` (`id`, `board`, `title`, `eyebrow`, `portfolio_id`, `content`, `image`, `is_visible`, `admin_id`, `views`, `created_at`, `updated_at`) VALUES (3,'portfolio','THE SPACE KIDS','BRAND EXPERIENCE',3,'우주의 무한한 가능성을 탐험하고\n새로운 경험을 만드는 브랜드입니다.','/aseets/images/section-portfolio/portfolio-3.png',1,1,0,'2026-10-12 21:49:46','2026-10-12 22:48:32');
-INSERT IGNORE INTO `posts` (`id`, `board`, `title`, `eyebrow`, `portfolio_id`, `content`, `image`, `is_visible`, `admin_id`, `views`, `created_at`, `updated_at`) VALUES (4,'portfolio','안녕하세요?','BRAND EXPERIENCE',4,'우주의 무한한 가능성을 탐험하고\r\n새로운 경험을 만드는 브랜드입니다.','/aseets/images/section-portfolio/portfolio-4.png',1,1,0,'2026-10-12 21:49:46','2026-10-12 23:05:11');
 
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
