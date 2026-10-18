@@ -37,15 +37,23 @@ html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
 }
+/* 로딩 중에도 스크롤바를 그대로 둠. 숨겼다가 로더가 닫힐 때 생기면 화면 폭이 줄어 레이아웃이 한 번 밀리고
+   resize 로 GSAP·캔버스가 다시 계산됨 (scrollbar-gutter 는 루트가 overflow: hidden/clip 일 때 Chrome 에서 자리를 남기지 않음).
+   로딩 중 스크롤은 js/loader.js 가 막고, 스크롤바는 로더에 맞춰 어둡게 */
+html:has(> body.is-loading) {
+  color-scheme: dark;
+}
+/* Lenis 정지는 overflow: clip 으로 스크롤바를 없애므로 덮어씀 (lenis.css 선택자보다 우선하도록 같은 :not 을 붙임).
+   메인에서 lenis.stop() 은 로딩 중에만 씀 (js/smooth-scroll.js) */
+html.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: visible;
+}
 body {
   font-family: var(--f-sans);
   color: var(--c-ink);
   background: var(--c-bg-dark);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-}
-body.is-loading {
-  overflow: hidden;
 }
 h1,
 h2,
@@ -85,8 +93,13 @@ img {
   z-index: 100;
   height: var(--header-h);
   transition:
+    transform 0.45s var(--ease-out),
     background-color 0.4s ease,
     color 0.4s ease;
+}
+/* 아래로 스크롤하면 위로 접힘 (js/common.js). 키보드 포커스가 들어오면 다시 보임 */
+.header.is-hidden:not(:focus-within) {
+  transform: translateY(-100%);
 }
 .header__inner {
   display: flex;

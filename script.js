@@ -383,6 +383,7 @@
     let cardHeight = 1;
     let stackStep = 1;
     let hold = 1;
+    let leadIn = 0;
     let travel = 1;
     let segment = 1;
     let sectionTop = 0;
@@ -451,9 +452,11 @@
       serviceStage.style.setProperty("--gyu-card-width", `${cardWidth}px`);
       serviceStage.style.setProperty("--gyu-card-height", `${cardHeight}px`);
       hold = viewportHeight * 0.3;
+      // 앞 섹션(From Idea to System.)이 걷힌 뒤 첫 카드가 바로 넘어가지 않도록 첫 카드만 더 머무름
+      leadIn = viewportHeight * 0.7;
       travel = viewportHeight * 0.85;
       segment = hold + travel;
-      section.style.height = `${viewportHeight + lastIndex * segment + hold}px`;
+      section.style.height = `${viewportHeight + leadIn + lastIndex * segment + hold}px`;
       sectionTop = section.getBoundingClientRect().top + window.scrollY;
     };
 
@@ -464,7 +467,7 @@
         "gyu-mvp-active",
         sectionRect.top <= 0 && sectionRect.bottom > 0,
       );
-      const offset = clamp(window.scrollY - sectionTop, 0, lastIndex * segment);
+      const offset = clamp(window.scrollY - sectionTop - leadIn, 0, lastIndex * segment);
       const index = Math.min(Math.floor(offset / segment), lastIndex);
       if (index === lastIndex) return lastIndex;
       return index + clamp((offset - index * segment - hold) / travel);
@@ -616,7 +619,7 @@
       const focusedControl = deck.contains(document.activeElement);
       if (focusedControl) deck.focus({ preventScroll: true });
       sectionTop = section.getBoundingClientRect().top + window.scrollY;
-      scrollToPosition(sectionTop + destination * segment + hold * 0.5);
+      scrollToPosition(sectionTop + leadIn + destination * segment + hold * 0.5);
       requestDeckRender();
     };
 

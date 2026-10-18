@@ -53,5 +53,23 @@ $subpage = subpage_current();
 <?= subpage_inline($subpage['css'], 'style') ?>
     </style>
 <?php endif; ?>
+<?php if (!empty($isHome)): ?>
+    <script>
+      // 위 스타일시트(@font-face)가 적용된 뒤 실행됨. 로더·히어로 첫 화면 폰트를 바로 받기 시작하고,
+      // 받을 때까지 로더 문구 등장을 멈춰 대체 폰트 → 웹폰트 교체가 보이지 않게 함 (css/loader.css)
+      (() => {
+        const root = document.documentElement;
+        root.classList.add("fonts-pending");
+        const release = () => root.classList.remove("fonts-pending");
+        Promise.all([
+          '300 1em "Inter"',
+          '800 1em "Inter"',
+          'italic 500 1em "Playfair Display"',
+          '500 1em "Pretendard Variable"',
+        ].map((font) => document.fonts.load(font, "Aa가"))).then(release, release);
+        setTimeout(release, 2500);
+      })();
+    </script>
+<?php endif; ?>
   </head>
   <body<?= isset($bodyClass) ? ' class="' . e($bodyClass) . '"' : '' ?>>

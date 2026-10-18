@@ -3,7 +3,7 @@
   const sections = document.querySelectorAll('[data-header-theme]');
 
   // 헤더 하단 라인에 걸친 섹션의 테마를 헤더에 적용
-  const update = () => {
+  const updateTheme = () => {
     const line = header.offsetHeight / 2;
     for (const s of sections) {
       const r = s.getBoundingClientRect();
@@ -14,9 +14,19 @@
     }
   };
 
-  addEventListener('scroll', update, { passive: true });
-  addEventListener('resize', update);
-  update();
+  // 20px 넘게 내려간 상태에서 아래로 스크롤하면 접고, 위로 스크롤하면 다시 보임
+  const HIDE_AFTER = 20;
+  let lastY = Math.max(0, scrollY);
+  const updateVisibility = () => {
+    const y = Math.max(0, scrollY);
+    if (y <= HIDE_AFTER || y < lastY) header.classList.remove('is-hidden');
+    else if (y > lastY) header.classList.add('is-hidden');
+    lastY = y;
+  };
+
+  addEventListener('scroll', () => { updateTheme(); updateVisibility(); }, { passive: true });
+  addEventListener('resize', updateTheme);
+  updateTheme();
 })();
 
 // 공통 헤더·푸터 내비게이션 텍스트 롤링
