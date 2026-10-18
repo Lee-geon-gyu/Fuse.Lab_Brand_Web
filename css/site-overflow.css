@@ -50,11 +50,13 @@
   overflow-wrap: anywhere;
 }
 
+/* overflow:hidden 인 inline-block 은 baseline 이 아래끝으로 내려가 버튼 아래 여백이 커지므로 top 정렬 */
 .marquee-btn .marquee-text {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  vertical-align: top;
 }
 
 /* footer 연락처 */
