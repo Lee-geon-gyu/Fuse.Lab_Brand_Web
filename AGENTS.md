@@ -8,7 +8,7 @@ fuse.lab 브랜드 웹사이트. 정적 HTML 퍼블리싱 위에 필요한 기�
 
 ## 운영 환경 (기준)
 
-- 카페24 10G 광아우토반 FullSSD+ — **PHP 8.2**, MariaDB, Apache(`.htaccess` 사용)
+- 카페24 10G 광아우토반 FullSSD+ — **PHP 8.4** (2026-10 확인: 8.4.21), MariaDB, Apache(`.htaccess` 사용)
 - 설치형 프로그램/프레임워크 없음. Composer·npm 빌드 없이 FTP 업로드만으로 동작해야 한다.
 - 저장소 루트 = 웹 루트 (`www/` 에 그대로 업로드)
 
@@ -42,7 +42,7 @@ fuse.lab 브랜드 웹사이트. 정적 HTML 퍼블리싱 위에 필요한 기�
   관리자 `admin/head` → `admin/layout-start` → 본문 → `admin/layout-end` → `admin/foot` (로그인·회원가입은 layout 생략)
 - PHP 페이지의 에셋·링크는 루트 기준 절대경로(`/css/...`, `/admin/board.php`). `.html` 원본은 상대경로 그대로 둔다.
 - `.html` 과 `.php` 가 함께 쓰는 JS 에서 페이지 이동 경로는 `<body data-*>` 로 받는다 (예: `data-editor-url`), 없으면 `.html` 경로.
-- PHP 8.2 문법까지만. 8.3+ 기능(typed class constants, `json_validate`, `|>` 등) 금지.
+- PHP 8.2 문법까지만 (로컬 도커가 `php:8.2-apache`). 8.3+ 기능(typed class constants, `json_validate`, `|>` 등) 금지.
 - DB 는 `db()` (PDO, utf8mb4) + prepared statement 만 사용. 문자열로 쿼리 조립 금지.
 - 출력은 `e()` 로 이스케이프. 비밀번호는 `password_hash` / `password_verify`.
 - 변수(DB·설정값)로 출력하는 모든 칸은 텍스트 넘침 처리: 표 셀·한 줄 레이블 → 말줄임 + `title`, 카드 제목 → line-clamp, 본문·메모 → 줄바꿈(`overflow-wrap: anywhere`). flex/grid 자식은 `min-width: 0` 확인. 사용자 화면 공통 보정은 `css/site-overflow.css`.

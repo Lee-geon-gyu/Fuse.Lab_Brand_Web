@@ -12,7 +12,7 @@
 
 ## 개발 환경
 
-- 운영: 카페24 10G 광아우토반 FullSSD+ (PHP 8.2 / MariaDB), 설치형 프레임워크 없이 순수 PHP
+- 운영: 카페24 10G 광아우토반 FullSSD+ (PHP 8.4 / MariaDB), 설치형 프레임워크 없이 순수 PHP
 - 로컬: Docker (`php:8.2-apache` + `mariadb:10.6` + phpMyAdmin)
 
 새 컴퓨터 세팅: [Docker Desktop](https://www.docker.com/products/docker-desktop/) 설치·실행 → 저장소 clone → 아래 실행
