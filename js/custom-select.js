@@ -93,6 +93,8 @@
       clearTimeout(closeTimer);
       clearTimeout(focusTimer);
       box.classList.remove("is-closing");
+      // 처음에 숨겨진 영역(hidden 행 등)에서 초기화되면 scrollHeight 가 0 이므로 열 때마다 잰다
+      box.style.setProperty("--select-menu-height", `${menu.scrollHeight}px`);
       box.classList.add("is-open");
       menu.setAttribute("aria-hidden", "false");
       menu.inert = false;
@@ -160,7 +162,6 @@
 
     surface.append(trigger, menu);
     box.append(surface);
-    box.style.setProperty("--select-menu-height", `${menu.scrollHeight}px`);
     box.classList.add("is-enhanced");
     sync();
     instances.push({ box, close });
