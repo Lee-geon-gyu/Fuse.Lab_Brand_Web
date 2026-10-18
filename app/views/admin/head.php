@@ -16,13 +16,15 @@ $bodyData ??= [];
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><?= e($pageTitle) ?> | fuse.lab</title>
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/aseets/img/favicon-32.png" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <?php foreach ($styles as $href): ?>
-    <link rel="stylesheet" href="<?= e($href) ?>" />
+    <link rel="stylesheet" href="<?= e(asset($href)) ?>" />
 <?php endforeach; ?>
 <?php foreach ($scripts as $src): ?>
-    <script src="<?= e($src) ?>" defer></script>
+    <script src="<?= e(asset($src)) ?>" defer></script>
 <?php endforeach; ?>
   </head>
   <body<?php foreach ($bodyData as $key => $value): ?> data-<?= e($key) ?>="<?= e($value) ?>"<?php endforeach; ?>>

@@ -40,7 +40,7 @@ PHP 파일 목록. 파일을 추가/삭제하면 이 표도 함께 수정한다.
 
 | 파일 | 설명 |
 | --- | --- |
-| `app/bootstrap.php` | 모든 페이지 최상단 require. 타임존·세션·에러 표시, `e()`, `redirect()`, `flash()`, `view()` |
+| `app/bootstrap.php` | 모든 페이지 최상단 require. 타임존·세션·에러 표시, `e()`, `redirect()`, `site_url()`(절대 주소 기준, 설정 `site_url` 또는 요청 호스트), `asset()`(내부 CSS·JS 경로에 `?v=수정시각`), `flash()`, `view()` |
 | `app/config.php` | 설정 로더 (도커 환경변수 → `config.local.php` 덮어쓰기). `db`, `debug`, `signup_code`, `mail_from`, `site_url`, `source_edit` |
 | `app/config.local.example.php` | 카페24 운영용 설정 예시 (`config.local.php`로 복사, git 제외) |
 | `app/db.php` | `db()` — PDO(MariaDB, utf8mb4) 싱글턴 |
@@ -55,9 +55,9 @@ PHP 파일 목록. 파일을 추가/삭제하면 이 표도 함께 수정한다.
 | `app/chatbot.php` | 챗봇: `CHATBOT_TONES`, `chatbot_settings()`(행 없으면 기본값), 검증·저장·초기화 / AI: `chatbot_ai()`, `chatbot_ai_save()`, `chatbot_ai_reply()`(Claude Messages API, curl) |
 | `app/stats.php` | `track_visit()`, `track_chatbot_use()` (세션당 하루 1회 `visit_stats` 집계), 대시보드 집계 함수 |
 | `app/mail.php` | `send_mail()` — 운영 `mail()`, 로컬(debug) 은 `app/storage/mail.log` 에 기록 |
-| `app/views/site/head.php` | 사용자 `<head>` + `<body>` 시작 (`pageTitle`, `bodyClass`, `isHome` = 메인 전용 Lenis, `styles` = 페이지 CSS). 공통 CSS 뒤에 `css/site-overflow.css`(DB 값 텍스트 넘침 보정) 로드 |
+| `app/views/site/head.php` | 사용자 `<head>` + `<body>` 시작 (`pageTitle`, `bodyClass`, `isHome` = 메인 전용 Lenis, `styles` = 페이지 CSS). 파비콘·OG 메타(`aseets/img/og-image.jpg`). 공통 CSS 뒤에 `css/motion.css`(글자 등장)·`css/site-overflow.css`(DB 값 텍스트 넘침 보정) 로드 |
 | `app/views/site/header.php` | 사용자 GNB (`isHome`, `headerTheme`). Portfolio → `/portfolio.php`, 나머지는 메인 섹션 |
-| `app/views/site/footer.php` | 사용자 footer + 챗봇 위젯 + 공통 스크립트 + 문서 끝 (`isHome`) |
+| `app/views/site/footer.php` | 사용자 footer + 챗봇 위젯 + 공통 스크립트(`script.js` 다음 `js/motion.js` = 패럴랙스·글자 등장·상세 화살표) + 문서 끝 (`isHome`) |
 | `app/views/site/chatbot.php` | 사용자 챗봇 위젯 마크업 (설정값 반영) |
 | `app/views/site/portfolio-items.php` | 포트폴리오 목록 항목 (3개씩 한 줄) |
 | `app/views/admin/head.php` | 관리자 `<head>` + `<body>` 시작 (`pageTitle`, `styles`, `scripts`, `bodyData`) |

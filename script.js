@@ -142,6 +142,7 @@
       const isIncoming = index === activeIndex + 1 && segmentProgress > 0;
       const isInteractive = isCurrent || isOutgoing || isIncoming;
 
+      project.classList.toggle("is-gyu-current", isCurrent);
       project.classList.toggle("is-gyu-outgoing", isOutgoing);
       project.classList.toggle("is-gyu-incoming", isIncoming);
       project.style.setProperty(

@@ -65,6 +65,6 @@ view('site/head', ['pageTitle' => slot_value('page_title', '포트폴리오 목�
         </div>
       </section>
     </main>
-    <script src="/js/portfolio-list.js" defer></script>
+    <script src="<?= e(asset('/js/portfolio-list.js')) ?>" defer></script>
 
 <?php view('site/footer', ['isHome' => false]); ?>

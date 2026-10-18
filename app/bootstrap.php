@@ -59,6 +59,28 @@ function site_contact(): array
     ];
 }
 
+/** 절대 주소 기준. 운영은 설정의 site_url(Host 헤더 조작 방지), 비어 있으면(로컬) 요청 호스트 */
+function site_url(): string
+{
+    $siteUrl = rtrim((string) app_config()['site_url'], '/');
+    if ($siteUrl !== '') {
+        return $siteUrl;
+    }
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+    return ($https ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+}
+
+/** 사이트 내부 CSS·JS 경로에 수정 시각을 붙여 배포 후 브라우저 캐시에 옛 파일이 남지 않게 한다. 외부 주소는 그대로 */
+function asset(string $path): string
+{
+    $file = dirname(__DIR__) . parse_url($path, PHP_URL_PATH);
+    if (!str_starts_with($path, '/') || str_starts_with($path, '//') || !is_file($file)) {
+        return $path;
+    }
+    return $path . (str_contains($path, '?') ? '&' : '?') . 'v=' . filemtime($file);
+}
+
 /** 다음 요청에서 한 번만 보여줄 메시지. 인자 2개면 저장, 1개면 꺼내고 삭제 */
 function flash(string $key, ?string $message = null): ?string
 {

@@ -80,7 +80,7 @@ docker compose exec -T db mariadb -ufuselab -pfuselab fuselab < db/seed-portfoli
 
 ## 카페24 배포
 
-1. `app/config.local.example.php` → `app/config.local.php` 로 복사 후 카페24 DB 정보, `signup_code`, `mail_from`(보내는 사람), `site_url`(사이트 주소, 재설정 메일 링크용) 입력
+1. `app/config.local.example.php` → `app/config.local.php` 로 복사 후 카페24 DB 정보, `signup_code`, `mail_from`(보내는 사람), `site_url`(사이트 주소, 재설정 메일 링크·공유 썸네일(`og:image`) 절대 주소용) 입력
 2. 카페24 DB 관리(phpMyAdmin) > SQL 에서 `db/schema.sql` 실행. 이미 이전 버전 스키마를 적용한 DB 에 다시 실행해도 안전함 (`admins.email`, `posts.portfolio_id`, `boards.type` 은 `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` 로 추가됨, `boards`·`board_tables` 테이블·기본 `포트폴리오` 게시판도 이때 생김)
    - 게시판 DB 관리 전환 이전(공지사항·이벤트·자료실이 코드에 고정돼 있던 버전)에서 올리는 경우: 그 세 게시판 글은 목록 필터에 더 이상 나오지 않으므로 아래 [게시판 관리](#게시판-관리)의 1회성 정리를 한다
 3. 기본 계정 `admin` / `qwer1234` 로 `/admin/login.php` 로그인 후 비밀번호 변경 (이메일을 실제 주소로 바꿔야 비밀번호 찾기 메일을 받을 수 있음)

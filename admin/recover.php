@@ -51,13 +51,6 @@ if ($type === 'id') {
     recover_respond(200, true, '입력한 이메일로 가입된 계정이 있으면 메일을 보냈습니다.');
 }
 
-// 운영은 설정의 site_url(고정 주소)을 써서 Host 헤더 조작으로 링크가 바뀌지 않게 함. 비어 있으면(로컬) 요청 호스트
-$siteUrl = rtrim((string) app_config()['site_url'], '/');
-if ($siteUrl === '') {
-    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-        || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
-    $siteUrl = ($https ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
-}
-$resetUrl = $siteUrl . '/admin/reset-password.php';
+$resetUrl = site_url() . '/admin/reset-password.php';
 request_admin_password_reset($loginId, $email, $resetUrl);
 recover_respond(200, true, '입력한 ID와 이메일이 일치하는 계정이 있으면 재설정 메일을 보냈습니다.');

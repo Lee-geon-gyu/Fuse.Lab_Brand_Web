@@ -565,5 +565,5 @@ view('site/head', ['pageTitle' => 'fuse.lab', 'bodyClass' => 'is-loading', 'isHo
       </section>
     </main>
 
-    <script src="/js/contact-form.js" defer></script>
+    <script src="<?= e(asset('/js/contact-form.js')) ?>" defer></script>
 <?php view('site/footer', ['isHome' => true]); ?>

@@ -30,12 +30,27 @@ view('admin/layout-start', ['active' => 'dashboard']);
           <button class="month-nav__step month-nav__step--prev" id="month-prev" type="button" aria-label="이전 달">
             <img src="/aseets/icons/admin/dashboard/arrow-20.svg" alt="" width="20" height="20" />
           </button>
-          <label class="month-nav__picker">
-            <img src="/aseets/icons/admin/dashboard/calendar-month.svg" alt="" width="24" height="24" />
-            <span id="month-label"><?= e($monthStart->format('Y. m')) ?></span>
-            <img class="month-nav__caret" src="/aseets/icons/admin/dashboard/arrow-down-12.svg" alt="" width="12" height="12" />
-            <input id="month-input" type="month" value="<?= e($monthStart->format('Y-m')) ?>" aria-label="조회 월 선택" />
-          </label>
+          <div class="month-nav__picker">
+            <button class="month-nav__trigger" id="month-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="month-panel" aria-label="조회 월 선택">
+              <img src="/aseets/icons/admin/dashboard/calendar-month.svg" alt="" width="24" height="24" />
+              <span id="month-label"><?= e($monthStart->format('Y. m')) ?></span>
+              <img class="month-nav__caret" src="/aseets/icons/admin/dashboard/arrow-down-12.svg" alt="" width="12" height="12" />
+            </button>
+            <input id="month-input" type="hidden" value="<?= e($monthStart->format('Y-m')) ?>" />
+            <div class="month-panel" id="month-panel" role="dialog" aria-label="조회 월 선택" hidden>
+              <div class="month-panel__head">
+                <button class="month-panel__year-step month-panel__year-step--prev" type="button" data-year-step="-1" aria-label="이전 해">
+                  <img src="/aseets/icons/admin/dashboard/arrow-20.svg" alt="" width="20" height="20" />
+                </button>
+                <strong class="month-panel__year" id="month-panel-year" aria-live="polite"></strong>
+                <button class="month-panel__year-step" type="button" data-year-step="1" aria-label="다음 해">
+                  <img src="/aseets/icons/admin/dashboard/arrow-20.svg" alt="" width="20" height="20" />
+                </button>
+              </div>
+              <div class="month-panel__grid" id="month-panel-grid"></div>
+              <button class="month-panel__today" id="month-panel-today" type="button">이번 달</button>
+            </div>
+          </div>
           <button class="month-nav__step" id="month-next" type="button" aria-label="다음 달">
             <img src="/aseets/icons/admin/dashboard/arrow-20.svg" alt="" width="20" height="20" />
           </button>

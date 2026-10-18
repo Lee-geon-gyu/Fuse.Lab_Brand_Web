@@ -5,6 +5,35 @@
   height: 100%;
 }
 
+/* 카드: 라운드 + 호버 시 이미지 확대·라운드 커짐·어둡게 */
+.portfolio-sub-grid .body-box .body-list .body-list-item > a {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 1.6rem;
+  transition: border-radius 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.portfolio-sub-grid .body-box .body-list .body-list-item > a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.45));
+  opacity: 0.6;
+  transition: opacity 0.5s, background-color 0.5s;
+  pointer-events: none;
+}
+
+.portfolio-sub-grid .body-box .body-list .body-list-item > a:is(:hover, :focus-visible) {
+  border-radius: 4rem;
+}
+
+.portfolio-sub-grid .body-box .body-list .body-list-item > a:is(:hover, :focus-visible)::after {
+  background-color: rgba(0, 0, 0, 0.35);
+  opacity: 1;
+}
+
 /* 업로드 썸네일 크기가 제각각이어도 원본(560×560)과 같은 칸 크기로 */
 .portfolio-sub-grid .body-box .body-list .body-list-item img {
   display: block;
@@ -12,6 +41,18 @@
   max-width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.portfolio-sub-grid .body-box .body-list .body-list-item > a:is(:hover, :focus-visible) img {
+  transform: scale(1.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-sub-grid .body-box .body-list .body-list-item > a,
+  .portfolio-sub-grid .body-box .body-list .body-list-item img {
+    transition: none;
+  }
 }
 
 /* 카드 제목(DB 값): 카드 안쪽에서 최대 2줄, 넘치면 말줄임 (전체는 title) */

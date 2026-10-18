@@ -150,6 +150,7 @@
     const [year, month] = monthInput.value.split("-").map(Number);
     const requestId = ++statsRequest;
     monthLabel.textContent = `${year}. ${pad(month)}`;
+    monthTrigger.setAttribute("aria-label", `조회 월 선택, ${year}년 ${month}월`);
     document.querySelectorAll(".js-month-name").forEach((node) => {
       node.textContent = `${month}월`;
     });
@@ -188,12 +189,123 @@
     document.querySelector("#member-today").textContent = `${numberFormat.format(members.today)} 명`;
   }
 
-  function shiftMonth(offset) {
-    const [year, month] = monthInput.value.split("-").map(Number);
-    const next = new Date(year, month - 1 + offset, 1);
+  function setMonth(year, month) {
+    const next = new Date(year, month - 1, 1);
     monthInput.value = `${next.getFullYear()}-${pad(next.getMonth() + 1)}`;
     renderStats();
   }
+
+  function shiftMonth(offset) {
+    const [year, month] = monthInput.value.split("-").map(Number);
+    setMonth(year, month + offset);
+  }
+
+  // 월 선택 패널: 연도 이동 + 12개월 격자 + 이번 달. 브라우저 기본 month 피커 대신 사용
+  const monthTrigger = document.querySelector("#month-trigger");
+  const monthPanel = document.querySelector("#month-panel");
+  const monthPanelYear = document.querySelector("#month-panel-year");
+  const monthPanelGrid = document.querySelector("#month-panel-grid");
+  let panelYear = 0;
+
+  function currentYearMonth() {
+    const [year, month] = (today || "").split("-").map(Number);
+    if (year && month) return [year, month];
+    const now = new Date();
+    return [now.getFullYear(), now.getMonth() + 1];
+  }
+
+  function renderMonthPanel(focusMonth) {
+    const [selectedYear, selectedMonth] = monthInput.value.split("-").map(Number);
+    const [thisYear, thisMonth] = currentYearMonth();
+    monthPanelYear.textContent = `${panelYear}년`;
+    monthPanelGrid.replaceChildren(
+      ...Array.from({ length: 12 }, (_, index) => {
+        const month = index + 1;
+        const button = document.createElement("button");
+        const selected = panelYear === selectedYear && month === selectedMonth;
+        button.type = "button";
+        button.className = "month-panel__month";
+        button.textContent = `${month}월`;
+        button.dataset.month = String(month);
+        button.tabIndex = month === focusMonth ? 0 : -1;
+        button.setAttribute("aria-label", `${panelYear}년 ${month}월`);
+        if (selected) button.setAttribute("aria-current", "date");
+        if (panelYear === thisYear && month === thisMonth) button.classList.add("is-this-month");
+        return button;
+      }),
+    );
+  }
+
+  function focusPanelMonth(month) {
+    monthPanelGrid.querySelector(`[data-month="${month}"]`)?.focus();
+  }
+
+  function openMonthPanel() {
+    const [year, month] = monthInput.value.split("-").map(Number);
+    panelYear = year;
+    renderMonthPanel(month);
+    monthPanel.hidden = false;
+    monthTrigger.setAttribute("aria-expanded", "true");
+    focusPanelMonth(month);
+  }
+
+  function closeMonthPanel(restoreFocus = true) {
+    if (monthPanel.hidden) return;
+    monthPanel.hidden = true;
+    monthTrigger.setAttribute("aria-expanded", "false");
+    if (restoreFocus) monthTrigger.focus();
+  }
+
+  monthTrigger.addEventListener("click", () => {
+    if (monthPanel.hidden) openMonthPanel();
+    else closeMonthPanel();
+  });
+
+  monthPanel.addEventListener("click", (event) => {
+    const step = event.target.closest("[data-year-step]");
+    if (step) {
+      panelYear += Number(step.dataset.yearStep);
+      const focused = Number(document.activeElement?.dataset?.month) || 1;
+      renderMonthPanel(focused);
+      return;
+    }
+    const monthButton = event.target.closest(".month-panel__month");
+    if (monthButton) {
+      setMonth(panelYear, Number(monthButton.dataset.month));
+      closeMonthPanel();
+      return;
+    }
+    if (event.target.closest("#month-panel-today")) {
+      setMonth(...currentYearMonth());
+      closeMonthPanel();
+    }
+  });
+
+  monthPanel.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeMonthPanel();
+      return;
+    }
+    const month = Number(event.target.dataset?.month);
+    const moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -4, ArrowDown: 4 };
+    if (!month || !(event.key in moves)) return;
+    event.preventDefault();
+    let next = month + moves[event.key];
+    if (next < 1 || next > 12) {
+      panelYear += next < 1 ? -1 : 1;
+      next = ((next - 1 + 12) % 12) + 1;
+    }
+    renderMonthPanel(next);
+    focusPanelMonth(next);
+  });
+
+  document.addEventListener("pointerdown", (event) => {
+    if (!event.target.closest(".month-nav__picker")) closeMonthPanel(false);
+  });
+  monthPanel.addEventListener("focusout", (event) => {
+    if (event.relatedTarget && !event.relatedTarget.closest(".month-nav__picker")) closeMonthPanel(false);
+  });
 
   function createBadge(text, tone) {
     const badge = document.createElement("span");
@@ -430,14 +542,6 @@
 
   document.querySelector("#month-prev").addEventListener("click", () => shiftMonth(-1));
   document.querySelector("#month-next").addEventListener("click", () => shiftMonth(1));
-  monthInput.addEventListener("click", () => {
-    try {
-      monthInput.showPicker();
-    } catch {}
-  });
-  monthInput.addEventListener("change", () => {
-    if (monthInput.value) renderStats();
-  });
   weekSelect.addEventListener("change", () => {
     if (monthStats) renderWeek();
   });

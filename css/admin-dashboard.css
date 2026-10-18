@@ -54,8 +54,7 @@ a {
 
 button:focus-visible,
 select:focus-visible,
-a:focus-visible,
-.month-nav__picker:focus-within {
+a:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
@@ -123,11 +122,15 @@ a:focus-visible,
 
 .month-nav__picker {
   position: relative;
+}
+
+.month-nav__trigger {
   display: flex;
   align-items: center;
   gap: 12px;
   height: 42px;
   padding: 0 12px;
+  border: 1px solid transparent;
   border-radius: 12px;
   background: #fff;
   color: #33363d;
@@ -135,19 +138,123 @@ a:focus-visible,
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
-  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.month-nav__trigger:hover,
+.month-nav__trigger[aria-expanded="true"] {
+  border-color: var(--primary);
 }
 
 .month-nav__caret {
   transform: rotate(90deg);
+  transition: transform 0.2s;
 }
 
-.month-nav__picker input {
+.month-nav__trigger[aria-expanded="true"] .month-nav__caret {
+  transform: rotate(-90deg);
+}
+
+.month-panel {
   position: absolute;
-  inset: 0;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  width: 280px;
+  padding: 16px;
+  border: 1px solid #e3e6ea;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(19, 20, 22, 0.14);
+}
+
+.month-panel[hidden] {
+  display: none;
+}
+
+.month-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.month-panel__year {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.month-panel__year-step {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+}
+
+.month-panel__year-step:hover {
+  background: #f1ebff;
+}
+
+.month-panel__year-step img {
+  display: block;
+}
+
+.month-panel__year-step--prev img {
+  transform: rotate(180deg);
+}
+
+.month-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.month-panel__month {
+  height: 40px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: none;
+  color: var(--text-subtle);
+  font-size: 15px;
+  font-weight: 500;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.month-panel__month:hover {
+  background: #f1ebff;
+  color: var(--primary);
+}
+
+.month-panel__month.is-this-month {
+  border-color: var(--primary-light);
+}
+
+.month-panel__month[aria-current="date"] {
+  background: var(--primary);
+  color: #fff;
+}
+
+.month-panel__today {
+  display: block;
   width: 100%;
-  opacity: 0;
-  cursor: pointer;
+  height: 40px;
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: #f4f5f7;
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.month-panel__today:hover {
+  background: #f1ebff;
 }
 
 .chatbot-banner {
