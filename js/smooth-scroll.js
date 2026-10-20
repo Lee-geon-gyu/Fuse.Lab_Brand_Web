@@ -21,9 +21,10 @@
   gsap.ticker.lagSmoothing(0);
   ScrollTrigger.addEventListener("refresh", () => lenis.resize());
 
+  // 새로고침 시 맨 위로: 메인만 (head.php 가 메인에서만 scrollRestoration 을 manual 로 둠). 서브페이지는 브라우저 위치 복원 유지
   const isReload = performance.getEntriesByType("navigation")[0]?.type === "reload";
   const resetScroll = () => {
-    if (isReload) lenis.scrollTo(0, { immediate: true });
+    if (isReload && history.scrollRestoration === "manual") lenis.scrollTo(0, { immediate: true });
   };
 
   if (document.body.classList.contains("is-loading")) {

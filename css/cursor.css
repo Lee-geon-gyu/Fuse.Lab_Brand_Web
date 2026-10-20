@@ -1,0 +1,60 @@
+/* js/cursor.js 커스텀 커서 + 마그네틱 버튼. fx-cursor-on 은 마우스 기기에서 스크립트가 붙임 */
+.fx-cursor-on,
+.fx-cursor-on * {
+  cursor: none !important;
+}
+
+/* 글자 입력 칸은 시스템 텍스트 커서 유지 */
+.fx-cursor-on :is(input, textarea, [contenteditable="true"]) {
+  cursor: text !important;
+}
+
+.fx-cursor-on :is(input[type="checkbox"], input[type="radio"], input[type="submit"], input[type="button"]) {
+  cursor: none !important;
+}
+
+.fx-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2147483647;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  /* 밝은·어두운 섹션 모두에서 보이도록 반전 */
+  mix-blend-mode: difference;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.fx-cursor.is-visible {
+  opacity: 1;
+}
+
+.fx-cursor.is-text {
+  opacity: 0;
+}
+
+.fx-cursor::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fx-cursor.is-hover::before {
+  transform: scale(4);
+}
+
+.fx-cursor.is-down::before {
+  transform: scale(0.7);
+}
+
+.fx-cursor.is-hover.is-down::before {
+  transform: scale(3.4);
+}

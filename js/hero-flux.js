@@ -608,14 +608,71 @@ void main(){
   }, { passive: true });
   document.addEventListener('pointerleave', function () { mouseOn = false; });
 
+  // 드래그로 카메라 궤도 회전 (마우스·펜만. 터치는 페이지 스크롤 유지). 놓으면 관성으로 감속하고 각도는 유지
+  var hero = container.closest('.hero') || container;
+  var DRAG_SPEED = 0.006; // px 당 회전(rad)
+  var PITCH_LIMIT = 1.2; // 위아래 최대 각도(rad)
+  var camBase = CAM_BASE.clone();
+  var orbit = { yaw: 0, pitch: 0, vYaw: 0, vPitch: 0 };
+  var drag = null;
+  var _orbitPos = new THREE.Vector3();
+  var _yAxis = new THREE.Vector3(0, 1, 0);
+  var _side = new THREE.Vector3();
+
+  hero.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'touch' || e.button !== 0 || e.target.closest('a, button, input, textarea, select, label')) return;
+    drag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: e.timeStamp };
+    orbit.vYaw = 0;
+    orbit.vPitch = 0;
+    hero.setPointerCapture(e.pointerId);
+    hero.classList.add('is-dragging');
+    e.preventDefault();
+  });
+  hero.addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    orbit.vYaw = -(e.clientX - drag.x) * DRAG_SPEED;
+    orbit.vPitch = (e.clientY - drag.y) * DRAG_SPEED;
+    orbit.yaw += orbit.vYaw;
+    orbit.pitch = clamp(orbit.pitch + orbit.vPitch, -PITCH_LIMIT, PITCH_LIMIT);
+    drag.x = e.clientX;
+    drag.y = e.clientY;
+    drag.t = e.timeStamp;
+  });
+  function endDrag(e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    // 멈춘 채로 놓으면 관성 없음
+    if (e.timeStamp - drag.t > 80) {
+      orbit.vYaw = 0;
+      orbit.vPitch = 0;
+    }
+    drag = null;
+    hero.classList.remove('is-dragging');
+  }
+  hero.addEventListener('pointerup', endDrag);
+  hero.addEventListener('pointercancel', endDrag);
+
+  function updateCamera() {
+    if (!drag) {
+      orbit.vYaw *= 0.92;
+      orbit.vPitch *= 0.92;
+      orbit.yaw += orbit.vYaw;
+      orbit.pitch = clamp(orbit.pitch + orbit.vPitch, -PITCH_LIMIT, PITCH_LIMIT);
+    }
+    _orbitPos.copy(camBase).applyAxisAngle(_yAxis, orbit.yaw);
+    _side.crossVectors(_yAxis, _orbitPos).normalize();
+    if (_side.lengthSq() > 0) _orbitPos.applyAxisAngle(_side, -orbit.pitch);
+    camera.position.copy(_orbitPos);
+    camera.lookAt(0, 0, 0);
+  }
+
   function resize() {
     var w = container.clientWidth, h = container.clientHeight;
     if (!w || !h) return;
     renderer.setSize(w, h, false);
     var aspect = w / h;
     camera.aspect = aspect;
-    camera.position.copy(CAM_BASE).multiplyScalar(clamp(1.1 / aspect, 1, 2.2));
-    camera.lookAt(0, 0, 0);
+    camBase.copy(CAM_BASE).multiplyScalar(clamp(1.1 / aspect, 1, 2.2));
+    updateCamera();
     camera.updateProjectionMatrix();
     SHARED.uPixelRatio.value = renderer.getPixelRatio();
   }
@@ -636,6 +693,7 @@ void main(){
     targetRY += CONFIG.autoRotate * dt;
     root.rotation.y += (targetRY - root.rotation.y) * 0.08;
     root.updateMatrixWorld();
+    updateCamera();
 
     var T = timeline();
     var t = ((simTime % T.L) + T.L) % T.L;
