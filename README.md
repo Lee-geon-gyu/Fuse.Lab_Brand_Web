@@ -91,6 +91,17 @@ docker compose exec -T db mariadb -ufuselab -pfuselab fuselab < db/seed-portfoli
 6. 배포 후 확인: 견적문의 제출, ID/비밀번호 찾기 메일 수신(카페24 `mail()` 발송 여부 미확인), 이미지 업로드
 7. `docker/`, `docker-compose.yml`, `*.md`, `.claude/`, `.agents/`, `.codex/` 는 업로드하지 않음 (업로드돼도 `.htaccess` 로 차단)
 
+### 자동 배포 (GitHub Actions)
+
+`deploy` 브랜치에 push 되면 `.github/workflows/deploy.yml` 이 카페24 에 FTP 로 배포한다. 로직은 로컬 배포와 같은 `.claude/skills/ftp-deploy/deploy.py` (원격 `/www/.deploy-rev` 커밋부터 바뀐 파일만 업로드·삭제, `db/schema.sql` 이 바뀌었으면 적용)
+
+- 배포: `main` 을 `deploy` 로 PR 머지하거나 `git push origin main:deploy`
+- 저장소 Settings > Secrets and variables > Actions
+  - Secrets: `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD`, `FTP_REMOTE_DIR`(`/www`), `FTP_PORT`(선택, 기본 21)
+  - Variables: `DEPLOY_URL`(선택, 기본 `https://{FTP_HOST}`) — 배포 후 `/`·`/portfolio.php`·`/admin/login.php` 200, `/app/config.local.php`·`/db/schema.sql` 403 확인에 사용
+- 수동 실행: Actions > Deploy to Cafe24 > Run workflow (브랜치 `deploy`). `dry_run` 은 목록만, `all` 은 전체 업로드(원격 삭제 없음)
+- 원격 `.deploy-rev` 커밋이 GitHub 에 없으면 (push 안 한 로컬 커밋으로 수동 배포한 경우) 실패하므로 `all` 로 한 번 실행
+
 ## 관리자 기능
 
 | 메뉴 | 기능 |

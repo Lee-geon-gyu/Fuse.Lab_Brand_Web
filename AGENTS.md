@@ -71,6 +71,7 @@ fuse.lab 브랜드 웹사이트. 정적 HTML 퍼블리싱 위에 필요한 기�
 3. 기본 관리자 `admin` / `qwer1234` (`db/schema.sql` 이 넣음) 로 로그인 후 비밀번호 변경. 추가 관리자는 `/admin/signup.php` 에서 승인 코드로 가입 (필요 없으면 `signup_code` 를 `''` 로 비워 닫을 수 있음)
 4. 업로드 제외: `docker/`, `docker-compose.yml`, `setup.*`, `.env*`, `*.md`, `.git*`, `.claude/`, `.codex/`, `app/storage/`, `uploads/posts/` (로컬 업로드 파일)
    (실수로 올라가도 루트 `.htaccess` 가 차단)
+5. 코드 배포: `deploy` 브랜치에 push 하면 GitHub Actions(`.github/workflows/deploy.yml`)가 FTP 로 변경분 배포. 수동은 `ftp-deploy` 스킬. 설정은 README `자동 배포 (GitHub Actions)`
 
 ## 포트폴리오 이미지 작업
 
