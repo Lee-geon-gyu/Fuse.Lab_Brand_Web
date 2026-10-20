@@ -11,6 +11,8 @@ description: fuse.lab 프로젝트를 카페24에 FTP로 배포할 때 사용한
 
 접속 정보는 루트 `.env`의 `FTP_HOST`, `FTP_PORT`, `FTP_USER`, `FTP_PASSWORD`, `FTP_REMOTE_DIR`(`/www`)을 사용한다. `DEPLOY_URL`이 있으면 검증할 사이트 주소로 쓰고, 없으면 `https://{FTP_HOST}`를 사용한다. 비밀번호와 비밀 설정값은 출력하거나 커밋하지 않는다.
 
+`deploy` 브랜치에 push 하면 GitHub Actions(`.github/workflows/deploy.yml`)가 같은 스크립트를 `--schema-if-changed`로 실행한다. 이때 접속 정보는 `.env` 대신 같은 이름의 저장소 Secrets 환경변수를 쓴다. 설정은 README의 `자동 배포 (GitHub Actions)`를 따른다.
+
 ## 절차
 
 1. 배포 요청의 범위와 Git 변경 상태를 확인한다. 스킬 설치·변환이나 사용법 설명만 요청받았다면 배포를 실행하지 않는다. 배포할 변경은 커밋되어 있어야 하며, 관련 없는 변경을 함께 커밋하지 않는다. `--allow-dirty`는 사용자가 요청한 경우에만 사용한다. 미추적 파일은 배포 대상에 포함되지 않는다.
