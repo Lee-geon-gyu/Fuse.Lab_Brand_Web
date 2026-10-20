@@ -14,6 +14,7 @@ $subpage = subpage_current();
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <meta name="google-site-verification" content="dODcCKmnRah-somPG8Ex6P5XURwUt1q4wI-GYiJQfqs" />
 <?php if (!empty($isHome)): ?>
     <script>
       // Set this before the browser restores the previous scroll position.
