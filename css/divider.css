@@ -17,6 +17,21 @@
   position: absolute; max-width: none;
   width: 177.13%; height: 129.45%; left: -38.56%; top: -16.33%;
 }
+.divider__canvas {
+  position: absolute; inset: 0;
+  display: block; width: 100%; height: 100%; pointer-events: none;
+  visibility: hidden;
+}
+.divider__sphere.is-webgl .divider__canvas { visibility: visible; }
+.divider__sphere.is-webgl img { visibility: hidden; }
+.divider.is-sequenced { z-index: 2; }
+.divider.is-sequenced[data-divider-playback="idle"] :is(.divider__sphere, .divider__canvas) { visibility: hidden; }
+.fx-divider-pin .gyu-mvp { z-index: 1; }
+.divider.is-sequenced:is([data-divider-playback="idle"], [data-divider-playback="playing"]) :is(.divider__text, .divider__marquee) {
+  visibility: hidden;
+}
+.divider__word { display: inline-block; white-space: nowrap; }
+.divider__char { display: inline-block; }
 .divider__text {
   position: absolute; left: calc(50% + 0.5px); top: 50%; transform: translate(-50%, -50%);
   display: flex; flex-direction: column; align-items: center; text-align: center;
@@ -53,6 +68,7 @@
 /* 진입 연출 (문구는 js/motion.js 글자 등장) */
 .divider.is-pre .divider__sphere { opacity: 0; transform: scale(0.8); }
 .divider__sphere { transition: opacity 1s var(--ease-out), transform 1.2s var(--ease-out); }
+.divider.is-sequenced .divider__sphere { transition: none; }
 
 @media (max-width: 768px) {
   .divider__text { white-space: normal; width: 100%; }

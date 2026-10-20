@@ -198,70 +198,7 @@
     );
   }
 
-  // From Idea to System.
-  revealOnScroll(document.querySelector(".divider__text"), {
-    chars: [".divider__title", ".divider__desc"],
-    maxStagger: 0.5,
-  }, "top 80%");
-
-  // From Idea to System. 핀 고정 → 스크롤하면 제목 글자만 커지면서 서로 멀어지고 블러·흐려짐(startangelinus 첫 화면 로고 연출 방식).
-  // 구 이미지·작은 문구·배경은 확대하지 않고 흐려지기만 함.
-  // 서비스 섹션은 이 섹션 아래(z-index)에 미리 자리 잡아 두고, 마지막에 이 섹션이 걷히면서 드러남
-  const PIN_LENGTH = 1.2; // 핀 길이 (화면 높이 배수)
-  const REVEAL_AT = 0.8; // 이 진행률에 서비스 섹션이 화면 맨 위에 닿고, 여기서부터 이 섹션이 걷힘
-  const divider = document.querySelector(".divider");
-  const dividerTitle = divider?.querySelector(".divider__title");
-  if (divider && dividerTitle) {
-    const nextSection = document.querySelector(".gyu-mvp");
-    const nextBackground = getComputedStyle(nextSection ?? divider).backgroundColor;
-    const titleChars = splitChars(dividerTitle);
-    const middle = (titleChars.length - 1) / 2;
-    document.documentElement.classList.add("fx-divider-pin");
-    // 서비스 섹션을 위로 당겨 핀 진행률 REVEAL_AT 에서 화면 맨 위에 닿게 함.
-    // 남은 핀 구간((1 - REVEAL_AT) × 핀 길이)은 서비스 섹션 첫 카드 대기 구간(화면 0.3배) 안에 들어가 카드가 움직이지 않음
-    const placeNextSection = () => {
-      if (!nextSection) return;
-      nextSection.style.marginTop =
-        `${-(divider.offsetHeight + window.innerHeight * PIN_LENGTH * (1 - REVEAL_AT))}px`;
-    };
-    placeNextSection();
-    ScrollTrigger.addEventListener("refreshInit", placeNextSection);
-    gsap
-      .timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: {
-          trigger: divider,
-          start: "top top",
-          end: () => `+=${window.innerHeight * PIN_LENGTH}`,
-          pin: true,
-          scrub: true,
-          // 아래 섹션(서비스·why·contact)의 핀보다 먼저 계산해야 그 위치에 이 핀 길이가 반영됨
-          refreshPriority: 1,
-          invalidateOnRefresh: true,
-          onUpdate: ({ progress }) => {
-            // 배경이 어두워진 뒤에는 헤더를 밝은 글자로
-            divider.dataset.headerTheme = progress > 0.5 ? "light" : "dark";
-            // 서비스 섹션이 가려져 있는 동안은 카드 문구 등장을 미뤘다가 걷히기 시작할 때 재생
-            if (nextSection) nextSection.dataset.fxCovered = String(progress < REVEAL_AT);
-          },
-        },
-      })
-      .to(dividerTitle, { scale: 3.2, ease: "power1.in", duration: 0.75 }, 0)
-      // 가운데 글자를 기준으로 양옆 글자가 멀어짐 (제목 글자 크기에 비례)
-      .to(titleChars, {
-        x: (index) => (index - middle) * dividerTitle.offsetHeight * 0.18,
-        ease: "power1.in",
-        duration: 0.75,
-      }, 0)
-      .to(dividerTitle, { filter: "blur(16px)", ease: "power2.in", duration: 0.45 }, 0.15)
-      .to(dividerTitle, { opacity: 0, ease: "power1.in", duration: 0.3 }, 0.45)
-      .to([divider.querySelector(".divider__desc"), divider.querySelector(".divider__marquee")], { opacity: 0, duration: 0.25 }, 0)
-      // .divider__sphere 는 CSS transition(진입 연출)이 걸려 있어 안쪽 img 를 흐리게 함
-      .to(divider.querySelector(".divider__sphere img"), { opacity: 0, duration: 0.4 }, 0.15)
-      .to(divider, { backgroundColor: nextBackground, duration: 0.45 }, 0.3)
-      // 아래에 미리 자리 잡은 서비스 섹션이 보이도록 이 섹션을 걷어냄
-      .to(divider, { opacity: 0, duration: 1 - REVEAL_AT }, REVEAL_AT);
-  }
+  // 디바이드의 구체 → 글자 등장 → 스크롤 확대 전환은 js/divider.js에서 순서대로 관리한다.
 
   // 서비스 카드: 앞에 놓인 카드의 문구 등장
   const mvp = document.querySelector(".gyu-mvp");
