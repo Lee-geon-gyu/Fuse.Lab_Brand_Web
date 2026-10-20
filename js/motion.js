@@ -207,7 +207,7 @@
   // From Idea to System. 핀 고정 → 스크롤하면 제목 글자만 커지면서 서로 멀어지고 블러·흐려짐(startangelinus 첫 화면 로고 연출 방식).
   // 구 이미지·작은 문구·배경은 확대하지 않고 흐려지기만 함.
   // 서비스 섹션은 이 섹션 아래(z-index)에 미리 자리 잡아 두고, 마지막에 이 섹션이 걷히면서 드러남
-  const PIN_LENGTH = 1.5; // 핀 길이 (화면 높이 배수)
+  const PIN_LENGTH = 1.2; // 핀 길이 (화면 높이 배수)
   const REVEAL_AT = 0.8; // 이 진행률에 서비스 섹션이 화면 맨 위에 닿고, 여기서부터 이 섹션이 걷힘
   const divider = document.querySelector(".divider");
   const dividerTitle = divider?.querySelector(".divider__title");

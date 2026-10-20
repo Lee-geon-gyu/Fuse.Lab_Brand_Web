@@ -22,8 +22,8 @@
     window.scrollTo({ top, behavior: skipAnimation ? "instant" : "smooth" });
   };
   const transitionCount = Math.max(projects.length - 1, 0);
-  const holdScrollRatio = 0.65;
-  const transitionScrollRatio = 1.85;
+  const holdScrollRatio = 0.45;
+  const transitionScrollRatio = 1.0;
 
   let segmentLength = 1;
   let holdLength = 1;
@@ -453,8 +453,8 @@
       serviceStage.style.setProperty("--gyu-card-height", `${cardHeight}px`);
       hold = viewportHeight * 0.3;
       // 앞 섹션(From Idea to System.)이 걷힌 뒤 첫 카드가 바로 넘어가지 않도록 첫 카드만 더 머무름
-      leadIn = viewportHeight * 0.7;
-      travel = viewportHeight * 0.85;
+      leadIn = viewportHeight * 0.5;
+      travel = viewportHeight * 0.6;
       segment = hold + travel;
       section.style.height = `${viewportHeight + leadIn + lastIndex * segment + hold}px`;
       sectionTop = section.getBoundingClientRect().top + window.scrollY;
@@ -805,7 +805,7 @@ const tl = gsap.timeline({
   scrollTrigger: {
     trigger: section,
     start: "top top",
-    end: () => `+=${window.innerHeight * (items.length - 1)}`,
+    end: () => `+=${window.innerHeight * 0.5 * (items.length - 1)}`,
     pin: true,
     scrub: 0.2,
     anticipatePin: 0,

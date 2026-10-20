@@ -3,7 +3,7 @@
  * 사용자 페이지 <head> ~ <body> 시작
  * @var string      $pageTitle
  * @var string|null $bodyClass
- * @var bool|null   $isHome    true 면 메인 전용 Lenis 스크롤 로드
+ * @var bool|null   $isHome    true 면 메인 전용 로더·폰트 대기·스크롤 위치 초기화
  * @var string[]    $styles    페이지 전용 CSS 경로 (공통 CSS 뒤에 로드)
  */
 $styles ??= [];
@@ -38,13 +38,11 @@ $subpage = subpage_current();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;800&family=Playfair+Display:ital,wght@1,400;1,500&display=swap" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-<?php if (!empty($isHome)): ?>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.css" />
-<?php endif; ?>
 <?php foreach ([
     '/css/common.css', '/css/loader.css', '/css/hero.css', '/css/divider.css', '/css/font.css',
     '/css/GYU.css', '/css/WON.css', '/css/SURO.css', '/css/chatbot-widget.css', '/css/motion.css',
-    '/css/site-overflow.css', ...$styles,
+    '/css/site-overflow.css', '/css/cursor.css', ...$styles,
 ] as $href): ?>
     <link rel="stylesheet" href="<?= e(asset($href)) ?>" />
 <?php endforeach; ?>

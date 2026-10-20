@@ -55,14 +55,11 @@ $subpage = subpage_current();
     <script src="<?= e(asset('/js/divider.js')) ?>"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
-<?php if ($isHome): ?>
     <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
-<?php endif; ?>
     <script src="<?= e(asset('/script.js')) ?>"></script>
     <script src="<?= e(asset('/js/motion.js')) ?>"></script>
-<?php if ($isHome): ?>
     <script src="<?= e(asset('/js/smooth-scroll.js')) ?>"></script>
-<?php endif; ?>
+    <script src="<?= e(asset('/js/cursor.js')) ?>"></script>
     <script src="<?= e(asset('/js/chatbot-widget.js')) ?>"></script>
 <?php if ($subpage !== null && trim($subpage['js']) !== ''): ?>
     <script data-subpage-js>
