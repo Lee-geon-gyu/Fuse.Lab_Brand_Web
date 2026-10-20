@@ -14,8 +14,13 @@ description: fuse.lab 사이트를 카페24(fuselab.mycafe24.com)에 FTP 로 배
 3. 업로드: `python .claude/skills/ftp-deploy/deploy.py`
    - 원격 `/www/.deploy-rev` 에 적힌 커밋부터 `HEAD` 까지 바뀐 파일만 올리고, 삭제된 파일은 원격에서도 지움. 끝나면 `.deploy-rev` 를 `HEAD` 로 갱신
    - `.deploy-rev` 가 없거나 `--all` 이면 배포 대상 전체 업로드 (삭제 없음)
-   - `db/schema.sql` 이 바뀌었으면 `--schema` 추가 → 일회용 PHP 를 무작위 이름으로 올려 schema.sql 만 실행하고 바로 삭제
+   - `db/schema.sql` 이 바뀌었으면 `--schema` 추가 → 일회용 PHP 를 무작위 이름으로 올려 schema.sql 만 실행하고 바로 삭제 (`--schema-if-changed` 는 schema.sql 이 업로드 대상일 때만 적용)
 4. 확인: 라이브 `/`, `/portfolio.php`, `/admin/login.php` 200, `/app/config.local.php`·`/db/schema.sql` 403. 화면을 바꾼 배포면 브라우저로 해당 페이지를 열어 콘솔 오류 확인
+
+## 자동 배포 (GitHub Actions)
+
+- `deploy` 브랜치 push → `.github/workflows/deploy.yml` 이 이 스크립트를 `--schema-if-changed` 로 실행. 접속 정보는 `.env` 대신 저장소 Secrets(같은 이름의 환경변수)
+- 같은 `.deploy-rev` 를 쓰므로 로컬 수동 배포와 섞어 써도 됨. 단 로컬에서 push 안 한 커밋으로 배포하면 다음 Actions 배포가 그 커밋을 못 찾아 실패함 (Actions 에서 `all` 로 실행)
 
 ## 규칙
 

@@ -1,6 +1,7 @@
 """카페24 FTP 배포. 사용법은 같은 폴더의 SKILL.md
 
-python .claude/skills/ftp-deploy/deploy.py [--all] [--dry-run] [--schema] [--allow-dirty]
+python .claude/skills/ftp-deploy/deploy.py [--all] [--dry-run] [--schema | --schema-if-changed] [--allow-dirty]
+GitHub Actions(.github/workflows/deploy.yml)도 이 스크립트를 실행한다
 """
 import argparse
 import ftplib
@@ -27,17 +28,25 @@ def git(*args):
     return subprocess.run(["git", *args], capture_output=True, text=True, check=True).stdout
 
 
+ENV_KEYS = ("FTP_HOST", "FTP_PORT", "FTP_USER", "FTP_PASSWORD", "FTP_REMOTE_DIR", "DEPLOY_URL")
+
+
 def load_env():
+    """루트 .env 를 읽고, 빈 값은 같은 이름의 환경변수로 채운다 (GitHub Actions 는 .env 없이 Secrets 를 환경변수로 넘김)"""
     env = {}
-    with open(".env", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, v = line.split("=", 1)
-                env[k.strip()] = v.strip()
+    if os.path.exists(".env"):
+        with open(".env", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    env[k.strip()] = v.strip()
+    for k in ENV_KEYS:
+        if not env.get(k) and os.environ.get(k):
+            env[k] = os.environ[k]
     for k in ("FTP_HOST", "FTP_USER", "FTP_PASSWORD", "FTP_REMOTE_DIR"):
         if not env.get(k):
-            sys.exit(f".env 에 {k} 가 없음")
+            sys.exit(f"{k} 가 없음 (.env 또는 환경변수)")
     return env
 
 
@@ -110,7 +119,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--all", action="store_true", help="변경분이 아니라 배포 대상 전체 업로드")
     ap.add_argument("--dry-run", action="store_true", help="목록만 출력")
-    ap.add_argument("--schema", action="store_true", help="업로드 후 db/schema.sql 적용")
+    schema = ap.add_mutually_exclusive_group()
+    schema.add_argument("--schema", action="store_true", help="업로드 후 db/schema.sql 적용")
+    schema.add_argument("--schema-if-changed", action="store_true", help="db/schema.sql 이 업로드 대상일 때만 적용 (CI 용)")
     ap.add_argument("--allow-dirty", action="store_true", help="커밋 안 된 변경이 있어도 진행")
     args = ap.parse_args()
 
@@ -148,6 +159,9 @@ def main():
         print("  +", p)
     for p in delete:
         print("  -", p)
+    apply_schema = args.schema or (args.schema_if_changed and "db/schema.sql" in upload)
+    if apply_schema:
+        print("업로드 후 db/schema.sql 적용")
     if args.dry_run:
         ftp.quit()
         return
@@ -169,7 +183,7 @@ def main():
     ftp.storbinary(f"STOR {base}/{REV_FILE}", io.BytesIO(head.encode()))
     print(f"배포 완료: {head[:7]}")
 
-    if args.schema:
+    if apply_schema:
         run_schema(ftp, base, site)
     ftp.quit()
 

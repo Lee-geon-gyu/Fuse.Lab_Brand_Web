@@ -1,0 +1,77 @@
+# deploy 브랜치에 push 되면 카페24(/www)에 FTP 로 배포한다
+# 실행 로직은 로컬 배포와 같은 .claude/skills/ftp-deploy/deploy.py
+#   - 원격 /www/.deploy-rev 커밋부터 지금 커밋까지 바뀐 파일만 업로드, 삭제된 파일은 원격에서도 삭제
+#   - db/schema.sql 이 바뀌었으면 업로드 후 schema.sql 적용 (db/dump.sql 은 운영 DB 에 넣지 않음)
+# 필요한 저장소 설정 (Settings > Secrets and variables > Actions)
+#   Secrets:   FTP_HOST, FTP_USER, FTP_PASSWORD, FTP_REMOTE_DIR(/www), FTP_PORT(선택, 기본 21)
+#   Variables: DEPLOY_URL(선택, 기본 https://{FTP_HOST}) — 배포 후 확인할 사이트 주소
+
+name: Deploy to Cafe24
+
+on:
+  push:
+    branches: [deploy]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 목록만 확인 (업로드 안 함)
+        type: boolean
+        default: false
+      all:
+        description: 변경분 대신 배포 대상 전체 업로드 (원격 파일 삭제 없음)
+        type: boolean
+        default: false
+
+# 배포가 겹치면 .deploy-rev 가 꼬이므로 하나씩, 진행 중인 배포는 취소하지 않음
+concurrency:
+  group: deploy-cafe24
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    # 수동 실행은 deploy 브랜치에서만
+    if: github.ref == 'refs/heads/deploy'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      FTP_HOST: ${{ secrets.FTP_HOST }}
+      FTP_PORT: ${{ secrets.FTP_PORT }}
+      FTP_USER: ${{ secrets.FTP_USER }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
+      DEPLOY_URL: ${{ vars.DEPLOY_URL }}
+    steps:
+      # .deploy-rev 커밋과 diff 하려면 전체 이력이 필요
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: FTP 배포
+        env:
+          DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
+          ALL: ${{ inputs.all && '--all' || '' }}
+        run: python .claude/skills/ftp-deploy/deploy.py --schema-if-changed $DRY_RUN $ALL
+
+      - name: 라이브 확인
+        if: ${{ !inputs.dry_run }}
+        run: |
+          site="${DEPLOY_URL:-https://$FTP_HOST}"
+          fail=0
+          check() {
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$site$1")
+            echo "$1 → $code (기대 $2)"
+            [ "$code" = "$2" ] || fail=1
+          }
+          check / 200
+          check /portfolio.php 200
+          check /admin/login.php 200
+          check /app/config.local.php 403
+          check /db/schema.sql 403
+          exit $fail
