@@ -16,7 +16,7 @@ ROOT = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=Tr
 os.chdir(ROOT)
 
 # AGENTS.md 배포 업로드 제외 + 에이전트 설정
-EXCLUDE_PREFIX = ("docker/", "docker-compose", "setup.", ".env", ".git", ".claude/", "code ")
+EXCLUDE_PREFIX = ("docker/", "docker-compose", "setup.", ".env", ".git", ".claude/", ".agents/", ".codex/", "code ")
 EXCLUDE_SUFFIX = (".md",)
 # 서버에만 있는 파일. 지우지도 덮어쓰지도 않음
 PROTECTED = ("app/config.local.php", "app/storage/", "uploads/posts/")

@@ -16,6 +16,32 @@ const PORTFOLIO_CATEGORIES = [
 /** 사용자 목록 한 번에 불러오는 개수 (3개씩 두 줄) */
 const PORTFOLIO_PAGE_SIZE = 6;
 
+/** 원본 사이트 주소로 대표 화면에 사용할 로고를 찾는다. 로고가 포함된 쿠무는 제외. */
+function portfolio_brand_logo(array $portfolio): ?array
+{
+    $url = parse_url((string) ($portfolio['site_url'] ?? ''));
+    if ($url === false || !isset($url['host'])) {
+        return null;
+    }
+    $key = strtolower($url['host'] . rtrim($url['path'] ?? '', '/'));
+    $logos = [
+        'r00neyj.github.io/sweatie_brand_web' => ['sweatie', 'sweatie.svg'],
+        'lee-geon-gyu.github.io/oy_redesign' => ['oy', 'oy.png'],
+        'tnfh23-web.github.io/afterimage' => ['afterimage', 'afterimage.svg'],
+        'rawdoc.app' => ['rawdoc', 'rawdoc.png'],
+        'r00neyj.github.io/eatgo_process' => ['eatgo', 'eatgo.png'],
+        'tnfh23-web.github.io/react-modoo' => ['modoo', 'modoo.png'],
+        'reflow.tnfh23.workers.dev' => ['reflow', 'reflow.png'],
+        'lee-geon-gyu.github.io/dive_web_react_ts' => ['dive', 'dive.png'],
+        'lee-geon-gyu.github.io/jw_redesign' => ['jw', 'jw-white-hd.png'],
+    ];
+    if (!isset($logos[$key])) {
+        return null;
+    }
+    [$brand, $file] = $logos[$key];
+    return ['brand' => $brand, 'src' => '/aseets/imgs/portfolio-sub/logos/' . $file];
+}
+
 /**
  * 사용자 목록: 노출 글을 $offset 부터 $limit 개.
  * @return array{items: array<int, array>, hasMore: bool}

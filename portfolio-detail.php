@@ -33,19 +33,28 @@ if ($portfolio === null) {
 }
 
 $title = $portfolio['title'];
+$brandLogo = portfolio_brand_logo($portfolio);
 $meta = array_filter([
     'CLIENT' => $portfolio['client'],
     'TYPE' => $portfolio['type'],
     'DATE' => $portfolio['project_date'],
 ], static fn (string $value): bool => $value !== '');
 
-view('site/head', ['pageTitle' => slot_value('page_title', '포트폴리오 상세') . ' ' . $title]);
+view('site/head', [
+    'pageTitle' => slot_value('page_title', '포트폴리오 상세') . ' ' . $title,
+    'styles' => ['/css/portfolio-brand-logo.css'],
+]);
 ?>
 <?php view('site/header', ['isHome' => false, 'headerTheme' => 'dark']); ?>
 
     <main>
-      <section class="portfolio-detail-sec-full-img">
+      <section class="portfolio-detail-sec-full-img<?= $brandLogo !== null ? ' portfolio-detail-sec-full-img--dimmed' : '' ?>">
         <img src="<?= e($portfolio['hero_image'] ?: $portfolio['thumbnail']) ?>" alt="<?= e($title) ?> 이미지" />
+<?php if ($brandLogo !== null): ?>
+        <div class="portfolio-brand-logo portfolio-brand-logo--<?= e($brandLogo['brand']) ?>">
+          <img src="<?= e($brandLogo['src']) ?>" alt="<?= e($title) ?> 로고" />
+        </div>
+<?php endif; ?>
         <img class="arrow-down" src="/aseets/imgs/portfolio-sub/arrow-down.svg" alt="arrow-down" />
       </section>
       <section class="portfolio-detail-sec-Overview">

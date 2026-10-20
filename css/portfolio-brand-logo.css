@@ -1,0 +1,63 @@
+/* 원본 로고를 대표 배경과 분리해 중앙에 표시한다. */
+.portfolio-detail-sec-full-img--dimmed::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.portfolio-detail-sec-full-img--dimmed .arrow-down {
+  z-index: 2;
+}
+
+.portfolio-brand-logo {
+  position: fixed;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  width: min(30vw, var(--brand-logo-width, 56rem));
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.portfolio-brand-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 22vh;
+  object-fit: contain;
+}
+
+.portfolio-brand-logo--sweatie { --brand-logo-width: 54rem; }
+.portfolio-brand-logo--oy { --brand-logo-width: 60rem; }
+.portfolio-brand-logo--afterimage { --brand-logo-width: 64rem; }
+.portfolio-brand-logo--rawdoc { --brand-logo-width: 52rem; }
+.portfolio-brand-logo--eatgo { --brand-logo-width: 52rem; }
+.portfolio-brand-logo--modoo { --brand-logo-width: 58rem; }
+.portfolio-brand-logo--reflow { --brand-logo-width: 56rem; }
+.portfolio-brand-logo--dive { --brand-logo-width: 52rem; }
+.portfolio-brand-logo--jw { --brand-logo-width: 56rem; }
+
+.portfolio-brand-logo--rawdoc img {
+  filter: invert(1);
+}
+
+.portfolio-brand-logo--reflow img,
+.portfolio-brand-logo--eatgo img {
+  filter: brightness(0) invert(1);
+}
+
+@media (max-width: 767px) {
+  .portfolio-brand-logo {
+    width: min(64vw, var(--brand-logo-width, 56rem));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-detail-sec-full-img--dimmed::after,
+  .portfolio-brand-logo {
+    position: absolute;
+  }
+}
