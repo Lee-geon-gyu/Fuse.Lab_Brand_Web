@@ -76,6 +76,7 @@ docker compose exec -T db mariadb -ufuselab -pfuselab fuselab < db/seed-portfoli
 - `app/` — PHP 공통 코드 (bootstrap, 설정, DB, `views/` 레이아웃). `.htaccess` 로 웹 접근 차단
 - `uploads/posts/` — 게시판 첨부·포트폴리오·챗봇 아이콘 이미지 (git 제외, `uploads/.htaccess` 로 스크립트 실행 차단)
 - `app/storage/` — 로컬 메일 로그 (git 제외, 웹 접근 차단)
+- `.claude/skills/` — Claude 용 프로젝트 스킬. `.codex/skills/` — Codex 용 프로젝트 스킬 (`AGENTS.md` 에서 연결). "FTP 배포해줘" 요청 시 `.codex/skills/ftp-deploy/SKILL.md` 를 읽고 같은 폴더의 `deploy.py` 를 실행. 실제 배포 로직은 `.claude/skills/ftp-deploy/deploy.py` 를 함께 사용
 - PHP 파일 목록: [page-map.md](page-map.md) / 화면 설계: [docs/design.md](docs/design.md)
 
 ## 카페24 배포
@@ -88,7 +89,7 @@ docker compose exec -T db mariadb -ufuselab -pfuselab fuselab < db/seed-portfoli
 4. 시안 데이터가 필요하면 `db/seed-portfolios.sql`(포트폴리오 목록 6개) → `db/seed-portfolio.sql`(메인 슬라이드 4개, VIEW PROJECT 를 목록 1~4번째에 연결) 순서로 한 번씩 실행
 5. `uploads/.htaccess` 를 함께 업로드. `uploads/posts/` 는 첫 업로드 때 자동 생성되며, 실패하면 FTP 로 만들고 쓰기 권한(755/707) 부여
 6. 배포 후 확인: 견적문의 제출, ID/비밀번호 찾기 메일 수신(카페24 `mail()` 발송 여부 미확인), 이미지 업로드
-7. `docker/`, `docker-compose.yml`, `*.md` 는 업로드하지 않음 (업로드돼도 `.htaccess` 로 차단)
+7. `docker/`, `docker-compose.yml`, `*.md`, `.claude/`, `.agents/`, `.codex/` 는 업로드하지 않음 (업로드돼도 `.htaccess` 로 차단)
 
 ## 관리자 기능
 

@@ -19,7 +19,7 @@ description: fuse.lab 사이트를 카페24(fuselab.mycafe24.com)에 FTP 로 배
 
 ## 규칙
 
-- 업로드 제외 (AGENTS.md 배포 항목): `docker/`, `docker-compose.yml`, `setup.*`, `.env*`, `.git*`, `*.md`, `.claude/`
+- 업로드 제외 (AGENTS.md 배포 항목): `docker/`, `docker-compose.yml`, `setup.*`, `.env*`, `.git*`, `*.md`, `.claude/`, `.agents/`, `.codex/`
 - 서버 전용, 건드리지 않음: `app/config.local.php`(운영 DB·`site_url` 설정), `app/storage/`, `uploads/posts/`(운영 업로드 파일)
 - FTP 로그인 홈이 이미 `/www` 다. 경로는 항상 `/www/...` 절대 경로로 쓴다 (상대 경로나 `/` 기준으로 올리면 웹 루트 밖에 올라감)
 - `db/dump.sql` 은 운영에 다시 넣지 않는다 (운영 콘텐츠를 덮어씀). 첫 설치 때만 빈 DB 에 적용했음

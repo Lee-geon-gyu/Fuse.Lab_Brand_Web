@@ -69,8 +69,23 @@ fuse.lab 브랜드 웹사이트. 정적 HTML 퍼블리싱 위에 필요한 기�
 1. `app/config.local.example.php` → `app/config.local.php` 복사 후 카페24 DB 정보·`signup_code`·`mail_from`·`site_url` 입력
 2. 카페24 DB 관리(phpMyAdmin)에서 `db/schema.sql` 실행 (시안 데이터가 필요하면 `db/seed-*.sql` 도 한 번씩)
 3. 기본 관리자 `admin` / `qwer1234` (`db/schema.sql` 이 넣음) 로 로그인 후 비밀번호 변경. 추가 관리자는 `/admin/signup.php` 에서 승인 코드로 가입 (필요 없으면 `signup_code` 를 `''` 로 비워 닫을 수 있음)
-4. 업로드 제외: `docker/`, `docker-compose.yml`, `setup.*`, `.env*`, `*.md`, `.git*`, `app/storage/`, `uploads/posts/` (로컬 업로드 파일)
+4. 업로드 제외: `docker/`, `docker-compose.yml`, `setup.*`, `.env*`, `*.md`, `.git*`, `.claude/`, `.codex/`, `app/storage/`, `uploads/posts/` (로컬 업로드 파일)
    (실수로 올라가도 루트 `.htaccess` 가 차단)
+
+## 포트폴리오 이미지 작업
+
+- 사용자가 포트폴리오 이미지 제작용 웹사이트 URL을 주면, 별도 지정이 없는 한 히어로 이미지·pro 상세 이미지·썸네일 세 장을 만든다.
+- 히어로: 사이트의 브랜드 분위기에 맞는 배경을 ImageGen으로 제작하고 최종 크기는 정확히 1920×1080px로 저장한다. 중앙은 사용자가 로고를 넣을 수 있도록 넉넉히 비우고 로고·문구·웹 UI를 넣지 않는다.
+- pro: 사이트를 먼저 1920×1080 PC 브라우저 화면으로 렌더링해 전체 내용을 캡처하고, 결과 이미지만 가로 1280px로 비율에 맞춰 축소한다. 브라우저 폭을 1280px로 설정해 캡처하지 않는다. 원래 PC 레이아웃을 유지하고 스크롤로 나타나는 콘텐츠와 마지막 영역까지 확인한다.
+- 슬라이더·캐러셀·화면 전환 영역은 대표 화면 하나만 담는다. 다른 슬라이드를 보여주려고 같은 섹션을 반복해서 붙이지 않는다. 예: PROCESS나 포트폴리오 슬라이더는 각각 한 번만 캡처한다.
+- 3D 전시·화면 전환형 사이트는 대표 공간과 주요 기능 화면을 PC 크기로 각각 캡처해 세로로 연결한다. 아주 긴 페이지는 구간별로 캡처해 반복·누락 없이 연결한다.
+- 썸네일: 기존 `kumu.png`처럼 사이트 첫 화면의 특징이 보이는 560×560px 정사각형 이미지로 만든다. 로고와 주요 문구가 잘리지 않도록 캡처 영역을 고른다.
+- 결과는 `aseets/imgs/portfolio-sub/`에 `<brand>-hero.png`, `<brand>-pro.png`, `<brand>.png` 이름으로 저장한다. 관리자 업로드 제한인 파일당 10MB 이하를 확인하고, 기존 파일이 있으면 사용자 요청 없이 덮어쓰지 않는다.
+
+## Codex 프로젝트 스킬
+
+- Codex 용 스킬은 `.codex/skills/` 에 둔다. 이 경로의 스킬은 이 지침을 통해 찾아 사용한다.
+- fuse.lab 사이트의 FTP 업로드·배포·라이브 반영을 요청받으면 먼저 `.codex/skills/ftp-deploy/SKILL.md` 를 읽고 따른다. 스킬 생성·정리나 사용법 설명만 요청받은 경우에는 실제 배포를 실행하지 않는다.
 
 ## Git
 

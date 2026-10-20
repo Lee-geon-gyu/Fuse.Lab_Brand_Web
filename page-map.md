@@ -2,14 +2,16 @@
 
 PHP 파일 목록. 파일을 추가/삭제하면 이 표도 함께 수정한다. 화면 설계는 [docs/design.md](docs/design.md).
 
+관리자 콘텐츠를 반영한 정적 포트폴리오 목록·프로젝트별 상세 HTML은 `sub-pages/`에 있으며, 파일 안내와 반영 기준은 [sub-pages/README.md](sub-pages/README.md)를 참고한다. 운영 PHP와 DB는 기존 경로를 사용한다.
+
 ## 페이지
 
 | URL | 파일 | 화면 | 퍼블리싱 원본 | 레이아웃 |
 | --- | --- | --- | --- | --- |
-| `/` | `index.php` | 메인 (원페이지). 포트폴리오 슬라이드 = 게시판 `포트폴리오` 노출 글, 견적문의 폼 → `/inquiry.php`. 관리자 로그인 시 슬라이드 수정 링크·관리자 바 | `index.html` | site, 로더 포함 |
+| `/` | `index.php` | 메인 (원페이지). 포트폴리오 슬라이드 = 게시판 `포트폴리오` 노출 글, 견적문의 폼 → `/inquiry.php`. 관리자 로그인 시 슬라이드 수정 링크·관리자 바. HTML 시안의 메인 슬라이드도 2026-10-20 운영 콘텐츠와 동기화 | `index.html` | site, 로더 포함 |
 | `/inquiry.php` | `inquiry.php` | 견적문의 폼 제출 (POST+CSRF, `Accept: application/json` 이면 JSON, 아니면 `/#contact` 로 redirect + flash) | - | - |
 | `/portfolio.php` | `portfolio.php` | 포트폴리오 목록 (`portfolios`). 분류 탭 `?category=`, `+` 더보기 (`?partial=1&page=N` → JSON 조각) | `sub-pages/portfolio-sub.html` | site |
-| `/portfolio-detail.php?id=` | `portfolio-detail.php` | 포트폴리오 상세. 없거나 숨김이면 404 | `sub-pages/portfolio-sub-detail.html` | site |
+| `/portfolio-detail.php?id=` | `portfolio-detail.php` | 포트폴리오 상세. 사이트 주소에 맞는 원본 로고를 대표 화면 중앙에 표시(로고가 배경에 포함된 쿠무 제외). 없거나 숨김이면 404 | `sub-pages/portfolio-sub-detail.html`, `sub-pages/portfolio-*.html` | site |
 | `/page/{주소}` | `page.php` | 관리자가 만든 서브페이지 (`.htaccess` 리라이트 → `?slug=`). HTML·CSS·JS 는 서브페이지 관리에서. 숨김이면 관리자만, 없으면 404. `css/custom-page.css` | - | site |
 | `/chatbot-open.php` | `chatbot-open.php` | 사용자 챗봇을 처음 열 때 사용 집계 (POST+CSRF, JSON) | - | - |
 | `/chatbot-chat.php` | `chatbot-chat.php` | 사용자 챗봇 AI 답변 (POST+CSRF `messages` JSON → Claude API, 세션당 시간 30회). 실패 시 위젯이 규칙 기반 응답 | - | - |
@@ -49,7 +51,7 @@ PHP 파일 목록. 파일을 추가/삭제하면 이 표도 함께 수정한다.
 | `app/posts.php` | 게시판: `BOARD_PORTFOLIO`, `BOARD_TYPES`, `board_list(?type)`(키 => 이름, 글 화면은 `'post'`)·`board_admin_list()`·`board_type()`·`board_exists()`·`board_create()`·`board_rename()`·`board_delete()`·`board_move()`, `portfolio_slides()`, `post_list()`, `post_find()`, `post_store_upload()`(업로드 공통), `post_delete()` |
 | `app/board-tables.php` | 표 게시판: `board_table()`(열·행 읽기), `board_table_clean()`(검증), `board_table_save()` |
 | `app/inquiries.php` | 견적문의: `INQUIRY_STATUSES`, 검증·저장·검색·상태/메모 변경·삭제 |
-| `app/portfolios.php` | 포트폴리오: `PORTFOLIO_CATEGORIES`, 공개 목록·관리 목록·저장·순서·노출·삭제 |
+| `app/portfolios.php` | 포트폴리오: `PORTFOLIO_CATEGORIES`, 공개 목록·관리 목록·저장·순서·노출·삭제, `portfolio_brand_logo()`(원본 사이트 주소별 로고) |
 | `app/slots.php` | 페이지 문구 슬롯: `slot()`(유형별 출력), `slot_value()`, `slot_scan()`(소스에서 슬롯 수집), `slot_save()` |
 | `app/subpages.php` | 서브페이지: `subpage_list()`(기존 PHP + 만든 페이지), `subpage_for_file()`, `subpage_find()`, `subpage_create()`, `subpage_save()`, `subpage_delete()`, `subpage_current()`(site/head·footer 가 CSS·HTML·JS 주입) / 소스 편집: `subpage_source()`, `subpage_source_save()`(해시 확인·문법 검사·백업), `subpage_source_backups()`, `subpage_source_restore()` |
 | `app/chatbot.php` | 챗봇: `CHATBOT_TONES`, `chatbot_settings()`(행 없으면 기본값), 검증·저장·초기화 / AI: `chatbot_ai()`, `chatbot_ai_save()`, `chatbot_ai_reply()`(Claude Messages API, curl) |
