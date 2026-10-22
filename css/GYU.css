@@ -369,6 +369,7 @@
 }
 
 .gyu-service-card__image,
+.gyu-service-card__water,
 .gyu-service-card__shade {
   position: absolute;
   inset: 0;
@@ -381,6 +382,29 @@
   object-fit: cover;
   object-position: center;
   transform: scale(1.025);
+}
+
+.gyu-service-card__water {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.is-water-ready > .gyu-service-card__water {
+  opacity: 1;
+}
+
+.is-water-ready > .gyu-service-card__image {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gyu-service-card__water {
+    display: none;
+  }
+
+  .is-water-ready > .gyu-service-card__image {
+    opacity: 1;
+  }
 }
 
 .gyu-service-card__shade {
@@ -442,10 +466,6 @@
   text-wrap: pretty;
 }
 
-.gyu-service-card__side-label {
-  display: none;
-}
-
 /* Absolute cards share one sticky stage; only their transforms animate. */
 .gyu-mvp.is-deck .gyu-mvp__stage {
   position: sticky;
@@ -477,40 +497,16 @@
   will-change: transform, opacity;
 }
 
+.gyu-mvp.is-deck .gyu-service-card__visual {
+  pointer-events: auto;
+}
+
 .gyu-mvp.is-deck .gyu-service-card__visual,
 .gyu-mvp.is-deck .gyu-service-card__hero {
   height: 100%;
   min-height: 0;
 }
 
-.gyu-mvp.is-deck .gyu-service-card__side-label {
-  position: absolute;
-  top: 50%;
-  right: clamp(7px, 1.1vw, 20px);
-  z-index: 4;
-  display: block;
-  width: clamp(25px, 2.3vw, 42px);
-  max-height: calc(100% - 48px);
-  padding: 16px 7px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 999px;
-  background: rgba(4, 8, 14, 0.6);
-  color: #fff;
-  font-size: clamp(10px, 0.85vw, 15px);
-  font-weight: 500;
-  line-height: 1.25;
-  white-space: nowrap;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: translateY(-50%);
-}
-
-.gyu-service-card__side-label:hover {
-  background: #fff;
-  color: #101622;
-}
-
-.gyu-service-card__side-label:focus-visible,
 .gyu-mvp__deck:focus-visible {
   outline: 2px solid #b5c5ff;
   outline-offset: 5px;
@@ -710,13 +706,6 @@
   .gyu-service-card__hero p {
     font-size: 13px;
     line-height: 1.7;
-  }
-
-  .gyu-mvp.is-deck .gyu-service-card__side-label {
-    right: 4px;
-    width: 22px;
-    padding: 12px 4px;
-    font-size: 10px;
   }
 
   .gyu-service-card__hero p br {

@@ -369,6 +369,263 @@
     });
   });
 
+  // Each card keeps its own water surface. Only the front or touched surface animates.
+  const setupServiceWater = (items, serviceStage) => {
+    if (!window.THREE) return { update() {} };
+    const surfaces = new Map();
+    const rippleCount = 8;
+    let inView = false;
+    let frame = 0;
+    let lastFrame = 0;
+    let elapsed = 0;
+
+    const vertexShader = `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position.xy, 0.0, 1.0);
+      }
+    `;
+    const fragmentShader = `
+      uniform sampler2D uImage;
+      uniform vec2 uCover;
+      uniform float uAspect;
+      uniform float uTime;
+      uniform vec2 uPointer;
+      uniform vec2 uVelocity;
+      uniform float uHover;
+      uniform vec4 uRipples[8];
+      varying vec2 vUv;
+
+      void main() {
+        vec2 p = vec2(vUv.x * uAspect, vUv.y);
+        float t = uTime;
+        // Slow, crossing swells give the still image a quiet liquid surface.
+        vec2 displacement = vec2(
+          sin(p.y * 9.0 + t * 0.74) + 0.42 * sin(p.x * 6.0 - t * 0.51),
+          cos(p.x * 7.0 - t * 0.63) + 0.38 * sin(p.y * 11.0 + t * 0.46)
+        ) * 0.0026;
+        float light = 0.0;
+        for (int i = 0; i < 8; i++) {
+          vec4 ripple = uRipples[i];
+          float age = t - ripple.z;
+          vec2 delta = p - vec2(ripple.x * uAspect, ripple.y);
+          float distance = length(delta);
+          float front = distance - age * 0.24;
+          float envelope = exp(-front * front / 0.012) * exp(-age * 1.7);
+          float wave = sin(distance * 65.0 - age * 11.0) * envelope * ripple.w;
+          displacement += delta / max(distance, 0.015) * wave * 0.012;
+          light += wave * 0.012;
+        }
+        // The brush bends the image tangentially, like stirring with a fingertip.
+        vec2 delta = p - vec2(uPointer.x * uAspect, uPointer.y);
+        float brush = exp(-dot(delta, delta) / 0.026) * uHover;
+        float speed = min(length(uVelocity) * 12.0, 1.0);
+        displacement += vec2(-delta.y, delta.x) * brush * (0.08 + speed * 0.20);
+        displacement -= uVelocity * brush * 0.16;
+        vec2 uv = (vUv + displacement / vec2(uAspect, 1.0) - 0.5) * uCover + 0.5;
+        vec3 color = texture2D(uImage, clamp(uv, 0.001, 0.999)).rgb;
+        gl_FragColor = vec4(color + light, 1.0);
+      }
+    `;
+
+    const stop = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      lastFrame = 0;
+    };
+    const wake = () => {
+      if (!frame && inView && !document.hidden && !reducedMotion.matches) {
+        frame = requestAnimationFrame(tick);
+      }
+    };
+
+    const createSurface = (item, index) => {
+      let renderer;
+      let texture;
+      let geometry;
+      let material;
+      try {
+        renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false, powerPreference: "low-power" });
+        renderer.setPixelRatio(1);
+        const canvas = renderer.domElement;
+        // Let CSS hide the canvas when the user requests reduced motion.
+        canvas.style.display = "";
+        canvas.className = "gyu-service-card__water";
+        canvas.setAttribute("aria-hidden", "true");
+        texture = new THREE.Texture(item.image);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+        texture.needsUpdate = true;
+        const uniforms = {
+          uImage: { value: texture },
+          uCover: { value: new THREE.Vector2(1, 1) },
+          uAspect: { value: 1 },
+          uTime: { value: elapsed + index * 1.7 },
+          uPointer: { value: new THREE.Vector2(0.5, 0.5) },
+          uVelocity: { value: new THREE.Vector2() },
+          uHover: { value: 0 },
+          uRipples: { value: Array.from({ length: rippleCount }, () => new THREE.Vector4(0.5, 0.5, -100, 0)) },
+        };
+        geometry = new THREE.PlaneGeometry(2, 2);
+        material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader, depthTest: false, depthWrite: false });
+        const scene = new THREE.Scene();
+        scene.add(new THREE.Mesh(geometry, material));
+        const camera = new THREE.Camera();
+        const surface = {
+          renderer, texture, geometry, material, canvas, uniforms, scene, camera,
+          item, index, visible: true, active: false, hovering: false, lost: false,
+          dirty: true, lastInput: -1, lastRipple: -1, cursor: 0,
+          point: new THREE.Vector2(0.5, 0.5), velocity: new THREE.Vector2(),
+          width: 0, height: 0,
+        };
+        const pointer = (event) => {
+          if (!inView || reducedMotion.matches || surface.lost) return;
+          const rect = item.visual.getBoundingClientRect();
+          const x = clamp((event.clientX - rect.left) / rect.width);
+          const y = 1 - clamp((event.clientY - rect.top) / rect.height);
+          const now = performance.now();
+          const dt = Math.max(16, now - surface.lastInput);
+          if (surface.hovering) {
+            surface.velocity.set(
+              clamp((x - surface.point.x) * 16 / dt, -0.08, 0.08),
+              clamp((y - surface.point.y) * 16 / dt, -0.08, 0.08),
+            );
+          }
+          surface.point.set(x, y);
+          if (!surface.hovering || now - surface.lastRipple > 65) {
+            const strength = surface.hovering ? Math.min(1, 0.35 + surface.velocity.length() * 10) : 0.6;
+            uniforms.uRipples.value[surface.cursor].set(x, y, uniforms.uTime.value, strength);
+            surface.cursor = (surface.cursor + 1) % rippleCount;
+            surface.lastRipple = now;
+          }
+          surface.hovering = true;
+          surface.lastInput = now;
+          wake();
+        };
+        const leave = () => { surface.hovering = false; };
+        item.visual.addEventListener("pointerenter", pointer, { passive: true });
+        item.visual.addEventListener("pointermove", pointer, { passive: true });
+        item.visual.addEventListener("pointerleave", leave, { passive: true });
+        item.visual.addEventListener("pointerup", (event) => {
+          if (event.pointerType !== "mouse") leave();
+        }, { passive: true });
+        item.visual.addEventListener("pointercancel", leave, { passive: true });
+        canvas.addEventListener("webglcontextlost", (event) => {
+          event.preventDefault();
+          surface.lost = true;
+          item.visual.classList.remove("is-water-ready");
+        });
+        canvas.addEventListener("webglcontextrestored", () => {
+          surface.lost = false;
+          surface.dirty = true;
+          texture.needsUpdate = true;
+          wake();
+        });
+        item.image.after(canvas);
+        return surface;
+      } catch (_) {
+        geometry?.dispose();
+        material?.dispose();
+        texture?.dispose();
+        renderer?.dispose();
+        return null;
+      }
+    };
+
+    const draw = (surface, dt) => {
+      const { item, renderer, uniforms } = surface;
+      if (surface.lost) return;
+      const width = item.visual.clientWidth;
+      const height = item.visual.clientHeight;
+      if (!width || !height) return;
+      if (surface.width !== width || surface.height !== height) {
+        surface.width = width;
+        surface.height = height;
+        // Cap backing pixels independently from CSS size to keep card transitions light.
+        const scale = Math.min(1, 1440 / width, Math.sqrt(1200000 / (width * height)));
+        renderer.setSize(Math.round(width * scale), Math.round(height * scale), false);
+        const aspect = width / height;
+        const imageAspect = item.image.naturalWidth / item.image.naturalHeight;
+        uniforms.uAspect.value = aspect;
+        uniforms.uCover.value.set(Math.min(1, aspect / imageAspect) / 1.025, Math.min(1, imageAspect / aspect) / 1.025);
+      }
+      uniforms.uTime.value = elapsed + surface.index * 1.7;
+      const smoothing = 1 - Math.exp(-dt * 10);
+      uniforms.uPointer.value.lerp(surface.point, smoothing);
+      uniforms.uVelocity.value.lerp(surface.velocity, smoothing);
+      surface.velocity.multiplyScalar(Math.exp(-dt * 9));
+      uniforms.uHover.value += ((surface.hovering ? 1 : 0) - uniforms.uHover.value) * smoothing;
+      renderer.render(surface.scene, surface.camera);
+      // Leave the original image visible if the GPU cannot compile the effect.
+      if (renderer.info.programs?.some((program) => program.diagnostics?.runnable === false)) return;
+      item.visual.classList.add("is-water-ready");
+      surface.dirty = false;
+    };
+
+    function tick(now) {
+      frame = 0;
+      if (!inView || document.hidden || reducedMotion.matches) { lastFrame = 0; return; }
+      const dt = lastFrame ? Math.min((now - lastFrame) / 1000, 0.05) : 1 / 60;
+      lastFrame = now;
+      elapsed += dt;
+      surfaces.forEach((surface) => {
+        if (!surface || !surface.visible || surface.lost) return;
+        const rippling = surface.uniforms.uRipples.value.some((ripple) => surface.uniforms.uTime.value - ripple.z < 3);
+        if (surface.active || surface.hovering || surface.dirty || rippling || surface.uniforms.uHover.value > 0.001) {
+          draw(surface, dt);
+        }
+      });
+      wake();
+    }
+
+    const sync = () => {
+      items.forEach((item, index) => {
+        let surface = surfaces.get(item);
+        const enabled = inView && !reducedMotion.matches && item.waterVisible;
+        if (enabled && surface === undefined && item.image.complete && item.image.naturalWidth) {
+          surface = createSurface(item, index);
+          surfaces.set(item, surface);
+        }
+        if (surface) {
+          surface.visible = enabled;
+          surface.active = item.waterActive;
+          surface.canvas.style.filter = item.image.style.filter;
+          if (!enabled) surface.hovering = false;
+        }
+        if (reducedMotion.matches) item.visual.classList.remove("is-water-ready");
+      });
+      if (inView && !reducedMotion.matches && !document.hidden) wake();
+      else stop();
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      sync();
+    });
+    observer.observe(serviceStage);
+    items.forEach((item) => item.image.addEventListener("load", sync, { once: true }));
+    reducedMotion.addEventListener("change", () => {
+      surfaces.forEach((surface) => {
+        if (!surface) return;
+        surface.uniforms.uHover.value = 0;
+        surface.uniforms.uVelocity.value.set(0, 0);
+        surface.uniforms.uRipples.value.forEach((ripple) => ripple.w = 0);
+        surface.dirty = true;
+      });
+      sync();
+    });
+    document.addEventListener("visibilitychange", sync);
+    window.addEventListener("resize", () => {
+      surfaces.forEach((surface) => { if (surface) surface.dirty = true; });
+      wake();
+    });
+    window.addEventListener("pagehide", stop);
+    window.addEventListener("pageshow", sync);
+    return { update: sync };
+  };
+
+
   const setupMvpStory = () => {
     const section = document.querySelector(".gyu-mvp");
     const serviceStage = section?.querySelector(".gyu-mvp__stage");
@@ -414,17 +671,10 @@
         `${index + 1} / ${cards.length}, ${title}`,
       );
 
-      const tab = document.createElement("button");
-      tab.type = "button";
-      tab.className = "gyu-service-card__side-label";
-      tab.textContent = title;
-      tab.setAttribute("aria-label", `${title} 카드 보기`);
-      tab.addEventListener("click", () => goToCard(index));
-
-      visual.append(tab);
       image.decoding = "async";
-      return { card, visual, hero, image, tab, title };
+      return { card, visual, hero, image, title };
     });
+    const water = setupServiceWater(items, serviceStage);
 
     // One pinned stage, one scroll timeline. Card geometry never drives scrolling.
     const measure = () => {
@@ -487,7 +737,7 @@
           scale: 1,
           opacity: 1,
           body: 1,
-          tab: 0,
+
           blur: 0,
           brightness: 1,
         };
@@ -502,7 +752,7 @@
         scale,
         opacity: visible ? 1 : 0,
         body: 0,
-        tab: distance > 0 && visible ? 1 : 0,
+
         blur: Math.min(3.5, depth * 1.1),
         brightness: Math.max(0.55, 0.86 - depth * 0.08),
       };
@@ -541,7 +791,6 @@
             current.scale = mix(1, 0.94, departure);
             current.opacity = 1 - ease(clamp((fraction - 0.3) / 0.44));
             current.body = 1 - ease(clamp(fraction / 0.55));
-            current.tab = 0;
             current.blur = 3 * departure;
             current.brightness = mix(1, 0.78, departure);
             angle = -3 * departure;
@@ -556,7 +805,6 @@
 
         const visible = current.opacity > 0.001;
         const frontInteractive = settled && index === active;
-        const tabInteractive = settled && current.tab > 0.99 && visible;
         item.card.style.transform =
           `translate3d(${current.x.toFixed(3)}px, ${current.y.toFixed(3)}px, 0) ` +
           `rotate(${angle.toFixed(3)}deg) scale(${current.scale.toFixed(5)})`;
@@ -569,12 +817,11 @@
         item.image.setAttribute("aria-hidden", String(!frontInteractive));
         item.hero.style.opacity = String(current.body);
         item.hero.setAttribute("aria-hidden", String(!frontInteractive));
-        item.tab.style.opacity = String(current.tab);
-        item.tab.disabled = !tabInteractive;
-        item.tab.tabIndex = tabInteractive ? 0 : -1;
-        item.tab.style.pointerEvents = tabInteractive ? "auto" : "none";
-        item.tab.setAttribute("aria-hidden", String(!tabInteractive));
+        item.waterVisible = visible;
+        item.waterActive = visible && current.body > 0.01;
       });
+
+      water.update();
 
       if (settled && announcedIndex !== active) {
         announcedIndex = active;
